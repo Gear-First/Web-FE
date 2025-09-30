@@ -1,27 +1,37 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 import styled from "styled-components";
+import BellIcon from "../../assets/BellIcon.png";
 
-const TopBarContainer = styled.div`
+const TopBarContainer = styled.header`
   height: 64px;
   background: white;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 2rem;
+  padding: 1rem 2rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 `;
 
-const MenuGroup = styled.div`
+const MenuGroup = styled.nav`
   display: flex;
   gap: 20px;
 `;
 
-const MenuItem = styled.div.withConfig({
-  shouldForwardProp: (prop) => prop !== "active",
-})<{ active: boolean }>`
-  font-weight: ${(props) => (props.active ? "bold" : "normal")};
-  color: ${(props) => (props.active ? "#1976d2" : "#333")};
-  cursor: pointer;
+const MenuLink = styled(NavLink)`
+  font-weight: 500;
+  color: #333;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &.active {
+    color: #1976d2;
+    font-weight: 700;
+  }
+
+  &:hover {
+    color: #1976d2;
+  }
 `;
 
 const RightActions = styled.div`
@@ -30,32 +40,36 @@ const RightActions = styled.div`
   align-items: center;
 `;
 
-interface TopBarProps {
-  activeMenu: string;
-  setActiveMenu: (menu: string) => void;
-}
+const IconButton = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+`;
 
-const TopBar: React.FC<TopBarProps> = ({ activeMenu, setActiveMenu }) => {
-  const menus = ["재고관리", "통계", "지점관리"];
+const TopBar: React.FC = () => {
+  const menus = [
+    { path: "/", label: "자재 소요량 산출 및 계획" },
+    { path: "/", label: "구매 활동" },
+    { path: "/inventory", label: "자재 입고 및 보관" },
+    { path: "/", label: "자재 출고" },
+  ];
 
   return (
     <TopBarContainer>
       <div>GearFirst</div>
       <MenuGroup>
         {menus.map((menu) => (
-          <MenuItem
-            key={menu}
-            active={menu === activeMenu}
-            onClick={() => setActiveMenu(menu)}
-          >
-            {menu}
-          </MenuItem>
+          <MenuLink key={menu.path} to={menu.path}>
+            {menu.label}
+          </MenuLink>
         ))}
       </MenuGroup>
       <RightActions>
-        <div>홍길동님</div>
-        <button>🔔</button>
-        <button>⚙️</button>
+        <div>박우진님</div>
+        <IconButton>
+          <img src={BellIcon} alt="알림" width={20} height={20} />
+        </IconButton>
       </RightActions>
     </TopBarContainer>
   );

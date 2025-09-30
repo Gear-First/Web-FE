@@ -1,37 +1,44 @@
 import React from "react";
+import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 
-const SideBarWrapper = styled.div`
+const SideBarWrapper = styled.aside`
   width: 220px;
   background: #1e2a38;
   color: #fff;
   padding: 20px;
 `;
 
-const MenuItem = styled.div.withConfig({
-  shouldForwardProp: (prop) => prop !== "isActive",
-})<{ isActive: boolean }>`
+const MenuItem = styled(NavLink)`
+  display: block;
   padding: 10px 0;
-  font-weight: ${({ isActive }) => (isActive ? "bold" : "normal")};
-  color: ${({ isActive }) => (isActive ? "#00c4ff" : "#fff")};
-  cursor: pointer;
+  font-weight: 500;
+  color: #fff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &.active {
+    font-weight: 700;
+    color: #00c4ff;
+  }
+
+  &:hover {
+    color: #00c4ff;
+  }
 `;
 
-interface SideBarProps {
-  activeMenu: string;
-}
+const menuItems = [
+  { to: "/", label: "자재 소요량 산출 및 계획" },
+  { to: "/", label: "구매 활동" },
+  { to: "/inventory", label: "자재 입고 및 보관" },
+  { to: "/", label: "자재 출고" },
+];
 
-const SideBar: React.FC<SideBarProps> = ({ activeMenu }) => {
-  const menus = [
-    { key: "dashboard", label: "대시보드" },
-    { key: "inventory", label: "재고 관리" },
-    { key: "orders", label: "주문 관리" },
-  ];
-
+const SideBar: React.FC = () => {
   return (
     <SideBarWrapper>
-      {menus.map((menu) => (
-        <MenuItem key={menu.key} isActive={activeMenu === menu.key}>
+      {menuItems.map((menu) => (
+        <MenuItem key={menu.to} to={menu.to}>
           {menu.label}
         </MenuItem>
       ))}

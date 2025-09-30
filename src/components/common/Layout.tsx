@@ -7,6 +7,7 @@ const LayoutWrapper = styled.div`
   display: flex;
   flex-direction: column;
   height: 100vh;
+  width: 100vw;
 `;
 
 const MainWrapper = styled.div`
@@ -15,21 +16,15 @@ const MainWrapper = styled.div`
 `;
 
 interface LayoutProps {
-  activeMenu: string;
-  setActiveMenu?: (menu: string) => void;
   children: React.ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({
-  activeMenu,
-  setActiveMenu,
-  children,
-}) => {
+const Layout: React.FC<LayoutProps> = ({ children }) => {
   return (
     <LayoutWrapper>
-      <TopBar activeMenu={activeMenu} setActiveMenu={setActiveMenu!} />
+      <TopBar />
       <MainWrapper>
-        <SideBar activeMenu={activeMenu} />
+        <SideBar />
         {children}
       </MainWrapper>
     </LayoutWrapper>

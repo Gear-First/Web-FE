@@ -1,10 +1,11 @@
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import InventoryPage from "../pages/InventoryPage";
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<InventoryPage activeMenu="inventory" />} />
+      <Route path="/" element={<Navigate to="/inventory" replace />} />
+      <Route path="/inventory" element={<InventoryPage />} />
     </Routes>
   );
 };
