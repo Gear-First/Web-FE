@@ -31,7 +31,11 @@ const InventoryPage: React.FC = () => {
     locationFilter,
     setLocationFilter,
     filteredRecords,
-    inventorySnapshot,
+    // inventorySnapshot,
+    inventories,
+    loading,
+    error,
+    refetch,
   } = useReceivingStorageViewModel();
 
   return (
@@ -125,36 +129,28 @@ const InventoryPage: React.FC = () => {
           <Table>
             <thead>
               <tr>
-                <Th>Lot 번호</Th>
-                <Th>부품명</Th>
-                <Th>보관 창고</Th>
-                <Th>현재고 수량</Th>
-                <Th>안전 재고 수량</Th>
-                <Th>품질 상태</Th>
-                <Th>입고 일자</Th>
+                <Th>자재 명</Th>
+                <Th>자재 코드</Th>
+                <Th>현재 재고</Th>
+                <Th>가용 재고</Th>
+                <Th>창고</Th>
+                <Th>입고 날짜</Th>
+                <Th>상태</Th>
               </tr>
             </thead>
             <tbody>
-              {inventorySnapshot.map((snapshot) => {
-                const shortage = snapshot.onHand < snapshot.safetyStock;
-                return (
-                  <tr key={snapshot.materialCode}>
-                    <Td>{snapshot.materialCode}</Td>
-                    <Td>{snapshot.materialName}</Td>
-                    <Td>{snapshot.location}</Td>
-                    <Td>{snapshot.onHand.toLocaleString()}</Td>
-                    <Td>{snapshot.safetyStock.toLocaleString()}</Td>
-                    <Td>
-                      {shortage ? (
-                        <StatusBadge $variant="danger">보충 필요</StatusBadge>
-                      ) : (
-                        <StatusBadge $variant="success">안정</StatusBadge>
-                      )}
-                    </Td>
-                    <Td>{snapshot.lastUpdated}</Td>
+              {Array.isArray(inventories) &&
+                inventories.map((item) => (
+                  <tr key={item.inventoryCode}>
+                    <Td>{item.inventoryName}</Td>
+                    <Td>{item.inventoryCode}</Td>
+                    <Td>{item.currentStock}</Td>
+                    <Td>{item.availableStock}</Td>
+                    <Td>{item.warehouse}</Td>
+                    <Td>{new Date(item.inboundDate).toLocaleString()}</Td>
+                    <Td>{item.inventoryStatus}</Td>
                   </tr>
-                );
-              })}
+                ))}
             </tbody>
           </Table>
         </SectionCard>
