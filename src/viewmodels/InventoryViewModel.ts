@@ -1,9 +1,11 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type {
+  InventoryItem,
   InventorySnapshot,
   QualityStatus,
   ReceivingRecord,
 } from "../models/erp";
+import { getInventories } from "../service/api/InventoryApi";
 
 const RECEIVING_RECORDS: ReceivingRecord[] = [
   {
@@ -60,35 +62,35 @@ const RECEIVING_RECORDS: ReceivingRecord[] = [
   },
 ];
 
-const INVENTORY_SNAPSHOT: InventorySnapshot[] = [
-  {
-    materialCode: "LOT-20250920-001",
-    materialName: "고전압 케이블",
-    onHand: 1980,
-    unit: "m",
-    safetyStock: 1500,
-    location: "창고 A",
-    lastUpdated: "2024-09-20",
-  },
-  {
-    materialCode: "LOT-20250918-002",
-    materialName: "ABS 센서",
-    onHand: 1000,
-    unit: "EA",
-    safetyStock: 1200,
-    location: "창고 B",
-    lastUpdated: "2024-09-18",
-  },
-  {
-    materialCode: "LOT-20250915-003",
-    materialName: "브레이크 패드",
-    onHand: 2200,
-    unit: "EA",
-    safetyStock: 1500,
-    location: "창고 C",
-    lastUpdated: "2024-09-15",
-  },
-];
+// const INVENTORY_SNAPSHOT: InventorySnapshot[] = [
+//   {
+//     materialCode: "LOT-20250920-001",
+//     materialName: "고전압 케이블",
+//     onHand: 1980,
+//     unit: "m",
+//     safetyStock: 1500,
+//     location: "창고 A",
+//     lastUpdated: "2024-09-20",
+//   },
+//   {
+//     materialCode: "LOT-20250918-002",
+//     materialName: "ABS 센서",
+//     onHand: 1000,
+//     unit: "EA",
+//     safetyStock: 1200,
+//     location: "창고 B",
+//     lastUpdated: "2024-09-18",
+//   },
+//   {
+//     materialCode: "LOT-20250915-003",
+//     materialName: "브레이크 패드",
+//     onHand: 2200,
+//     unit: "EA",
+//     safetyStock: 1500,
+//     location: "창고 C",
+//     lastUpdated: "2024-09-15",
+//   },
+// ];
 
 type QualityFilter = QualityStatus | "ALL";
 
@@ -97,6 +99,26 @@ type LocationFilter = "ALL" | string;
 export const useReceivingStorageViewModel = () => {
   const [qualityFilter, setQualityFilter] = useState<QualityFilter>("ALL");
   const [locationFilter, setLocationFilter] = useState<LocationFilter>("ALL");
+
+  const [inventories, setInventories] = useState<InventoryItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchInventories = async () => {
+    try {
+      setLoading(true);
+      const data = await getInventories();
+      setInventories(data);
+    } catch (err: any) {
+      setError(err.message || "데이터를 불러오는 중 오류 발생");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchInventories();
+  }, []);
 
   const locationOptions = useMemo(() => {
     const locations = Array.from(
@@ -123,15 +145,15 @@ export const useReceivingStorageViewModel = () => {
     const qualityHold = filteredRecords.filter(
       (record) => record.qualityStatus === "보류"
     ).length;
-    const totalOnHand = INVENTORY_SNAPSHOT.reduce(
-      (acc, snapshot) => acc + snapshot.onHand,
-      0
-    );
+    // const totalOnHand = INVENTORY_SNAPSHOT.reduce(
+    //   (acc, snapshot) => acc + snapshot.onHand,
+    //   0
+    // );
 
     return {
       todayReceipts,
       qualityHold,
-      totalOnHand,
+      // totalOnHand,
     };
   }, [filteredRecords]);
 
@@ -142,7 +164,11 @@ export const useReceivingStorageViewModel = () => {
     locationFilter,
     setLocationFilter,
     filteredRecords,
-    inventorySnapshot: INVENTORY_SNAPSHOT,
+    // inventorySnapshot: INVENTORY_SNAPSHOT,
     summary,
+    inventories,
+    loading,
+    error,
+    refetch: fetchInventories,
   };
 };
