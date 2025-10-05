@@ -105,7 +105,7 @@ const IssuancePage = () => {
         <SectionCard>
           <SectionHeader>
             <div>
-              <SectionTitle>출고 예정</SectionTitle>
+              <SectionTitle>자재 출고 예정</SectionTitle>
               <SectionCaption>
                 향후 작업 지시별 자재 준비 상태를 점검합니다.
               </SectionCaption>
