@@ -48,3 +48,11 @@ export interface IssuanceRecord {
   handledBy: string;
   status: IssuanceStatus;
 }
+
+export interface IssuanceSchedule {
+  workOrder: string;
+  inventoryName: string;
+  requiredDate: string;
+  preparedQuantity: number;
+  status: "준비완료" | "자재부족";
+}

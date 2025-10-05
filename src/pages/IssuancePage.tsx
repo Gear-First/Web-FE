@@ -21,9 +21,19 @@ const statusVariant: Record<IssuanceStatus, "warning" | "info" | "success"> = {
   완료: "success",
 };
 
+const scheduleVariant = {
+  준비완료: "success" as const,
+  자재부족: "danger" as const,
+};
+
 const IssuancePage = () => {
-  const { statusOptions, statusFilter, setStatusFilter, filteredRecords } =
-    useIssuanceViewModel();
+  const {
+    statusOptions,
+    statusFilter,
+    setStatusFilter,
+    filteredRecords,
+    schedule,
+  } = useIssuanceViewModel();
 
   return (
     <Layout>
@@ -84,6 +94,45 @@ const IssuancePage = () => {
                   <Td>
                     <StatusBadge $variant={statusVariant[record.status]}>
                       {record.status}
+                    </StatusBadge>
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Table>
+        </SectionCard>
+
+        <SectionCard>
+          <SectionHeader>
+            <div>
+              <SectionTitle>자재 출고 예정</SectionTitle>
+              <SectionCaption>
+                향후 작업 지시별 자재 준비 상태를 점검합니다.
+              </SectionCaption>
+            </div>
+          </SectionHeader>
+          <Table>
+            <thead>
+              <tr>
+                <Th>작업 지시</Th>
+                <Th>제품</Th>
+                <Th>필요 일자</Th>
+                <Th>준비 자재 수</Th>
+                <Th>상태</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {schedule.map((item) => (
+                <tr key={item.workOrder}>
+                  <Td>{item.workOrder}</Td>
+                  <Td>{item.inventoryName}</Td>
+                  <Td>{item.requiredDate}</Td>
+                  <Td>{item.preparedQuantity}</Td>
+                  <Td>
+                    <StatusBadge
+                      $variant={scheduleVariant[item.status] ?? "info"}
+                    >
+                      {item.status}
                     </StatusBadge>
                   </Td>
                 </tr>
