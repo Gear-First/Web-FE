@@ -48,3 +48,41 @@ export interface IssuanceRecord {
   handledBy: string;
   status: IssuanceStatus;
 }
+
+export type OrderPriority = "높음" | "보통" | "낮음";
+export type OrderStatus = "요청" | "협상중" | "발주완료";
+
+export default interface ProcurementRequest {
+  id: string;
+  materialCode: string;
+  materialName: string;
+  requestedQty: number;
+  unit: string;
+  requester: string;
+  department: string;
+  requestedDate: string;
+  priority: OrderPriority;
+  status: OrderStatus;
+  targetDate: string;
+  selectedVendor?: string;
+}
+
+export interface VendorQuote {
+  requestId: string;
+  vendorName: string;
+  pricePerUnit: number;
+  leadTimeDays: number;
+  validity: string;
+}
+
+export type PurchaseOrderStatus = "작성중" | "발주" | "입고완료";
+
+export interface PurchaseOrder {
+  id: string;
+  vendorName: string;
+  orderDate: string;
+  expectedDate: string;
+  totalAmount: number;
+  status: PurchaseOrderStatus;
+  requestId: string;
+}
