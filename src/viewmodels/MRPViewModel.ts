@@ -53,7 +53,9 @@ export const useMRPViewModel = () => {
     const dates = Array.from(
       new Set(PLAN_DATA.map((plan) => plan.plannedStartDate))
     );
-    return ["ALL", ...dates];
+    return [{ value: "ALL", label: "전체 일정" }].concat(
+      dates.map((date) => ({ value: date, label: date }))
+    );
   }, []);
 
   const productOptions = useMemo(() => {
