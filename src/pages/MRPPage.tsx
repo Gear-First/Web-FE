@@ -42,8 +42,8 @@ const MRPPage: React.FC = () => {
                 onChange={(event) => setSelectedDate(event.target.value)}
               >
                 {dateOptions.map((date) => (
-                  <option key={date} value={date}>
-                    {date}
+                  <option key={date.value} value={date.value}>
+                    {date.label}
                   </option>
                 ))}
               </Select>
