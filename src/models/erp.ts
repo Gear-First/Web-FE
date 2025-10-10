@@ -56,3 +56,12 @@ export interface IssuanceSchedule {
   preparedQuantity: number;
   status: "준비완료" | "자재부족";
 }
+
+export interface ProductionPlan {
+  id: string;
+  productCode: string;
+  productName: string;
+  plannedQuantity: number;
+  plannedStartDate: string;
+  plannedEndDate: string;
+}
