@@ -23,6 +23,17 @@ const qualityVariant: Record<QualityStatus, "success" | "warning" | "danger"> =
     불합격: "danger",
   };
 
+const inventoryStatusVariant: Record<string, "success" | "danger" | "warning"> =
+  {
+    STABLE: "success",
+    NEED_RESTOCK: "danger",
+  };
+
+const inventoryStatusDisplay: Record<string, string> = {
+  STABLE: "안정",
+  NEED_RESTOCK: "부족",
+};
+
 const InventoryPage: React.FC = () => {
   const {
     locationOptions,
@@ -147,8 +158,19 @@ const InventoryPage: React.FC = () => {
                     <Td>{item.currentStock}</Td>
                     <Td>{item.availableStock}</Td>
                     <Td>{item.warehouse}</Td>
-                    <Td>{new Date(item.inboundDate).toLocaleString()}</Td>
-                    <Td>{item.inventoryStatus}</Td>
+                    <Td>
+                      {new Date(item.inboundDate).toISOString().slice(0, 10)}
+                    </Td>
+                    <Td>
+                      <StatusBadge
+                        $variant={
+                          inventoryStatusVariant[item.inventoryStatus] ?? "info"
+                        }
+                      >
+                        {inventoryStatusDisplay[item.inventoryStatus] ??
+                          item.inventoryStatus}
+                      </StatusBadge>
+                    </Td>
                   </tr>
                 ))}
             </tbody>
