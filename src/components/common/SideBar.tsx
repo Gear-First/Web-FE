@@ -28,8 +28,8 @@ const MenuItem = styled(NavLink)`
 `;
 
 const menuItems = [
-  { to: "/supplierOrder", label: "구매 활동" },
   { to: "/mrp", label: "자재 소요량 산출 및 계획" },
+  { to: "/supplierOrder", label: "구매 활동" },
   { to: "/inventory", label: "자재 입고 및 보관" },
   { to: "/issuance", label: "자재 출고" },
 ];
