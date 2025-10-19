@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import InventoryPage from "../pages/InventoryPage";
 import IssuancePage from "../pages/IssuancePage";
+import SupplierOrderPage from "../pages/SupplierOrderPage";
 import MRPPage from "../pages/MRPPage";
 
 const AppRoutes = () => {
@@ -10,6 +11,7 @@ const AppRoutes = () => {
       <Route path="/mrp" element={<MRPPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
       <Route path="/issuance" element={<IssuancePage />} />
+      <Route path="/supplierOrder" element={<SupplierOrderPage />} />
     </Routes>
   );
 };
