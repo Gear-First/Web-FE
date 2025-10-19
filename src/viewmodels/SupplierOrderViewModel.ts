@@ -1,9 +1,6 @@
 import { useMemo, useState } from "react";
-import type ProcurementRequest, {
-  OrderPriority,
-  OrderStatus,
-  PurchaseOrder,
-} from "../models/erp";
+import type ProcurementRequest from "../models/erp";
+import type { OrderPriority, OrderStatus, PurchaseOrder } from "../models/erp";
 
 const PROCUREMENT_REQUESTS: ProcurementRequest[] = [
   {

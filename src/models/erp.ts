@@ -49,7 +49,6 @@ export interface IssuanceRecord {
   status: IssuanceStatus;
 }
 
-<<<<<<< HEAD
 export type OrderPriority = "높음" | "보통" | "낮음";
 export type OrderStatus = "요청" | "협상중" | "발주완료";
 
@@ -86,7 +85,7 @@ export interface PurchaseOrder {
   totalAmount: number;
   status: PurchaseOrderStatus;
   requestId: string;
-=======
+}
 export interface IssuanceSchedule {
   workOrder: string;
   inventoryName: string;
@@ -102,5 +101,4 @@ export interface ProductionPlan {
   plannedQuantity: number;
   plannedStartDate: string;
   plannedEndDate: string;
->>>>>>> 9d8286a730ac3c26c297ec7ee3da62cd67a5cdd8
 }

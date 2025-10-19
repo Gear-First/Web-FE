@@ -48,13 +48,8 @@ const IconButton = styled.button`
 
 const TopBar: React.FC = () => {
   const menus = [
-<<<<<<< HEAD
-    { id: 1, name: "자재 소요량 산출 및 계획", path: "/" },
     { id: 2, name: "구매 활동", path: "/supplierOrder" },
-=======
     { id: 1, name: "자재 소요량 산출 및 계획", path: "/mrp" },
-    { id: 2, name: "구매 활동", path: "/" },
->>>>>>> 9d8286a730ac3c26c297ec7ee3da62cd67a5cdd8
     { id: 3, name: "자재 입고 및 보관", path: "/inventory" },
     { id: 4, name: "자재 출고", path: "/issuance" },
   ];
