@@ -1,14 +1,13 @@
-// src/features/issuance/components/IssuanceTable.tsx
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
-import type { IssuanceRecord, IssuanceStatus } from "../IssuanceTypes";
+import type { OutboundRecord, OutboundStatus } from "../OutboundTypes";
 
-const statusVariant: Record<IssuanceStatus, "warning" | "info" | "success"> = {
+const statusVariant: Record<OutboundStatus, "warning" | "info" | "success"> = {
   대기: "warning",
   진행중: "info",
   완료: "success",
 };
 
-export default function IssuanceTable({ rows }: { rows: IssuanceRecord[] }) {
+export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
   return (
     <Table>
       <thead>

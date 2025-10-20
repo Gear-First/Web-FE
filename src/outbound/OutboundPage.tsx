@@ -1,4 +1,3 @@
-// src/features/issuance/page.tsx
 import Layout from "../components/common/Layout";
 import {
   PageContainer,
@@ -11,32 +10,32 @@ import {
 } from "../components/common/PageLayout";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import IssuanceTable from "./components/IssuanceTable";
+import OutboundTable from "./components/OutboundTable";
 import ScheduleTable from "./components/ScheduleTable";
-import type { IssuanceStatus } from "./IssuanceTypes";
+import type { OutboundStatus } from "./OutboundTypes";
 import {
-  issuanceKeys,
-  fetchIssuanceRecords,
-  fetchIssuanceSchedule,
-} from "./IssuanceApi";
+  outboundKeys,
+  fetchOutboundRecords,
+  fetchOutboundSchedule,
+} from "./OutboundApi";
 
-type StatusFilter = IssuanceStatus | "ALL";
+type StatusFilter = OutboundStatus | "ALL";
 
-export default function IssuancePage() {
+export default function OutboundPage() {
   const [status, setStatus] = useState<StatusFilter>("ALL");
   const statusOptions: StatusFilter[] = ["ALL", "대기", "진행중", "완료"];
 
   const { data: records = [], isLoading: loadingR } = useQuery({
-    queryKey: issuanceKeys.records,
-    queryFn: fetchIssuanceRecords,
+    queryKey: outboundKeys.records,
+    queryFn: fetchOutboundRecords,
     select: (rows) =>
       status === "ALL" ? rows : rows.filter((r) => r.status === status),
     staleTime: 5 * 60 * 1000,
   });
 
   const { data: schedule = [], isLoading: loadingS } = useQuery({
-    queryKey: issuanceKeys.schedule,
-    queryFn: fetchIssuanceSchedule,
+    queryKey: outboundKeys.schedule,
+    queryFn: fetchOutboundSchedule,
     staleTime: 5 * 60 * 1000,
   });
 
@@ -65,7 +64,7 @@ export default function IssuancePage() {
             </FilterGroup>
           </SectionHeader>
 
-          {loadingR ? "로딩중..." : <IssuanceTable rows={records} />}
+          {loadingR ? "로딩중..." : <OutboundTable rows={records} />}
         </SectionCard>
 
         <SectionCard>

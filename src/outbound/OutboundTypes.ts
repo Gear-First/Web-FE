@@ -1,6 +1,6 @@
-export type IssuanceStatus = "대기" | "진행중" | "완료";
+export type OutboundStatus = "대기" | "진행중" | "완료";
 
-export interface IssuanceRecord {
+export interface OutboundRecord {
   id: string;
   inventoryCode: string;
   inventoryName: string;
@@ -10,11 +10,11 @@ export interface IssuanceRecord {
   receiptDate: string;
   destination: string;
   handledBy: string;
-  status: IssuanceStatus;
+  status: OutboundStatus;
   deliveryFactory: string;
 }
 
-export interface IssuanceSchedule {
+export interface OutboundSchedule {
   workOrder: string;
   inventoryName: string;
   requiredDate: string;

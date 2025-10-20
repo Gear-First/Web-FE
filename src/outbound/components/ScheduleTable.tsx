@@ -1,13 +1,12 @@
-// src/features/issuance/components/ScheduleTable.tsx
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
-import type { IssuanceSchedule } from "../IssuanceTypes";
+import type { OutboundSchedule } from "../OutboundTypes";
 
 const scheduleVariant = {
   준비완료: "success" as const,
   자재부족: "danger" as const,
 };
 
-export default function ScheduleTable({ rows }: { rows: IssuanceSchedule[] }) {
+export default function ScheduleTable({ rows }: { rows: OutboundSchedule[] }) {
   return (
     <Table>
       <thead>
