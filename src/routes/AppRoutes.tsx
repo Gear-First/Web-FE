@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import IssuancePage from "../issuance/IssuancePage";
+import InboundPage from "../inbound/InboundPage";
 
 const AppRoutes = () => {
   return (
@@ -7,6 +8,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Navigate to="/issuance" replace />} />
       <Route path="/mrp" element={<IssuancePage />} />
       <Route path="/inventory" element={<IssuancePage />} />
+      <Route path="/inbound" element={<InboundPage />} />
       <Route path="/issuance" element={<IssuancePage />} />
       <Route path="/supplierOrder" element={<IssuancePage />} />
     </Routes>
