@@ -52,7 +52,7 @@ const TopBar: React.FC = () => {
     { id: 2, name: "구매 활동", path: "/supplierOrder" },
     { id: 3, name: "자재 입고 및 보관", path: "/inventory" },
     { id: 4, name: "입고 관리", path: "/outbound" },
-    { id: 5, name: "자재 출고", path: "/issuance" },
+    { id: 5, name: "자재 출고", path: "/outbound" },
   ];
 
   return (

@@ -1,15 +1,14 @@
 // 초기엔 목데이터로 시작하고, 서버 연동 시 fetch/axios로 교체하세요.
-import type { IssuanceRecord, IssuanceSchedule } from "./IssuanceTypes";
+import type { OutboundRecord, OutboundSchedule } from "./OutboundTypes";
 
 // --- query keys (여기 한군데서 관리) ---
-export const issuanceKeys = {
-  records: ["issuance", "records"] as const,
-  schedule: ["issuance", "schedule"] as const,
+export const outboundKeys = {
+  records: ["outbound", "records"] as const,
+  schedule: ["outbound", "schedule"] as const,
 };
 
 // --- mock (실서버 전환시 삭제/대체) ---
-export const mockRecords: IssuanceRecord[] = [
-  /* ...여기에 현재 제공한 데이터 붙여넣기... */
+export const mockRecords: OutboundRecord[] = [
   {
     id: "ISS-240920-01",
     inventoryCode: "MAT-WIR-550",
@@ -141,8 +140,7 @@ export const mockRecords: IssuanceRecord[] = [
     deliveryFactory: "창고 C",
   },
 ];
-export const mockSchedule: IssuanceSchedule[] = [
-  /* ...여기에 현재 제공한 데이터 붙여넣기... */
+export const mockSchedule: OutboundSchedule[] = [
   {
     workOrder: "WO-240921-03",
     inventoryName: "데이터 케이블",
@@ -223,12 +221,12 @@ export const mockSchedule: IssuanceSchedule[] = [
 ];
 
 // --- API 함수 ---
-export async function fetchIssuanceRecords(): Promise<IssuanceRecord[]> {
-  // return (await axios.get("/api/issuance/records")).data;
+export async function fetchOutboundRecords(): Promise<OutboundRecord[]> {
+  // return (await axios.get("/api/outbound/records")).data;
   return mockRecords;
 }
 
-export async function fetchIssuanceSchedule(): Promise<IssuanceSchedule[]> {
-  // return (await axios.get("/api/issuance/schedule")).data;
+export async function fetchOutboundSchedule(): Promise<OutboundSchedule[]> {
+  // return (await axios.get("/api/outbound/schedule")).data;
   return mockSchedule;
 }
