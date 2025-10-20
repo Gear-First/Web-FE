@@ -1,17 +1,14 @@
 import { Routes, Route, Navigate } from "react-router-dom";
-import InventoryPage from "../pages/InventoryPage";
-import IssuancePage from "../pages/IssuancePage";
-import SupplierOrderPage from "../pages/SupplierOrderPage";
-import MRPPage from "../pages/MRPPage";
+import IssuancePage from "../issuance/IssuancePage";
 
 const AppRoutes = () => {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/inventory" replace />} />
-      <Route path="/mrp" element={<MRPPage />} />
-      <Route path="/inventory" element={<InventoryPage />} />
+      <Route path="/" element={<Navigate to="/issuance" replace />} />
+      <Route path="/mrp" element={<IssuancePage />} />
+      <Route path="/inventory" element={<IssuancePage />} />
       <Route path="/issuance" element={<IssuancePage />} />
-      <Route path="/supplierOrder" element={<SupplierOrderPage />} />
+      <Route path="/supplierOrder" element={<IssuancePage />} />
     </Routes>
   );
 };
