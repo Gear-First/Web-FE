@@ -31,6 +31,7 @@ const menuItems = [
   { to: "/mrp", label: "자재 소요량 산출 및 계획" },
   { to: "/supplierOrder", label: "구매 활동" },
   { to: "/inventory", label: "자재 입고 및 보관" },
+  { to: "/inbound", label: "입고 관리" },
   { to: "/outbound", label: "자재 출고" },
 ];
 

@@ -75,12 +75,25 @@ export const Td = styled.td`
   color: #1f2937;
 `;
 
-type StatusVariant = "success" | "warning" | "danger" | "info";
+type StatusVariant =
+  | "success"
+  | "warning"
+  | "danger"
+  | "info"
+  | "accepted"
+  | "pending"
+  | "rejected";
 
 const statusColors: Record<StatusVariant, { bg: string; color: string }> = {
   success: { bg: "#dcfce7", color: "#166534" },
+  accepted: { bg: "#dcfce7", color: "#166534" },
+
   warning: { bg: "#fef3c7", color: "#92400e" },
+  pending: { bg: "#fef3c7", color: "#92400e" },
+
   danger: { bg: "#fee2e2", color: "#991b1b" },
+  rejected: { bg: "#fee2e2", color: "#991b1b" },
+
   info: { bg: "#dbeafe", color: "#1d4ed8" },
 };
 
