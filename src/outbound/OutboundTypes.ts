@@ -13,11 +13,3 @@ export interface OutboundRecord {
   status: OutboundStatus; // 상태
   deliveryFactory: string; // 출고대상(창고)
 }
-
-export interface OutboundSchedule {
-  outboundId: string; // 출고번호
-  inventoryName: string; // 부품이름
-  requiredDate: string; // 필요일자
-  preparedQuantity: number; // 준비자재수
-  status: "준비완료" | "자재부족"; // 상태
-}

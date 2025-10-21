@@ -14,7 +14,7 @@ import {
   Label,
   Value,
   RemarkSection,
-} from "../../components/ModalPageLayout";
+} from "../../components/common/ModalPageLayout";
 
 interface Props {
   record: OutboundRecord | null;
