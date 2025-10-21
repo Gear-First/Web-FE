@@ -4,7 +4,7 @@ export const PageContainer = styled.div`
   flex: 1;
   padding: 2rem;
   background: #f5f6fa;
-  overflow-y: auto;
+  overflow: auto;
 `;
 
 export const SectionCard = styled.section`

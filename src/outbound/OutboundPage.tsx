@@ -11,13 +11,8 @@ import {
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import OutboundTable from "./components/OutboundTable";
-import ScheduleTable from "./components/ScheduleTable";
 import type { OutboundStatus } from "./OutboundTypes";
-import {
-  outboundKeys,
-  fetchOutboundRecords,
-  fetchOutboundSchedule,
-} from "./OutboundApi";
+import { outboundKeys, fetchOutboundRecords } from "./OutboundApi";
 
 type StatusFilter = OutboundStatus | "ALL";
 
@@ -33,19 +28,13 @@ export default function OutboundPage() {
     staleTime: 5 * 60 * 1000,
   });
 
-  const { data: schedule = [], isLoading: loadingS } = useQuery({
-    queryKey: outboundKeys.schedule,
-    queryFn: fetchOutboundSchedule,
-    staleTime: 5 * 60 * 1000,
-  });
-
   return (
     <Layout>
       <PageContainer>
         <SectionCard>
           <SectionHeader>
             <div>
-              <SectionTitle>자재 출고 기록</SectionTitle>
+              <SectionTitle>출고 관리</SectionTitle>
               <SectionCaption>
                 작업 지시별 자재 출고 이력을 추적하고 현황을 확인합니다.
               </SectionCaption>
@@ -63,21 +52,7 @@ export default function OutboundPage() {
               </Select>
             </FilterGroup>
           </SectionHeader>
-
           {loadingR ? "로딩중..." : <OutboundTable rows={records} />}
-        </SectionCard>
-
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>자재 출고 예정</SectionTitle>
-              <SectionCaption>
-                향후 작업 지시별 자재 준비 상태를 점검합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
-
-          {loadingS ? "로딩중..." : <ScheduleTable rows={schedule} />}
         </SectionCard>
       </PageContainer>
     </Layout>
