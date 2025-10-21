@@ -14,7 +14,7 @@ import {
   SectionTitle,
   Title,
   Value,
-} from "../../components/ModalPageLayout";
+} from "../../components/common/ModalPageLayout";
 import type { InboundRecord, InboundStatus } from "../InboundTypes";
 
 interface Props {
