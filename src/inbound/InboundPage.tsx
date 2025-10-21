@@ -24,7 +24,7 @@ export default function InboundPage() {
     queryKey: inboundKeys.records,
     queryFn: fetchInboundRecords,
     select: (rows) =>
-      status === "ALL" ? rows : rows.filter((r) => r.qualityStatus === status),
+      status === "ALL" ? rows : rows.filter((r) => r.status === status),
     staleTime: 5 * 60 * 1000,
   });
 
