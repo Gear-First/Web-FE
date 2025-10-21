@@ -3,7 +3,6 @@ import type { OutboundRecord } from "./OutboundTypes";
 // --- query keys ---
 export const outboundKeys = {
   records: ["outbound", "records"] as const,
-  schedule: ["outbound", "schedule"] as const,
 };
 
 // --- mock (실서버 전환시 삭제) ---
