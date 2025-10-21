@@ -102,6 +102,7 @@ export const StatusBadge = styled.span<{ $variant?: StatusVariant }>`
   align-items: center;
   gap: 6px;
   padding: 0.25rem 0.55rem;
+  width: fit-content;
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 600;
