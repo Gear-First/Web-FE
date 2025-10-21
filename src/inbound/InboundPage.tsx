@@ -9,16 +9,16 @@ import {
   SectionTitle,
   Select,
 } from "../components/common/PageLayout";
-import type { QualityStatus } from "./InboundTypes";
+import type { InboundStatus } from "./InboundTypes";
 import { useQuery } from "@tanstack/react-query";
 import { fetchInboundRecords, inboundKeys } from "./InboundApi";
 import InboundTable from "./components/InboundTable";
 
-type QualityFilter = QualityStatus | "ALL";
+type StatusFilter = InboundStatus | "ALL";
 
 export default function InboundPage() {
-  const [status, setStatus] = useState<QualityFilter>("ALL");
-  const statusOptions: QualityFilter[] = ["ALL", "합격", "보류", "불합격"];
+  const [status, setStatus] = useState<StatusFilter>("ALL");
+  const statusOptions: StatusFilter[] = ["ALL", "합격", "보류", "불합격"];
 
   const { data: records = [], isLoading: loadingR } = useQuery({
     queryKey: inboundKeys.records,
@@ -42,7 +42,7 @@ export default function InboundPage() {
             <FilterGroup>
               <Select
                 value={status}
-                onChange={(e) => setStatus(e.target.value as QualityFilter)}
+                onChange={(e) => setStatus(e.target.value as StatusFilter)}
               >
                 {statusOptions.map((opt) => (
                   <option key={opt} value={opt}>

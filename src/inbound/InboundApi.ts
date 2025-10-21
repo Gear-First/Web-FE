@@ -23,8 +23,8 @@ export const inboundRecords: InboundRecord[] = [
   {
     inboundId: "RCV-250920-02",
     lotId: "LOT-250915-02",
-    partName: "MAT-SCR-302",
-    partCode: "스테인리스 나사 M4",
+    partCode: "MAT-SCR-302",
+    partName: "스테인리스 나사 M4",
     inboundQty: 2000,
     receivedDate: "2025-09-20",
     expectedInDate: "2025-09-23",
@@ -38,8 +38,8 @@ export const inboundRecords: InboundRecord[] = [
   {
     inboundId: "RCV-250921-01",
     lotId: "LOT-250916-01",
-    partName: "MAT-PLT-220",
-    partCode: "알루미늄 플레이트",
+    partCode: "MAT-PLT-220",
+    partName: "알루미늄 플레이트",
     inboundQty: 180,
     receivedDate: "2025-09-21",
     expectedInDate: "2025-09-24",
@@ -53,8 +53,8 @@ export const inboundRecords: InboundRecord[] = [
   {
     inboundId: "RCV-250921-02",
     lotId: "LOT-250916-02",
-    partName: "MAT-BOL-114",
-    partCode: "육각 볼트 10mm",
+    partCode: "MAT-BOL-114",
+    partName: "육각 볼트 10mm",
     inboundQty: 900,
     receivedDate: "2025-09-21",
     expectedInDate: "2025-09-23",
@@ -68,8 +68,8 @@ export const inboundRecords: InboundRecord[] = [
   {
     inboundId: "RCV-250922-01",
     lotId: "LOT-250917-01",
-    partName: "MAT-SWT-440",
-    partCode: "리미트 스위치",
+    partCode: "MAT-SWT-440",
+    partName: "리미트 스위치",
     inboundQty: 320,
     receivedDate: "2025-09-22",
     expectedInDate: "2025-09-24",

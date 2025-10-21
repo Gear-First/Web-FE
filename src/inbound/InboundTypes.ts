@@ -1,8 +1,8 @@
-export type QualityStatus = "합격" | "보류" | "불합격";
+export type InboundStatus = "합격" | "보류" | "불합격";
 
 export interface InboundRecord {
   inboundId: string;
-  LotId: string;
+  lotId: string;
   partName: string;
   partCode: string;
   inboundQty: number;
@@ -10,7 +10,7 @@ export interface InboundRecord {
   expectedInDate: string;
   inDate: string;
   warehouse: string;
-  status: QualityStatus;
+  status: InboundStatus;
   inspector: string;
   vendor: string;
   note: string;
