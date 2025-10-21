@@ -20,8 +20,8 @@ export default function ScheduleTable({ rows }: { rows: OutboundSchedule[] }) {
       </thead>
       <tbody>
         {rows.map((i) => (
-          <tr key={i.workOrder}>
-            <Td>{i.workOrder}</Td>
+          <tr key={i.outboundId}>
+            <Td>{i.outboundId}</Td>
             <Td>{i.inventoryName}</Td>
             <Td>{i.requiredDate}</Td>
             <Td>{i.preparedQuantity}</Td>

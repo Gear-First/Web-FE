@@ -30,16 +30,16 @@ export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
         <tbody>
           {rows.map((r) => (
             <tr
-              key={r.id}
+              key={r.outboundId}
               style={{ cursor: "pointer" }}
               onClick={() => {
                 setSelectedRecord(r);
                 setIsModalOpen(true);
               }}
             >
-              <Td>{r.id}</Td>
+              <Td>{r.outboundId}</Td>
               <Td>{r.inventoryName}</Td>
-              <Td>{r.quantity.toLocaleString()}</Td>
+              <Td>{r.outboundQuantity.toLocaleString()}</Td>
               <Td>{r.receiptDate}</Td>
               <Td>{r.issuedDate}</Td>
               <Td>

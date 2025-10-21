@@ -65,11 +65,11 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
           <DetailGrid>
             <DetailItem>
               <Label>출고번호</Label>
-              <Value>{record.id}</Value>
+              <Value>{record.outboundId}</Value>
             </DetailItem>
             <DetailItem>
               <Label>출고수량</Label>
-              <Value>{record.quantity.toLocaleString()}</Value>
+              <Value>{record.outboundQuantity.toLocaleString()}</Value>
             </DetailItem>
             <DetailItem>
               <Label>접수일시</Label>
@@ -109,7 +109,7 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
           <DetailGrid>
             <DetailItem>
               <Label>담당자</Label>
-              <Value>{record.handledBy}</Value>
+              <Value>{record.manager}</Value>
             </DetailItem>
             <DetailItem>
               <Label>부서</Label>
