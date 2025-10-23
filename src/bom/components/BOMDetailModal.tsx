@@ -14,7 +14,7 @@ import {
   Title,
   Value,
 } from "../../components/common/ModalPageLayout";
-
+import Button from "../../components/common/Button";
 interface Props {
   record: BOMRecord | null;
   isOpen: boolean;
@@ -96,7 +96,17 @@ const BOMDetailModal = ({ record, isOpen, onClose }: Props) => {
               <Label>연락처</Label>
               <Value>test@test.com</Value>
             </DetailItem>
+            <DetailItem>
+              <Label>작성일시</Label>
+              <Value>{record.createdDate}</Value>
+            </DetailItem>
           </DetailGrid>
+        </Section>
+        <Section
+          style={{ display: "flex", justifyContent: "center", gap: "1rem" }}
+        >
+          <Button>수정</Button>
+          <Button style={{ backgroundColor: "red" }}>삭제</Button>
         </Section>
       </ModalContainer>
     </Overlay>
