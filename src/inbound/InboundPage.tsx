@@ -21,7 +21,7 @@ export default function InboundPage() {
   const statusOptions: StatusFilter[] = ["ALL", "합격", "보류", "불합격"];
 
   const { data: records = [], isLoading: loadingR } = useQuery({
-    queryKey: inboundKeys.records,
+    queryKey: [...inboundKeys.records, status],
     queryFn: fetchInboundRecords,
     select: (rows) =>
       status === "ALL" ? rows : rows.filter((r) => r.status === status),
