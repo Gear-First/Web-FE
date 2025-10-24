@@ -21,7 +21,7 @@ export default function OutboundPage() {
   const statusOptions: StatusFilter[] = ["ALL", "대기", "진행중", "완료"];
 
   const { data: records = [], isLoading: loadingR } = useQuery({
-    queryKey: [...outboundKeys.records, status],
+    queryKey: outboundKeys.records,
     queryFn: fetchOutboundRecords,
     select: (rows) =>
       status === "ALL" ? rows : rows.filter((r) => r.status === status),
