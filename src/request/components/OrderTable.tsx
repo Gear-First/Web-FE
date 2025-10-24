@@ -1,18 +1,16 @@
-import { useState } from "react";
 import { Table, Th, Td } from "../../components/common/PageLayout";
 import type { RequestRecord } from "../RequestTypes";
-import OrderDetailModal from "./OrderDetailModal";
 
-export default function OrderTable({ rows }: { rows: RequestRecord[] }) {
-  // 선택된 발주 레코드 상태 (행 클릭 시 모달에 전달)
-  const [selectedRecord, setSelectedRecord] = useState<RequestRecord | null>(
-    null
-  );
-  // 모달 열림 여부 상태
-  const [isModalOpen, setIsModalOpen] = useState(false);
+/** 미승인 발주 요청 목록 테이블 */
+export default function OrderTable({
+  rows,
+  onRowClick,
+}: {
+  rows: RequestRecord[];
+  onRowClick: (row: RequestRecord) => void; // 부모 콜백
+}) {
   return (
     <>
-      {/* 발주 목록 테이블 */}
       <Table>
         <thead>
           <tr>
@@ -22,16 +20,12 @@ export default function OrderTable({ rows }: { rows: RequestRecord[] }) {
             <Th>담당자</Th>
           </tr>
         </thead>
-        {/* 전달받은 rows 배열을 반복 렌더링 */}
         <tbody>
           {rows.map((r) => (
             <tr
               key={r.requestId}
               style={{ cursor: "pointer" }}
-              onClick={() => {
-                setSelectedRecord(r);
-                setIsModalOpen(true);
-              }}
+              onClick={() => onRowClick(r)} // 클릭 시 해당 행 데이터 부모로 전달
             >
               <Td>{r.requestId}</Td>
               <Td>{r.requestDate}</Td>
@@ -41,12 +35,6 @@ export default function OrderTable({ rows }: { rows: RequestRecord[] }) {
           ))}
         </tbody>
       </Table>
-      {/* 상세 모달 */}
-      <OrderDetailModal
-        record={selectedRecord}
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-      />
     </>
   );
 }
