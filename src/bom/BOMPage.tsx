@@ -11,14 +11,15 @@ import {
 } from "../components/common/PageLayout";
 import type { PartCate } from "./BOMTypes";
 import BOMTable from "./components/BOMTable";
-import { useQuery } from "@tanstack/react-query";
-import { bomKeys, fetchBOMRecords } from "./BOMApi";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { bomKeys, fetchBOMRecords, createBOM, updateBOM } from "./BOMApi";
 import Button from "../components/common/Button";
 import BOMRegisterModal from "./components/BOMRegisterModal";
 import resetIcon from "../assets/reset.svg";
 import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
+import type { BOMDTO } from "./components/BOMForm";
 
 type CateFilter = PartCate | "ALL";
 
@@ -30,14 +31,18 @@ type AppliedFilters = {
 
 export default function BOMPage() {
   const [cate, setCate] = useState<CateFilter>("ALL");
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 입력값(즉시 반영 X)
+  // 🔹 등록/수정 겸용 모달 상태
+  const [isRegOpen, setIsRegOpen] = useState(false);
+  const [regMode, setRegMode] = useState<"create" | "edit">("create");
+  const [initialForEdit, setInitialForEdit] = useState<BOMDTO | null>(null);
+
+  // 🔎 입력값(즉시 반영 X)
   const [keyword, setKeyword] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  // 검색 버튼을 눌렀을 때만 적용되는 필터
+  // 🔍 적용 필터(검색 버튼 눌렀을 때만 반영)
   const [applied, setApplied] = useState<AppliedFilters>({
     keyword: "",
     startDate: null,
@@ -52,8 +57,9 @@ export default function BOMPage() {
     "카테고리 D",
   ];
 
+  const queryClient = useQueryClient();
+
   const { data: records = [], isLoading: loadingR } = useQuery({
-    // 카테고리는 즉시 반영, 나머지는 applied 기준
     queryKey: [
       ...bomKeys.records,
       cate,
@@ -62,7 +68,6 @@ export default function BOMPage() {
       applied.endDate,
     ],
     queryFn: fetchBOMRecords,
-    // 서버에서 필터링하지 않을 경우 클라이언트에서 필터
     select: (rows) => {
       const byCate =
         cate === "ALL" ? rows : rows.filter((r) => r.category === cate);
@@ -73,7 +78,6 @@ export default function BOMPage() {
           })
         : byCate;
 
-      // 날짜 기준은 예: r.createdDate(YYYY-MM-DD) 기준으로 필터
       const start = applied.startDate ? new Date(applied.startDate) : null;
       const end = applied.endDate ? new Date(applied.endDate) : null;
 
@@ -113,6 +117,7 @@ export default function BOMPage() {
       <Layout>
         <PageContainer>
           <SectionCard>
+            {/* 상단 제목 + 등록 버튼 */}
             <SectionHeader>
               <div>
                 <SectionTitle>BOM</SectionTitle>
@@ -121,25 +126,27 @@ export default function BOMPage() {
                 </SectionCaption>
               </div>
             </SectionHeader>
+
             <SectionHeader>
-              {/* 등록 버튼 */}
-              <Button onClick={() => setIsModalOpen(true)}>BOM +</Button>
-              <FilterGroup
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
+              <Button
+                onClick={() => {
+                  setRegMode("create");
+                  setInitialForEdit(null);
+                  setIsRegOpen(true);
                 }}
               >
-                {/* 카테고리 (즉시 반영) */}
+                BOM +
+              </Button>
 
+              <FilterGroup>
+                {/* 카테고리 (즉시 반영) */}
                 <Select
                   value={cate}
                   onChange={(e) => setCate(e.target.value as CateFilter)}
                 >
-                  {cateOptions.map((cate) => (
-                    <option key={cate} value={cate}>
-                      {cate === "ALL" ? "전체 카테고리" : cate}
+                  {cateOptions.map((opt) => (
+                    <option key={opt} value={opt}>
+                      {opt === "ALL" ? "전체 카테고리" : opt}
                     </option>
                   ))}
                 </Select>
@@ -161,12 +168,11 @@ export default function BOMPage() {
                   placeholder="부품코드 / 부품명 검색"
                 />
 
-                {/* 액션 버튼 */}
                 <Button variant="icon" onClick={onSearch}>
-                  <img src={searchIcon} width={18} height={18} />
+                  <img src={searchIcon} width={18} height={18} alt="검색" />
                 </Button>
                 <Button variant="icon" onClick={onReset}>
-                  <img src={resetIcon} width={18} height={18} />
+                  <img src={resetIcon} width={18} height={18} alt="초기화" />
                 </Button>
               </FilterGroup>
             </SectionHeader>
@@ -176,9 +182,21 @@ export default function BOMPage() {
         </PageContainer>
       </Layout>
 
+      {/* 등록/수정 겸용 모달 */}
       <BOMRegisterModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        isOpen={isRegOpen}
+        onClose={() => setIsRegOpen(false)}
+        mode={regMode}
+        initial={initialForEdit}
+        onSubmit={async () => {
+          if (regMode === "create") {
+            await createBOM();
+          } else {
+            await updateBOM();
+          }
+          // 목록 갱신
+          queryClient.invalidateQueries({ queryKey: bomKeys.records });
+        }}
       />
     </>
   );

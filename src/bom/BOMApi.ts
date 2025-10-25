@@ -257,3 +257,15 @@ export async function fetchBOMRecords(): Promise<BOMRecord[]> {
   // 실제 API 호출 필요
   return bomRecords;
 }
+
+export async function createBOM(): Promise<void> {
+  return;
+}
+
+export async function updateBOM(): Promise<void> {
+  return;
+}
+
+export async function deleteBOM(): Promise<void> {
+  return;
+}

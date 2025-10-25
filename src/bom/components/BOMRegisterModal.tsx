@@ -19,7 +19,22 @@ import { Table, Td, Th } from "../../components/common/PageLayout";
 interface Props {
   isOpen: boolean;
   onClose: () => void;
+  mode?: "create" | "edit";
+  initial?: BOMDTO | null;
+  onSubmit?: (payload: BOMDTO) => void;
 }
+export type BOMDTO = {
+  bomNo: string;
+  partCode: string;
+  partName: string;
+  materials: MaterialDTO[];
+};
+
+type MaterialDTO = {
+  materialCode: string;
+  materialName: string;
+  materialQty: number;
+};
 
 type MaterialRow = {
   id: string;
@@ -28,7 +43,13 @@ type MaterialRow = {
   materialQty: number | "";
 };
 
-const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
+const BOMRegisterModal = ({
+  isOpen,
+  onClose,
+  mode = "create",
+  initial = null,
+  onSubmit,
+}: Props) => {
   const [bomNo, setBomNo] = useState("");
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
@@ -42,6 +63,40 @@ const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
   ]);
 
   const listRef = useRef<HTMLDivElement | null>(null);
+
+  // 초기값 주입 (등록=빈값, 수정=기존값)
+  useEffect(() => {
+    if (!isOpen) return;
+    if (mode === "edit" && initial) {
+      setBomNo(initial.bomNo ?? "");
+      setPartCode(initial.partCode ?? "");
+      setPartName(initial.partName ?? "");
+      setMaterials(
+        (initial.materials?.length
+          ? initial.materials
+          : [{ materialCode: "", materialName: "", materialQty: 1 }]
+        ).map((m) => ({ id: crypto.randomUUID(), ...m }))
+      );
+    } else {
+      setBomNo("");
+      setPartCode("");
+      setPartName("");
+      setMaterials([
+        {
+          id: crypto.randomUUID(),
+          materialCode: "",
+          materialName: "",
+          materialQty: 1,
+        },
+      ]);
+    }
+  }, [isOpen, mode, initial]);
+
+  // 자재 행 추가 시 자동 스크롤
+  useEffect(() => {
+    if (!listRef.current) return;
+    listRef.current.scrollTop = listRef.current.scrollHeight;
+  }, [materials.length]);
 
   const addMaterial = () => {
     setMaterials((arr) => [
@@ -70,14 +125,31 @@ const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
     );
   };
 
-  const handleRegister = () => {
+  const handleSubmit = () => {
+    if (!bomNo.trim()) return alert("BOM 번호를 입력하세요.");
+    if (!partCode.trim()) return alert("부품 코드를 입력하세요.");
+    if (!partName.trim()) return alert("부품명을 입력하세요.");
+    if (materials.some((m) => !m.materialCode.trim() || !m.materialName.trim()))
+      return alert("자재 코드/명을 입력하세요.");
+    if (
+      materials.some((m) => m.materialQty === "" || Number(m.materialQty) <= 0)
+    )
+      return alert("자재 수량은 1 이상이어야 합니다.");
+
+    const payload: BOMDTO = {
+      bomNo: bomNo.trim(),
+      partCode: partCode.trim(),
+      partName: partName.trim(),
+      materials: materials.map((m) => ({
+        materialCode: m.materialCode.trim(),
+        materialName: m.materialName.trim(),
+        materialQty: Number(m.materialQty),
+      })),
+    };
+
+    onSubmit?.(payload);
     onClose();
   };
-
-  useEffect(() => {
-    if (!listRef.current) return;
-    listRef.current.scrollTop = listRef.current.scrollHeight;
-  }, [materials.length]);
 
   if (!isOpen) return null;
 
@@ -86,16 +158,16 @@ const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
-            <Title>BOM 등록</Title>
+            <Title>{mode === "edit" ? "BOM 수정" : "BOM 등록"}</Title>
           </HeaderLeft>
           <CloseButton onClick={onClose} aria-label="닫기">
             &times;
           </CloseButton>
         </Header>
 
-        {/* 부품 등록 */}
+        {/* 부품 정보 */}
         <Section>
-          <SectionTitle>부품 등록</SectionTitle>
+          <SectionTitle>부품 정보</SectionTitle>
           <DetailGrid>
             <DetailItem>
               <Label>BOM 번호</Label>
@@ -103,6 +175,7 @@ const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
                 placeholder="예) BOM-250101-05"
                 value={bomNo}
                 onChange={(e) => setBomNo(e.target.value)}
+                disabled={mode === "edit"}
               />
             </DetailItem>
 
@@ -126,14 +199,11 @@ const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
           </DetailGrid>
         </Section>
 
-        {/* 자재 등록 */}
+        {/* 자재 목록 */}
         <Section>
           <HeaderRow>
-            <SectionTitle>자재 등록</SectionTitle>
-            <Button
-              style={{ backgroundColor: "#ffffff", color: "black" }}
-              onClick={addMaterial}
-            >
+            <SectionTitle>자재 목록</SectionTitle>
+            <Button color="gray" onClick={addMaterial}>
               자재 추가
             </Button>
           </HeaderRow>
@@ -142,14 +212,14 @@ const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
             <StickyTable>
               <thead>
                 <tr>
-                  <Th style={{ width: "30%" }}>자재 코드</Th>
+                  <Th>자재 코드</Th>
                   <Th>자재명</Th>
-                  <Th style={{ width: "14%" }}>자재 수량</Th>
-                  <Th style={{ width: "64px" }} />
+                  <Th>자재 수량</Th>
+                  <Th />
                 </tr>
               </thead>
               <tbody>
-                {materials.map((m, idx) => (
+                {materials.map((m) => (
                   <tr key={m.id}>
                     <Td>
                       <CellInput
@@ -206,7 +276,9 @@ const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
             <Button color="gray" onClick={onClose}>
               취소
             </Button>
-            <Button onClick={handleRegister}>등록</Button>
+            <Button onClick={handleSubmit}>
+              {mode === "edit" ? "수정 저장" : "등록"}
+            </Button>
           </Actions>
         </Section>
       </ModalContainer>
@@ -216,14 +288,15 @@ const BOMRegisterModal = ({ isOpen, onClose }: Props) => {
 
 export default BOMRegisterModal;
 
-/* 상단 "자재 등록" 행 */
+/* 상단 "자재 목록" 행 */
 const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 10px;
 `;
 
-/* 모달 상단 인풋(부품 등록) */
+/* 모달 상단 인풋 */
 const Input = styled.input`
   width: 50%;
   border: 1px solid #e5e7eb;
@@ -232,7 +305,6 @@ const Input = styled.input`
   font-size: 0.92rem;
   background: #fff;
   transition: box-shadow 0.12s, border-color 0.12s;
-
   &:focus {
     outline: none;
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28);
@@ -268,7 +340,6 @@ const SmallGhostBtn = styled.button`
   cursor: pointer;
   color: #6b7280;
   transition: background 0.12s, color 0.12s;
-
   &:hover {
     background: #f3f4f6;
     color: #111827;
@@ -277,13 +348,13 @@ const SmallGhostBtn = styled.button`
 
 /* 자재 테이블 */
 const MaterialsScroll = styled.div`
-  max-height: 360px; /* 필요에 따라 320~420px 조절 */
+  max-height: 360px;
   overflow: auto;
   border: 1px solid #edf1f5;
   border-radius: 10px;
 `;
 
-/* sticky thead + 줄간격 최적화 */
+/* sticky thead */
 const StickyTable = styled(Table)`
   thead th {
     position: sticky;
