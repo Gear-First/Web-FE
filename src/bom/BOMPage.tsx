@@ -17,6 +17,8 @@ import Button from "../components/common/Button";
 import BOMRegisterModal from "./components/BOMRegisterModal";
 import resetIcon from "../assets/reset.svg";
 import searchIcon from "../assets/search.svg";
+import SearchBox from "../components/common/SearchBox";
+import DateRange from "../components/common/DateRange";
 
 type CateFilter = PartCate | "ALL";
 
@@ -120,7 +122,6 @@ export default function BOMPage() {
               </div>
             </SectionHeader>
             <SectionHeader>
-              {" "}
               {/* 등록 버튼 */}
               <Button onClick={() => setIsModalOpen(true)}>BOM +</Button>
               <FilterGroup
@@ -136,50 +137,28 @@ export default function BOMPage() {
                   value={cate}
                   onChange={(e) => setCate(e.target.value as CateFilter)}
                 >
-                  {cateOptions.map((c) => (
-                    <option key={c} value={c}>
-                      {c === "ALL" ? "전체 카테고리" : c}
+                  {cateOptions.map((cate) => (
+                    <option key={cate} value={cate}>
+                      {cate === "ALL" ? "전체 카테고리" : cate}
                     </option>
                   ))}
                 </Select>
 
                 {/* 날짜 범위 */}
-                <input
-                  type="date"
-                  value={startDate}
-                  onChange={(e) => setStartDate(e.target.value)}
-                  placeholder="시작일"
-                  style={{
-                    padding: "8px",
-                    borderRadius: 8,
-                    border: "1px solid #e5e7eb",
-                  }}
-                />
-                <span>~</span>
-                <input
-                  type="date"
-                  value={endDate}
-                  onChange={(e) => setEndDate(e.target.value)}
-                  placeholder="종료일"
-                  style={{
-                    padding: "8px",
-                    borderRadius: 8,
-                    border: "1px solid #e5e7eb",
-                  }}
+                <DateRange
+                  startDate={startDate}
+                  endDate={endDate}
+                  onStartDateChange={setStartDate}
+                  onEndDateChange={setEndDate}
                 />
 
                 {/* 검색어 */}
-                <input
-                  type="text"
-                  value={keyword}
-                  onChange={(e) => setKeyword(e.target.value)}
+                <SearchBox
+                  keyword={keyword}
+                  onKeywordChange={setKeyword}
+                  onSearch={onSearch}
+                  onReset={onReset}
                   placeholder="부품코드 / 부품명 검색"
-                  style={{
-                    padding: "8px",
-                    borderRadius: 8,
-                    border: "1px solid #e5e7eb",
-                    width: 200,
-                  }}
                 />
 
                 {/* 액션 버튼 */}
