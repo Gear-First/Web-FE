@@ -17,3 +17,17 @@ export interface BOMRecord {
   materials: Material[];
   createdDate: string;
 }
+
+// 부모 onSubmit에 넘길 페이로드
+export type MaterialDTO = {
+  materialCode: string;
+  materialName: string;
+  materialQty: number;
+};
+export type BOMDTO = {
+  bomId: string;
+  partCode: string;
+  partName: string;
+  category: PartCate;
+  materials: MaterialDTO[];
+};

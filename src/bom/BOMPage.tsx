@@ -9,7 +9,7 @@ import {
   SectionTitle,
   Select,
 } from "../components/common/PageLayout";
-import type { PartCate } from "./BOMTypes";
+import type { BOMDTO, PartCate } from "./BOMTypes";
 import BOMTable from "./components/BOMTable";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { bomKeys, fetchBOMRecords, createBOM, updateBOM } from "./BOMApi";
@@ -19,7 +19,6 @@ import resetIcon from "../assets/reset.svg";
 import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
-import type { BOMDTO } from "./components/BOMForm";
 
 type CateFilter = PartCate | "ALL";
 
@@ -32,17 +31,17 @@ type AppliedFilters = {
 export default function BOMPage() {
   const [cate, setCate] = useState<CateFilter>("ALL");
 
-  // 🔹 등록/수정 겸용 모달 상태
+  // 등록/수정 겸용 모달 상태
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
   const [initialForEdit, setInitialForEdit] = useState<BOMDTO | null>(null);
 
-  // 🔎 입력값(즉시 반영 X)
+  // 입력값(즉시 반영 X)
   const [keyword, setKeyword] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  // 🔍 적용 필터(검색 버튼 눌렀을 때만 반영)
+  // 적용 필터(검색 버튼 눌렀을 때만 반영)
   const [applied, setApplied] = useState<AppliedFilters>({
     keyword: "",
     startDate: null,

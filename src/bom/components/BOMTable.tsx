@@ -3,9 +3,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Table, Td, Th } from "../../components/common/PageLayout";
 import BOMDetailModal from "./BOMDetailModal";
 import BOMRegisterModal from "./BOMRegisterModal";
-import type { BOMRecord } from "../BOMTypes";
+import type { BOMDTO, BOMRecord } from "../BOMTypes";
 import { bomKeys, deleteBOM, updateBOM } from "../BOMApi";
-import type { BOMDTO } from "./BOMRegisterModal";
 
 export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
   const [selectedRecord, setSelectedRecord] = useState<BOMRecord | null>(null);
@@ -73,9 +72,10 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
           closeDetail();
           setRegMode("edit");
           setInitialForEdit({
-            bomNo: rec.bomId,
+            bomId: rec.bomId,
             partCode: rec.partCode,
             partName: rec.partName,
+            category: rec.category,
             materials: rec.materials.map((m) => ({
               materialCode: m.materialCode,
               materialName: m.materialName,

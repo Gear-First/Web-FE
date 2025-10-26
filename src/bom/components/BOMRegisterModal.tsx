@@ -14,7 +14,13 @@ import {
 } from "../../components/common/ModalPageLayout";
 import Button from "../../components/common/Button";
 import styled from "styled-components";
-import { Table, Td, Th } from "../../components/common/PageLayout";
+import {
+  Table,
+  Td,
+  Th,
+  Select as PLSelect,
+} from "../../components/common/PageLayout";
+import type { BOMDTO, PartCate } from "../BOMTypes";
 
 interface Props {
   isOpen: boolean;
@@ -23,25 +29,21 @@ interface Props {
   initial?: BOMDTO | null;
   onSubmit?: (payload: BOMDTO) => void;
 }
-export type BOMDTO = {
-  bomNo: string;
-  partCode: string;
-  partName: string;
-  materials: MaterialDTO[];
-};
 
-type MaterialDTO = {
-  materialCode: string;
-  materialName: string;
-  materialQty: number;
-};
-
+// UI 전용 행 타입
 type MaterialRow = {
   id: string;
   materialCode: string;
   materialName: string;
   materialQty: number | "";
 };
+
+const cateOptions: PartCate[] = [
+  "카테고리 A",
+  "카테고리 B",
+  "카테고리 C",
+  "카테고리 D",
+];
 
 const BOMRegisterModal = ({
   isOpen,
@@ -50,9 +52,10 @@ const BOMRegisterModal = ({
   initial = null,
   onSubmit,
 }: Props) => {
-  const [bomNo, setBomNo] = useState("");
+  const [bomNo, setBomNo] = useState(""); // = bomId
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
+  const [partCate, setPartCate] = useState<PartCate>("카테고리 A");
   const [materials, setMaterials] = useState<MaterialRow[]>([
     {
       id: crypto.randomUUID(),
@@ -64,13 +67,14 @@ const BOMRegisterModal = ({
 
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  // 초기값 주입 (등록=빈값, 수정=기존값)
+  /* 초기값 주입 */
   useEffect(() => {
     if (!isOpen) return;
     if (mode === "edit" && initial) {
-      setBomNo(initial.bomNo ?? "");
+      setBomNo(initial.bomId ?? "");
       setPartCode(initial.partCode ?? "");
       setPartName(initial.partName ?? "");
+      setPartCate(initial.category ?? "카테고리 A");
       setMaterials(
         (initial.materials?.length
           ? initial.materials
@@ -81,6 +85,7 @@ const BOMRegisterModal = ({
       setBomNo("");
       setPartCode("");
       setPartName("");
+      setPartCate("카테고리 A");
       setMaterials([
         {
           id: crypto.randomUUID(),
@@ -92,7 +97,7 @@ const BOMRegisterModal = ({
     }
   }, [isOpen, mode, initial]);
 
-  // 자재 행 추가 시 자동 스크롤
+  /* 자재 행 추가 시 자동 스크롤 */
   useEffect(() => {
     if (!listRef.current) return;
     listRef.current.scrollTop = listRef.current.scrollHeight;
@@ -109,12 +114,10 @@ const BOMRegisterModal = ({
       },
     ]);
   };
-
   const removeMaterial = (id: string) => {
     if (materials.length === 1) return;
     setMaterials((arr) => arr.filter((m) => m.id !== id));
   };
-
   const updateMaterial = <K extends keyof MaterialRow>(
     id: string,
     key: K,
@@ -129,6 +132,7 @@ const BOMRegisterModal = ({
     if (!bomNo.trim()) return alert("BOM 번호를 입력하세요.");
     if (!partCode.trim()) return alert("부품 코드를 입력하세요.");
     if (!partName.trim()) return alert("부품명을 입력하세요.");
+    if (!partCate?.trim()) return alert("카테고리를 선택하세요.");
     if (materials.some((m) => !m.materialCode.trim() || !m.materialName.trim()))
       return alert("자재 코드/명을 입력하세요.");
     if (
@@ -137,9 +141,10 @@ const BOMRegisterModal = ({
       return alert("자재 수량은 1 이상이어야 합니다.");
 
     const payload: BOMDTO = {
-      bomNo: bomNo.trim(),
+      bomId: bomNo.trim(),
       partCode: partCode.trim(),
       partName: partName.trim(),
+      category: partCate,
       materials: materials.map((m) => ({
         materialCode: m.materialCode.trim(),
         materialName: m.materialName.trim(),
@@ -175,7 +180,7 @@ const BOMRegisterModal = ({
                 placeholder="예) BOM-250101-05"
                 value={bomNo}
                 onChange={(e) => setBomNo(e.target.value)}
-                disabled={mode === "edit"}
+                disabled={mode === "edit"} // 수정 시 식별자 잠금 권장
               />
             </DetailItem>
 
@@ -196,6 +201,21 @@ const BOMRegisterModal = ({
                 onChange={(e) => setPartName(e.target.value)}
               />
             </DetailItem>
+
+            <DetailItem>
+              <Label>부품 카테고리</Label>
+              <PLSelect
+                style={{ width: "50%" }}
+                value={partCate}
+                onChange={(e) => setPartCate(e.target.value as PartCate)}
+              >
+                {cateOptions.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </PLSelect>
+            </DetailItem>
           </DetailGrid>
         </Section>
 
@@ -212,10 +232,10 @@ const BOMRegisterModal = ({
             <StickyTable>
               <thead>
                 <tr>
-                  <Th>자재 코드</Th>
+                  <Th style={{ width: "30%" }}>자재 코드</Th>
                   <Th>자재명</Th>
-                  <Th>자재 수량</Th>
-                  <Th />
+                  <Th style={{ width: "14%" }}>자재 수량</Th>
+                  <Th style={{ width: 64 }} />
                 </tr>
               </thead>
               <tbody>
@@ -288,7 +308,7 @@ const BOMRegisterModal = ({
 
 export default BOMRegisterModal;
 
-/* 상단 "자재 목록" 행 */
+// 상단 자재 목록 행
 const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
@@ -296,7 +316,7 @@ const HeaderRow = styled.div`
   margin-bottom: 10px;
 `;
 
-/* 모달 상단 인풋 */
+//모달 상단 인풋
 const Input = styled.input`
   width: 50%;
   border: 1px solid #e5e7eb;
@@ -315,20 +335,20 @@ const Input = styled.input`
   }
 `;
 
-/* 자재 테이블 전용 인풋(셀 폭 100%) */
+// 자재 테이블 전용 인풋(셀 폭 100%)
 const CellInput = styled(Input)`
   width: 50%;
 `;
 const CellNumberInput = styled(CellInput).attrs({ type: "number" })``;
 
-/* 하단 액션 */
+// 하단 액션
 const Actions = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 `;
 
-/* 삭제 버튼 */
+// 삭제 버튼
 const SmallGhostBtn = styled.button`
   width: 28px;
   height: 28px;
@@ -346,7 +366,7 @@ const SmallGhostBtn = styled.button`
   }
 `;
 
-/* 자재 테이블 */
+// 자재 테이블
 const MaterialsScroll = styled.div`
   max-height: 360px;
   overflow: auto;
@@ -354,7 +374,7 @@ const MaterialsScroll = styled.div`
   border-radius: 10px;
 `;
 
-/* sticky thead */
+// sticky thead
 const StickyTable = styled(Table)`
   thead th {
     position: sticky;
