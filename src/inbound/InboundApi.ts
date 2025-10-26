@@ -13,7 +13,7 @@ export type InboundListParams = {
   pageSize?: number;
 };
 
-type ListResponse<T> = {
+export type ListResponse<T> = {
   data: T;
   meta?: {
     total: number;
@@ -23,10 +23,14 @@ type ListResponse<T> = {
   };
 };
 
+/**
+ * 입고 기록 목록 조회 API (MSW 또는 실제 서버 공용)
+ */
 export async function fetchInboundRecords(
   params?: InboundListParams
 ): Promise<ListResponse<InboundRecord[]>> {
   const qs = new URLSearchParams();
+
   if (params?.status) qs.set("status", params.status);
   if (params?.q) qs.set("q", params.q);
   if (params?.startDate) qs.set("startDate", params.startDate);
@@ -39,6 +43,7 @@ export async function fetchInboundRecords(
     : `/api/inbound/records`;
 
   const res = await fetch(url);
-  if (!res.ok) throw new Error("Failed to fetch inbound records");
+  if (!res.ok) throw new Error(`입고 데이터 요청 실패 (${res.status})`);
+
   return res.json();
 }

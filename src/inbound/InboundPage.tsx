@@ -59,11 +59,7 @@ export default function InboundPage() {
     pageSize,
   };
 
-  const {
-    data,
-    isLoading: loadingR,
-    fetchStatus,
-  } = useQuery<ListResponse<InboundRecord[]>, Error>({
+  const { data, fetchStatus } = useQuery<ListResponse<InboundRecord[]>, Error>({
     queryKey: [...inboundKeys.records, params],
     queryFn: () => fetchInboundRecords(params),
     staleTime: 5 * 60 * 1000,

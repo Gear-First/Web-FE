@@ -1,4 +1,5 @@
-import { useState } from "react";
+// src/features/bom/BOMPage.tsx
+import { useCallback, useMemo, useState } from "react";
 import Layout from "../components/common/Layout";
 import {
   FilterGroup,
@@ -9,115 +10,158 @@ import {
   SectionTitle,
   Select,
 } from "../components/common/PageLayout";
-import type { BOMDTO, PartCate } from "./BOMTypes";
+import type { BOMDTO, BOMRecord, PartCate } from "./BOMTypes";
 import BOMTable from "./components/BOMTable";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { bomKeys, fetchBOMRecords, createBOM, updateBOM } from "./BOMApi";
+import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
+import type { QueryKey } from "@tanstack/react-query";
+
+import {
+  bomKeys,
+  fetchBOMRecords,
+  createBOM,
+  updateBOM,
+  type ListResponse,
+} from "./BOMApi";
 import Button from "../components/common/Button";
 import BOMRegisterModal from "./components/BOMRegisterModal";
 import resetIcon from "../assets/reset.svg";
 import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
+import Pagination from "../components/common/Pagination";
+import { toCreatePayload, toPatchPayload } from "./payload";
 
 type CateFilter = PartCate | "ALL";
-
 type AppliedFilters = {
   keyword: string;
-  startDate: string | null; // YYYY-MM-DD
-  endDate: string | null; // YYYY-MM-DD
+  startDate: string | null;
+  endDate: string | null;
 };
 
+const CATE_OPTIONS: CateFilter[] = [
+  "ALL",
+  "카테고리 A",
+  "카테고리 B",
+  "카테고리 C",
+  "카테고리 D",
+];
+
 export default function BOMPage() {
+  // 필터 상태
   const [cate, setCate] = useState<CateFilter>("ALL");
-
-  // 등록/수정 겸용 모달 상태
-  const [isRegOpen, setIsRegOpen] = useState(false);
-  const [regMode, setRegMode] = useState<"create" | "edit">("create");
-  const [initialForEdit, setInitialForEdit] = useState<BOMDTO | null>(null);
-
-  // 입력값(즉시 반영 X)
   const [keyword, setKeyword] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  // 적용 필터(검색 버튼 눌렀을 때만 반영)
+  // 검색 적용 상태 (버튼 클릭 시에만 반영)
   const [applied, setApplied] = useState<AppliedFilters>({
     keyword: "",
     startDate: null,
     endDate: null,
   });
 
-  const cateOptions: CateFilter[] = [
-    "ALL",
-    "카테고리 A",
-    "카테고리 B",
-    "카테고리 C",
-    "카테고리 D",
-  ];
+  // 페이지네이션 상태
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // 등록/수정 모달
+  const [isRegOpen, setIsRegOpen] = useState(false);
+  const [regMode, setRegMode] = useState<"create" | "edit">("create");
+  const [initialForEdit, setInitialForEdit] = useState<BOMDTO | null>(null);
 
   const queryClient = useQueryClient();
 
-  const { data: records = [], isLoading: loadingR } = useQuery({
-    queryKey: [
-      ...bomKeys.records,
+  // queryKey는 순수 원시값으로 구성해 캐시 hit 안정화
+  const queryKey: QueryKey = useMemo(
+    () => [
+      ...bomKeys.records, // ["bom","records"]
       cate,
       applied.keyword,
       applied.startDate,
       applied.endDate,
+      page,
+      pageSize,
     ],
-    queryFn: fetchBOMRecords,
-    select: (rows) => {
-      const byCate =
-        cate === "ALL" ? rows : rows.filter((r) => r.category === cate);
-      const byKeyword = applied.keyword.trim()
-        ? byCate.filter((r) => {
-            const hay = `${r.partCode ?? ""} ${r.partName ?? ""}`.toLowerCase();
-            return hay.includes(applied.keyword.toLowerCase());
-          })
-        : byCate;
+    [cate, applied.keyword, applied.startDate, applied.endDate, page, pageSize]
+  );
 
-      const start = applied.startDate ? new Date(applied.startDate) : null;
-      const end = applied.endDate ? new Date(applied.endDate) : null;
+  const params = {
+    category: cate,
+    q: applied.keyword || undefined,
+    startDate: applied.startDate || undefined,
+    endDate: applied.endDate || undefined,
+    page,
+    pageSize,
+  };
 
-      const byDate =
-        start || end
-          ? byKeyword.filter((r) => {
-              const d = new Date(r.createdDate);
-              if (Number.isNaN(d.getTime())) return false;
-              const okStart = start ? d >= start : true;
-              const okEnd = end ? d <= end : true;
-              return okStart && okEnd;
-            })
-          : byKeyword;
-
-      return byDate;
-    },
+  const { data, fetchStatus } = useQuery<ListResponse<BOMRecord[]>, Error>({
+    queryKey,
+    queryFn: () => fetchBOMRecords(params),
     staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev, // 이전 페이지 데이터 유지 (깜빡임X)
+    gcTime: 30 * 60 * 1000, // 캐시 보존 조금 길게 (선택)
   });
 
-  const onSearch = () => {
+  const isFetching = fetchStatus === "fetching";
+  const records = data?.data ?? [];
+  const total = data?.meta?.total ?? 0;
+  const totalPages = data?.meta?.totalPages ?? 1;
+
+  // 핸들러는 useCallback으로 고정해 하위 컴포넌트 렌더 최적화
+  const onSearch = useCallback(() => {
     setApplied({
       keyword: keyword.trim(),
       startDate: startDate || null,
       endDate: endDate || null,
     });
-  };
+    setPage(1);
+  }, [keyword, startDate, endDate]);
 
-  const onReset = () => {
+  const onReset = useCallback(() => {
     setKeyword("");
     setStartDate("");
     setEndDate("");
     setCate("ALL");
+    setPage(1);
     setApplied({ keyword: "", startDate: null, endDate: null });
-  };
+  }, []);
+
+  const onChangeCate = useCallback((next: CateFilter) => {
+    setCate(next);
+    setPage(1);
+  }, []);
+
+  const onChangePageSize = useCallback((n: number) => {
+    setPageSize(n);
+    setPage(1);
+  }, []);
+
+  const createMut = useMutation<BOMRecord, Error, Omit<BOMRecord, "bomId">>({
+    mutationFn: createBOM,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bomKeys.records });
+      setIsRegOpen(false);
+    },
+  });
+
+  const updateMut = useMutation<
+    BOMRecord,
+    Error,
+    { id: string; patch: Partial<BOMRecord> }
+  >({
+    mutationFn: ({ id, patch }) => updateBOM(id, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bomKeys.records });
+      setIsRegOpen(false);
+    },
+  });
 
   return (
     <>
       <Layout>
         <PageContainer>
           <SectionCard>
-            {/* 상단 제목 + 등록 버튼 */}
+            {/* 상단 제목 */}
             <SectionHeader>
               <div>
                 <SectionTitle>BOM</SectionTitle>
@@ -127,6 +171,7 @@ export default function BOMPage() {
               </div>
             </SectionHeader>
 
+            {/* 상단 도구 모음 */}
             <SectionHeader>
               <Button
                 onClick={() => {
@@ -142,9 +187,9 @@ export default function BOMPage() {
                 {/* 카테고리 (즉시 반영) */}
                 <Select
                   value={cate}
-                  onChange={(e) => setCate(e.target.value as CateFilter)}
+                  onChange={(e) => onChangeCate(e.target.value as CateFilter)}
                 >
-                  {cateOptions.map((opt) => (
+                  {CATE_OPTIONS.map((opt) => (
                     <option key={opt} value={opt}>
                       {opt === "ALL" ? "전체 카테고리" : opt}
                     </option>
@@ -177,25 +222,66 @@ export default function BOMPage() {
               </FilterGroup>
             </SectionHeader>
 
-            {loadingR ? "로딩중..." : <BOMTable rows={records} />}
+            {/* 테이블 */}
+            <BOMTable rows={records} />
+
+            {/* 하단 상태/총건수 */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                margin: "8px 0 12px",
+              }}
+            >
+              <div style={{ height: 18 }}>
+                {isFetching && (
+                  <span style={{ fontSize: 12, color: "#6b7280" }}>
+                    로딩중…
+                  </span>
+                )}
+              </div>
+              <span style={{ fontSize: 12, color: "#6b7280" }}>
+                총 {total.toLocaleString()}건
+              </span>
+            </div>
+
+            {/* 페이지네이션 (디자인 유지) */}
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, totalPages)}
+              onChange={setPage}
+              isBusy={isFetching}
+              maxButtons={5}
+              totalItems={total}
+              pageSize={pageSize}
+              pageSizeOptions={[10, 20, 50, 100]}
+              onChangePageSize={onChangePageSize}
+              showSummary
+              showPageSize
+              align="center"
+              dense={false}
+              sticky={false}
+            />
           </SectionCard>
         </PageContainer>
       </Layout>
 
-      {/* 등록/수정 겸용 모달 */}
+      {/* 등록/수정 모달 */}
       <BOMRegisterModal
         isOpen={isRegOpen}
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async () => {
+        onSubmit={async (payload: BOMDTO) => {
           if (regMode === "create") {
-            await createBOM();
-          } else {
-            await updateBOM();
+            await createMut.mutateAsync(toCreatePayload(payload));
+          } else if (initialForEdit?.bomId) {
+            await updateMut.mutateAsync({
+              id: initialForEdit.bomId,
+              patch: toPatchPayload(payload),
+            });
           }
-          // 목록 갱신
-          queryClient.invalidateQueries({ queryKey: bomKeys.records });
         }}
       />
     </>

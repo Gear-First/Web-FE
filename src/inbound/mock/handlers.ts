@@ -1,7 +1,9 @@
+// src/features/inbound/mock/handlers.ts
 import { http, HttpResponse } from "msw";
 import { mockdata as inboundRecords } from "./mockdata";
 
 export const handlers = [
+  // Inbound 목록
   http.get("/api/inbound/records", ({ request }) => {
     const url = new URL(request.url);
     const status = url.searchParams.get("status");
@@ -40,5 +42,13 @@ export const handlers = [
       data: pageData,
       meta: { total, page, pageSize, totalPages: Math.ceil(total / pageSize) },
     });
+  }),
+
+  // (옵션) Inbound 상세
+  http.get("/api/inbound/records/:id", ({ params }) => {
+    const rec = inboundRecords.find((r) => r.inboundId === params.id);
+    return rec
+      ? HttpResponse.json(rec)
+      : HttpResponse.json({ message: "Not found" }, { status: 404 });
   }),
 ];

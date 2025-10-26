@@ -9,7 +9,7 @@ const queryClient = new QueryClient();
 
 async function enableMocking() {
   if (import.meta.env && import.meta.env.MODE === "development") {
-    const { worker } = await import("./routes/browser");
+    const { worker } = await import("./mocks/browser");
     await worker.start({
       onUnhandledRequest: "bypass",
     });
