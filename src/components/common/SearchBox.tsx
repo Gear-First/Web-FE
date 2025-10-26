@@ -11,7 +11,7 @@ interface Props {
 export default function SearchBox({
   keyword,
   onKeywordChange,
-
+  onSearch,
   placeholder = "검색어를 입력하세요",
 }: Props) {
   return (
@@ -20,6 +20,12 @@ export default function SearchBox({
         type="text"
         value={keyword}
         onChange={(e) => onKeywordChange(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            onSearch();
+          }
+        }}
         placeholder={placeholder}
       />
     </Wrapper>

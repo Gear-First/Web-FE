@@ -51,11 +51,11 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
           <DetailGrid>
             <DetailItem>
               <Label>부품명</Label>
-              <Value>{record.inventoryName}</Value>
+              <Value>{record.inventoryItems[0]?.inventoryName ?? "-"}</Value>
             </DetailItem>
             <DetailItem>
               <Label>부품코드</Label>
-              <Value>{record.inventoryCode}</Value>
+              <Value>{record.inventoryItems[0]?.inventoryCode ?? "-"}</Value>
             </DetailItem>
           </DetailGrid>
         </Section>
@@ -69,7 +69,11 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
             </DetailItem>
             <DetailItem>
               <Label>출고수량</Label>
-              <Value>{record.outboundQuantity.toLocaleString()}</Value>
+              <Value>
+                {record.inventoryItems
+                  .reduce((sum, item) => sum + item.outboundQuantity, 0)
+                  .toLocaleString()}
+              </Value>
             </DetailItem>
             <DetailItem>
               <Label>접수일시</Label>
@@ -95,12 +99,6 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
               <Label>납품예정일</Label>
               <Value>{record.expectedDeliveryDate}</Value>
             </DetailItem>
-            {/* <DetailItem>
-              <Label>상태</Label>
-              <StatusBadge $variant={statusVariant[record.status]}>
-                {record.status}
-              </StatusBadge>
-            </DetailItem> */}
           </DetailGrid>
         </Section>
         {/* 담당자 정보 */}
@@ -113,42 +111,18 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
             </DetailItem>
             <DetailItem>
               <Label>부서</Label>
-              <Value>민티아</Value>
+              <Value>{record.managerPosition}</Value>
             </DetailItem>
             <DetailItem>
               <Label>연락처</Label>
-              <Value>010-1234-5678</Value>
+              <Value>{record.managerContact}</Value>
             </DetailItem>
           </DetailGrid>
         </Section>
         <Section>
           <SectionTitle>비고</SectionTitle>
           <RemarkSection>
-            <Value>
-              그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~그렇게 됐네여~그렇게 됐네여~그렇게
-              됐네여~그렇게 됐네여~
-            </Value>
+            <Value>{record.remarks}</Value>
           </RemarkSection>
         </Section>
       </ModalContainer>
