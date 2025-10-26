@@ -18,6 +18,7 @@ import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
 import Button from "../components/common/Button";
+import Pagination from "../components/common/Pagination";
 
 type StatusFilter = OutboundStatus | "ALL";
 
@@ -41,7 +42,11 @@ export default function OutboundPage() {
     endDate: null,
   });
 
-  const { data: records = [], isLoading: loadingR } = useQuery({
+  // 페이지네이션 상태
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const { data: records = [], isLoading: isFetching } = useQuery({
     queryKey: outboundKeys.records,
     queryFn: fetchOutboundRecords,
     select: (rows) => {
@@ -49,10 +54,12 @@ export default function OutboundPage() {
         status === "ALL" ? rows : rows.filter((r) => r.status === status);
       const byKeyword = applied.keyword.trim()
         ? byCate.filter((r) => {
-            const hay = `${r.inventoryCode ?? ""} ${
-              r.inventoryName ?? ""
-            }`.toLowerCase();
-            return hay.includes(applied.keyword.toLowerCase());
+            const itemText = r.inventoryItems
+              .map((item) => `${item.inventoryCode} ${item.inventoryName}`)
+              .join(" ")
+              .toLowerCase();
+
+            return itemText.includes(applied.keyword.toLowerCase());
           })
         : byCate;
 
@@ -75,12 +82,18 @@ export default function OutboundPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  // 현재 페이지 슬라이스
+  const total = records.length;
+  const totalPages = Math.ceil(total / pageSize);
+  const pagedRecords = records.slice((page - 1) * pageSize, page * pageSize);
+
   const onSearch = () => {
     setApplied({
       keyword: keyword.trim(),
       startDate: startDate || null,
       endDate: endDate || null,
     });
+    setPage(1);
   };
 
   const onReset = () => {
@@ -88,6 +101,7 @@ export default function OutboundPage() {
     setStartDate("");
     setEndDate("");
     setApplied({ keyword: "", startDate: null, endDate: null });
+    setPage(1);
   };
 
   return (
@@ -139,7 +153,42 @@ export default function OutboundPage() {
               </Button>
             </FilterGroup>
           </SectionHeader>
-          {loadingR ? "로딩중..." : <OutboundTable rows={records} />}
+
+          <OutboundTable rows={pagedRecords} />
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              margin: "8px 0 12px",
+            }}
+          >
+            <div style={{ height: 18 }}>
+              {isFetching && (
+                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
+              )}
+            </div>
+          </div>
+
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, totalPages)}
+            onChange={setPage}
+            isBusy={isFetching}
+            maxButtons={5}
+            totalItems={total}
+            pageSize={pageSize}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={(n) => {
+              setPageSize(n);
+              setPage(1);
+            }}
+            showSummary
+            showPageSize
+            align="center"
+            dense={false}
+            sticky={false}
+          />
         </SectionCard>
       </PageContainer>
     </Layout>

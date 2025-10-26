@@ -15,7 +15,7 @@ export default function InventoryTable({ rows }: { rows: InventoryRecord[] }) {
         </thead>
         <tbody>
           {rows.map((r) => (
-            <tr key={`${r.warehouseId}-${r.inventoryCode}`}>
+            <tr key={r.id}>
               <Td>{r.warehouseId}</Td>
               <Td>{r.inventoryCode}</Td>
               <Td>{r.inventoryName}</Td>
