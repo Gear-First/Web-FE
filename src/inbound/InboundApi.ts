@@ -1,4 +1,4 @@
-import type { InboundRecord } from "./InboundTypes";
+import type { InboundRecord, InboundStatus } from "./InboundTypes";
 
 export const inboundKeys = {
   records: ["inbound", "records"] as const,

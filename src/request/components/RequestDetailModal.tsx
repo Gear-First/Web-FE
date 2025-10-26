@@ -17,9 +17,9 @@ import {
   InventoryList,
   TextareaWrapper,
   StyledTextarea,
-  Button,
   RemarkSection,
 } from "../../components/common/ModalPageLayout";
+import Button from "../../components/common/Button";
 
 // 모달의 동작 모드: 발주/요청 상세
 type DetailVariant = "order" | "request";
@@ -270,13 +270,13 @@ const DetailModal = ({
                 >
                   {/* 승인/반려 버튼 → 상위 콜백 호출 */}
                   <Button
-                    color="#4CAF50"
+                    color="primary"
                     onClick={() => onApprove?.(record.requestId, remark)}
                   >
                     승인
                   </Button>
                   <Button
-                    color="#F44336"
+                    color="danger"
                     onClick={() => onReject?.(record.requestId, remark)}
                   >
                     반려
