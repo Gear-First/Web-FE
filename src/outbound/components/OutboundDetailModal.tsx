@@ -95,12 +95,6 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
               <Label>납품예정일</Label>
               <Value>{record.expectedDeliveryDate}</Value>
             </DetailItem>
-            {/* <DetailItem>
-              <Label>상태</Label>
-              <StatusBadge $variant={statusVariant[record.status]}>
-                {record.status}
-              </StatusBadge>
-            </DetailItem> */}
           </DetailGrid>
         </Section>
         {/* 담당자 정보 */}

@@ -13,20 +13,82 @@ import { useQuery } from "@tanstack/react-query";
 import OutboundTable from "./components/OutboundTable";
 import type { OutboundStatus } from "./OutboundTypes";
 import { outboundKeys, fetchOutboundRecords } from "./OutboundApi";
+import resetIcon from "../assets/reset.svg";
+import searchIcon from "../assets/search.svg";
+import SearchBox from "../components/common/SearchBox";
+import DateRange from "../components/common/DateRange";
+import Button from "../components/common/Button";
 
 type StatusFilter = OutboundStatus | "ALL";
 
+type AppliedFilters = {
+  keyword: string;
+  startDate: string | null; // YYYY-MM-DD
+  endDate: string | null; // YYYY-MM-DD
+};
+
 export default function OutboundPage() {
   const [status, setStatus] = useState<StatusFilter>("ALL");
-  const statusOptions: StatusFilter[] = ["ALL", "대기", "진행중", "완료"];
+  const statusOptions: StatusFilter[] = ["ALL", "대기", "진행중", "완료"]; // 입력값(즉시 반영 X)
+  const [keyword, setKeyword] = useState("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+
+  // 적용 필터(검색 버튼 눌렀을 때만 반영)
+  const [applied, setApplied] = useState<AppliedFilters>({
+    keyword: "",
+    startDate: null,
+    endDate: null,
+  });
 
   const { data: records = [], isLoading: loadingR } = useQuery({
     queryKey: outboundKeys.records,
     queryFn: fetchOutboundRecords,
-    select: (rows) =>
-      status === "ALL" ? rows : rows.filter((r) => r.status === status),
+    select: (rows) => {
+      const byCate =
+        status === "ALL" ? rows : rows.filter((r) => r.status === status);
+      const byKeyword = applied.keyword.trim()
+        ? byCate.filter((r) => {
+            const hay = `${r.inventoryCode ?? ""} ${
+              r.inventoryName ?? ""
+            }`.toLowerCase();
+            return hay.includes(applied.keyword.toLowerCase());
+          })
+        : byCate;
+
+      const start = applied.startDate ? new Date(applied.startDate) : null;
+      const end = applied.endDate ? new Date(applied.endDate) : null;
+
+      const byDate =
+        start || end
+          ? byKeyword.filter((r) => {
+              const d = new Date(r.receiptDate);
+              if (Number.isNaN(d.getTime())) return false;
+              const okStart = start ? d >= start : true;
+              const okEnd = end ? d <= end : true;
+              return okStart && okEnd;
+            })
+          : byKeyword;
+
+      return byDate;
+    },
     staleTime: 5 * 60 * 1000,
   });
+
+  const onSearch = () => {
+    setApplied({
+      keyword: keyword.trim(),
+      startDate: startDate || null,
+      endDate: endDate || null,
+    });
+  };
+
+  const onReset = () => {
+    setKeyword("");
+    setStartDate("");
+    setEndDate("");
+    setApplied({ keyword: "", startDate: null, endDate: null });
+  };
 
   return (
     <Layout>
@@ -39,6 +101,8 @@ export default function OutboundPage() {
                 작업 지시별 자재 출고 이력을 추적하고 현황을 확인합니다.
               </SectionCaption>
             </div>
+          </SectionHeader>
+          <SectionHeader style={{ justifyContent: "flex-end" }}>
             <FilterGroup>
               <Select
                 value={status}
@@ -50,6 +114,29 @@ export default function OutboundPage() {
                   </option>
                 ))}
               </Select>
+              {/* 날짜 범위 */}
+              <DateRange
+                startDate={startDate}
+                endDate={endDate}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+              />
+
+              {/* 검색어 */}
+              <SearchBox
+                keyword={keyword}
+                onKeywordChange={setKeyword}
+                onSearch={onSearch}
+                onReset={onReset}
+                placeholder="부품코드 / 부품명 검색"
+              />
+
+              <Button variant="icon" onClick={onSearch}>
+                <img src={searchIcon} width={18} height={18} alt="검색" />
+              </Button>
+              <Button variant="icon" onClick={onReset}>
+                <img src={resetIcon} width={18} height={18} alt="초기화" />
+              </Button>
             </FilterGroup>
           </SectionHeader>
           {loadingR ? "로딩중..." : <OutboundTable rows={records} />}

@@ -12,13 +12,24 @@ import { useState, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import InventoryTable from "./components/InventoryTable";
 import { inventoryKeys, fetchInventoryRecords } from "./InventoryApi";
+import SearchBox from "../components/common/SearchBox";
+import Button from "../components/common/Button";
+import resetIcon from "../assets/reset.svg";
+import searchIcon from "../assets/search.svg";
 
 // 필터 타입 정의: 전체(ALL) 또는 특정 창고 ID
 type WarehouseFilter = "ALL" | string;
+type AppliedFilters = {
+  keyword: string;
+};
 
 export default function InventoryPage() {
   // 선택된 창고 상태 관리
   const [warehouse, setWarehouse] = useState<WarehouseFilter>("ALL");
+  const [keyword, setKeyword] = useState("");
+  const [applied, setApplied] = useState<AppliedFilters>({
+    keyword: "",
+  });
 
   // 모든 데이터 조회
   const { data: records = [], isLoading: loadingR } = useQuery({
@@ -33,11 +44,40 @@ export default function InventoryPage() {
     [records]
   );
 
-  // 선택된 창고에 따른 필터링
+  // 필터링된 데이터 (창고 + 검색어)
   const filteredRecords = useMemo(() => {
-    if (warehouse === "ALL") return records; // 전체 선택 시 원본 데이터 반환
-    return records.filter((r) => r.warehouseId === warehouse); // 특정 창고 필터
-  }, [records, warehouse]);
+    let result = records;
+
+    // 창고 필터
+    if (warehouse !== "ALL") {
+      result = result.filter((r) => r.warehouseId === warehouse);
+    }
+
+    // 검색어 필터
+    if (applied.keyword.trim()) {
+      const keywordLower = applied.keyword.toLowerCase();
+      result = result.filter((r) => {
+        const hay = `${r.inventoryCode ?? ""} ${
+          r.inventoryName ?? ""
+        }`.toLowerCase();
+        return hay.includes(keywordLower);
+      });
+    }
+
+    return result;
+  }, [records, warehouse, applied]);
+
+  // 검색 버튼 클릭 시 적용
+  const onSearch = () => {
+    setApplied({ keyword: keyword.trim() });
+  };
+
+  // 초기화 버튼 클릭 시
+  const onReset = () => {
+    setKeyword("");
+    setApplied({ keyword: "" });
+    setWarehouse("ALL");
+  };
 
   return (
     <Layout>
@@ -64,6 +104,21 @@ export default function InventoryPage() {
                   </option>
                 ))}
               </Select>
+              {/* 검색어 */}
+              <SearchBox
+                keyword={keyword}
+                onKeywordChange={setKeyword}
+                onSearch={onSearch}
+                onReset={onReset}
+                placeholder="부품코드 / 부품명 검색"
+              />
+
+              <Button variant="icon" onClick={onSearch}>
+                <img src={searchIcon} width={18} height={18} alt="검색" />
+              </Button>
+              <Button variant="icon" onClick={onReset}>
+                <img src={resetIcon} width={18} height={18} alt="초기화" />
+              </Button>
             </FilterGroup>
           </SectionHeader>
           {loadingR ? "로딩중..." : <InventoryTable rows={filteredRecords} />}

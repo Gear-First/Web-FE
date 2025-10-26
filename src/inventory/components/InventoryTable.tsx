@@ -19,7 +19,7 @@ export default function InventoryTable({ rows }: { rows: InventoryRecord[] }) {
               <Td>{r.warehouseId}</Td>
               <Td>{r.inventoryCode}</Td>
               <Td>{r.inventoryName}</Td>
-              <Td>{r.inventoryQuantity.toLocaleString()} EA</Td>
+              <Td>{r.inventoryQuantity.toLocaleString()}</Td>
             </tr>
           ))}
         </tbody>
