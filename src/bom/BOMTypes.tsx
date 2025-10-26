@@ -30,4 +30,5 @@ export type BOMDTO = {
   partName: string;
   category: PartCate;
   materials: MaterialDTO[];
+  createdDate: string;
 };

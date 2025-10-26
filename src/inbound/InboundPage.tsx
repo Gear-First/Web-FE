@@ -20,11 +20,31 @@ export default function InboundPage() {
   const [status, setStatus] = useState<StatusFilter>("ALL");
   const statusOptions: StatusFilter[] = ["ALL", "합격", "보류", "불합격"];
 
-  const { data: records = [], isLoading: loadingR } = useQuery({
-    queryKey: [...inboundKeys.records, status],
-    queryFn: fetchInboundRecords,
-    select: (rows) =>
-      status === "ALL" ? rows : rows.filter((r) => r.status === status),
+  const [keyword, setKeyword] = useState("");
+  const [startDate, setStartDate] = useState<string>("");
+  const [endDate, setEndDate] = useState<string>("");
+  const [applied, setApplied] = useState<AppliedFilters>({
+    keyword: "",
+    startDate: null,
+    endDate: null,
+  });
+
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // 서버(=MSW) 필터로 위임: queryKey에 파라미터를 전부 포함
+  const params = {
+    status,
+    q: applied.keyword || undefined,
+    startDate: applied.startDate || undefined,
+    endDate: applied.endDate || undefined,
+    page,
+    pageSize,
+  };
+
+  const { data, fetchStatus } = useQuery<ListResponse<InboundRecord[]>, Error>({
+    queryKey: [...inboundKeys.records, params],
+    queryFn: () => fetchInboundRecords(params),
     staleTime: 5 * 60 * 1000,
   });
 
