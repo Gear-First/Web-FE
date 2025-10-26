@@ -1,238 +1,44 @@
-import type { InboundRecord } from "./InboundTypes";
+import type { InboundRecord, InboundStatus } from "./InboundTypes";
 
 export const inboundKeys = {
   records: ["inbound", "records"] as const,
 };
 
-export const inboundRecords: InboundRecord[] = [
-  {
-    inboundId: "RCV-250920-01",
-    lotId: "LOT-250915-01",
-    partCode: "MAT-WIR-550",
-    partName: "고전압 케이블",
-    inboundQty: 520,
-    receivedDate: "2025-09-20",
-    expectedInDate: "2025-09-22",
-    inDate: "2025-09-21",
-    warehouse: "창고 A-01",
-    status: "합격",
-    inspector: "박철수",
-    vendor: "공급처A",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250920-02",
-    lotId: "LOT-250915-02",
-    partCode: "MAT-SCR-302",
-    partName: "스테인리스 나사 M4",
-    inboundQty: 2000,
-    receivedDate: "2025-09-20",
-    expectedInDate: "2025-09-23",
-    inDate: "2025-09-22",
-    warehouse: "창고 B-03",
-    status: "합격",
-    inspector: "이민재",
-    vendor: "공급처B",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250921-01",
-    lotId: "LOT-250916-01",
-    partCode: "MAT-PLT-220",
-    partName: "알루미늄 플레이트",
-    inboundQty: 180,
-    receivedDate: "2025-09-21",
-    expectedInDate: "2025-09-24",
-    inDate: "2025-09-23",
-    warehouse: "창고 C-02",
-    status: "보류",
-    inspector: "최정우",
-    vendor: "공급처C",
-    note: "표면 스크래치 확인",
-  },
-  {
-    inboundId: "RCV-250921-02",
-    lotId: "LOT-250916-02",
-    partCode: "MAT-BOL-114",
-    partName: "육각 볼트 10mm",
-    inboundQty: 900,
-    receivedDate: "2025-09-21",
-    expectedInDate: "2025-09-23",
-    inDate: "2025-09-23",
-    warehouse: "창고 A-02",
-    status: "합격",
-    inspector: "박진수",
-    vendor: "공급처D",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250922-01",
-    lotId: "LOT-250917-01",
-    partCode: "MAT-SWT-440",
-    partName: "리미트 스위치",
-    inboundQty: 320,
-    receivedDate: "2025-09-22",
-    expectedInDate: "2025-09-24",
-    inDate: "2025-09-23",
-    warehouse: "창고 B-02",
-    status: "합격",
-    inspector: "김민아",
-    vendor: "공급처E",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250922-02",
-    lotId: "LOT-250917-02",
-    partName: "MAT-BRD-820",
-    partCode: "제어 보드 PCB",
-    inboundQty: 75,
-    receivedDate: "2025-09-22",
-    expectedInDate: "2025-09-25",
-    inDate: "2025-09-24",
-    warehouse: "창고 C-01",
-    status: "불합격",
-    inspector: "최정우",
-    vendor: "공급처F",
-    note: "납땜 불량 발견",
-  },
-  {
-    inboundId: "RCV-250923-01",
-    lotId: "LOT-250918-01",
-    partName: "MAT-COI-705",
-    partCode: "구리 코일",
-    inboundQty: 410,
-    receivedDate: "2025-09-23",
-    expectedInDate: "2025-09-26",
-    inDate: "2025-09-25",
-    warehouse: "창고 A-03",
-    status: "합격",
-    inspector: "이수빈",
-    vendor: "공급처G",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250923-02",
-    lotId: "LOT-250918-02",
-    partName: "MAT-CAP-300",
-    partCode: "전해 콘덴서 100µF",
-    inboundQty: 1200,
-    receivedDate: "2025-09-23",
-    expectedInDate: "2025-09-25",
-    inDate: "2025-09-24",
-    warehouse: "창고 B-04",
-    status: "합격",
-    inspector: "정하늘",
-    vendor: "공급처H",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250924-01",
-    lotId: "LOT-250919-01",
-    partName: "MAT-TUB-110",
-    partCode: "열수축튜브 6mm",
-    inboundQty: 900,
-    receivedDate: "2025-09-24",
-    expectedInDate: "2025-09-26",
-    inDate: "2025-09-26",
-    warehouse: "창고 A-02",
-    status: "보류",
-    inspector: "박철수",
-    vendor: "공급처I",
-    note: "두께 편차 확인 중",
-  },
-  {
-    inboundId: "RCV-250924-02",
-    lotId: "LOT-250919-02",
-    partName: "MAT-PLS-880",
-    partCode: "ABS 플라스틱 케이스",
-    inboundQty: 310,
-    receivedDate: "2025-09-24",
-    expectedInDate: "2025-09-27",
-    inDate: "2025-09-27",
-    warehouse: "창고 D-01",
-    status: "합격",
-    inspector: "이민재",
-    vendor: "공급처J",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250925-01",
-    lotId: "LOT-250920-01",
-    partName: "MAT-RLY-520",
-    partCode: "릴레이 24V",
-    inboundQty: 250,
-    receivedDate: "2025-09-25",
-    expectedInDate: "2025-09-28",
-    inDate: "2025-09-27",
-    warehouse: "창고 A-01",
-    status: "합격",
-    inspector: "김민아",
-    vendor: "공급처A",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250925-02",
-    lotId: "LOT-250920-02",
-    partName: "MAT-FUS-130",
-    partCode: "퓨즈 10A",
-    inboundQty: 800,
-    receivedDate: "2025-09-25",
-    expectedInDate: "2025-09-28",
-    inDate: "2025-09-27",
-    warehouse: "창고 B-01",
-    status: "불합격",
-    inspector: "이수빈",
-    vendor: "공급처K",
-    note: "정격 전류 오차 초과",
-  },
-  {
-    inboundId: "RCV-250926-01",
-    lotId: "LOT-250921-01",
-    partName: "MAT-GAS-430",
-    partCode: "실리콘 가스켓",
-    inboundQty: 150,
-    receivedDate: "2025-09-26",
-    expectedInDate: "2025-09-29",
-    inDate: "2025-09-28",
-    warehouse: "창고 C-02",
-    status: "합격",
-    inspector: "정하늘",
-    vendor: "공급처L",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250926-02",
-    lotId: "LOT-250921-02",
-    partName: "MAT-LBL-222",
-    partCode: "제품 라벨 스티커",
-    inboundQty: 5000,
-    receivedDate: "2025-09-26",
-    expectedInDate: "2025-09-29",
-    inDate: "2025-09-29",
-    warehouse: "창고 D-02",
-    status: "합격",
-    inspector: "박진수",
-    vendor: "공급처M",
-    note: "",
-  },
-  {
-    inboundId: "RCV-250927-01",
-    lotId: "LOT-250922-01",
-    partName: "MAT-BOX-720",
-    partCode: "포장 박스 500x300",
-    inboundQty: 180,
-    receivedDate: "2025-09-27",
-    expectedInDate: "2025-09-30",
-    inDate: "2025-09-30",
-    warehouse: "창고 D-03",
-    status: "보류",
-    inspector: "최정우",
-    vendor: "공급처N",
-    note: "인쇄 불량 확인 중",
-  },
-];
+export type InboundListParams = {
+  status?: InboundStatus | "ALL";
+  q?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  page?: number;
+  pageSize?: number;
+};
 
-export async function fetchInboundRecords(): Promise<InboundRecord[]> {
-  // 실제 API 호출 필요
-  return inboundRecords;
+type ListResponse<T> = {
+  data: T;
+  meta?: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
+};
+
+export async function fetchInboundRecords(
+  params?: InboundListParams
+): Promise<ListResponse<InboundRecord[]>> {
+  const qs = new URLSearchParams();
+  if (params?.status) qs.set("status", params.status);
+  if (params?.q) qs.set("q", params.q);
+  if (params?.startDate) qs.set("startDate", params.startDate);
+  if (params?.endDate) qs.set("endDate", params.endDate);
+  if (params?.page) qs.set("page", String(params.page));
+  if (params?.pageSize) qs.set("pageSize", String(params.pageSize));
+
+  const url = qs.toString()
+    ? `/api/inbound/records?${qs.toString()}`
+    : `/api/inbound/records`;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error("Failed to fetch inbound records");
+  return res.json();
 }

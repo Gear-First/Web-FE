@@ -8,7 +8,7 @@ interface Props {
   placeholder?: string;
 }
 
-export default function FilterSearchBox({
+export default function SearchBox({
   keyword,
   onKeywordChange,
   onSearch,

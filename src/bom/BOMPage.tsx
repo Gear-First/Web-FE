@@ -108,6 +108,7 @@ export default function BOMPage() {
     setKeyword("");
     setStartDate("");
     setEndDate("");
+    setCate("ALL");
     setApplied({ keyword: "", startDate: null, endDate: null });
   };
 
