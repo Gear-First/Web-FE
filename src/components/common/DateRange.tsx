@@ -8,7 +8,7 @@ interface Props {
   onEndDateChange: (v: string) => void;
 }
 
-export default function FilterDateRange({
+export default function DateRange({
   startDate,
   endDate,
   onStartDateChange,
