@@ -120,7 +120,10 @@ export default function OutboundPage() {
             <FilterGroup>
               <Select
                 value={status}
-                onChange={(e) => setStatus(e.target.value as StatusFilter)}
+                onChange={(e) => {
+                  setStatus(e.target.value as StatusFilter);
+                  setPage(1);
+                }}
               >
                 {statusOptions.map((opt) => (
                   <option key={opt} value={opt}>
