@@ -1,6 +1,6 @@
-import type { Material, PartCate } from "../../bom/BOMTypes";
-import { createRNG, dateAdd, pad } from "../../mocks/shared/utils";
-import type { PartRecords } from "./PartTypes";
+import type { Material, PartCate } from "../../../bom/BOMTypes";
+import { createRNG, dateAdd, pad } from "../../../mocks/shared/utils";
+import type { PartRecords } from "../PartTypes";
 
 /**
  * PartItem 목데이터 자동 생성기 (시드 고정 가능)
