@@ -87,8 +87,8 @@ export default function RequestPage() {
     const kw = pendingApplied.keyword.trim().toLowerCase();
     const keywordOk =
       !kw ||
-      `${r.requestId} ${r.agency} ${r.manager} ${r.inventoryItems
-        .map((it) => `${it.inventoryCode} ${it.inventoryName}`)
+      `${r.requestId} ${r.agency} ${r.manager} ${r.partItems
+        .map((it) => `${it.partCode} ${it.partName}`)
         .join(" ")}`
         .toLowerCase()
         .includes(kw);
@@ -121,8 +121,8 @@ export default function RequestPage() {
     const kw = processedApplied.keyword.trim().toLowerCase();
     const keywordOk =
       !kw ||
-      `${r.requestId} ${r.agency} ${r.manager} ${r.inventoryItems
-        .map((it) => `${it.inventoryCode} ${it.inventoryName}`)
+      `${r.requestId} ${r.agency} ${r.manager} ${r.partItems
+        .map((it) => `${it.partCode} ${it.partName}`)
         .join(" ")}`
         .toLowerCase()
         .includes(kw);

@@ -121,7 +121,7 @@ export const Value = styled.span`
 `;
 
 /* 부품 리스트 */
-export const InventoryList = styled.div`
+export const PartList = styled.div`
   border: 1px solid #e5e7eb;
   border-radius: 8px;
   background: #fafafa;

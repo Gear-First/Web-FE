@@ -51,11 +51,11 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
           <DetailGrid>
             <DetailItem>
               <Label>부품명</Label>
-              <Value>{record.inventoryItems[0]?.inventoryName ?? "-"}</Value>
+              <Value>{record.partItems[0]?.partName ?? "-"}</Value>
             </DetailItem>
             <DetailItem>
               <Label>부품코드</Label>
-              <Value>{record.inventoryItems[0]?.inventoryCode ?? "-"}</Value>
+              <Value>{record.partItems[0]?.partCode ?? "-"}</Value>
             </DetailItem>
           </DetailGrid>
         </Section>
@@ -70,7 +70,7 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
             <DetailItem>
               <Label>출고수량</Label>
               <Value>
-                {record.inventoryItems
+                {record.partItems
                   .reduce((sum, item) => sum + item.outboundQuantity, 0)
                   .toLocaleString()}
               </Value>

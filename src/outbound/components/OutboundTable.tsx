@@ -38,9 +38,9 @@ export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
               }}
             >
               <Td>{r.outboundId}</Td>
-              <Td>{r.inventoryItems[0]?.inventoryName || "-"}</Td>
+              <Td>{r.partItems[0]?.partName || "-"}</Td>
               <Td>
-                {r.inventoryItems[0]?.outboundQuantity.toLocaleString() || "-"}
+                {r.partItems[0]?.outboundQuantity.toLocaleString() || "-"}
               </Td>
               <Td>{r.receiptDate}</Td>
               <Td>{r.issuedDate}</Td>

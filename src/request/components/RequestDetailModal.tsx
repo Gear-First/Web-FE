@@ -14,7 +14,7 @@ import {
   DetailItem,
   Label,
   Value,
-  InventoryList,
+  PartList,
   TextareaWrapper,
   StyledTextarea,
   RemarkSection,
@@ -41,11 +41,7 @@ interface DetailModalProps {
 }
 
 /** 부품 리스트 섹션 */
-const InventoryListSection = ({
-  items,
-}: {
-  items: RequestRecord["inventoryItems"];
-}) => {
+const PartListSection = ({ items }: { items: RequestRecord["partItems"] }) => {
   // 전체 보기 버튼 상태
   const [showAll, setShowAll] = useState(false);
 
@@ -57,9 +53,9 @@ const InventoryListSection = ({
   // 아이템이 없을 때 처리
   if (!items || items.length === 0) {
     return (
-      <InventoryList>
+      <PartList>
         <Value>등록된 부품이 없습니다.</Value>
-      </InventoryList>
+      </PartList>
     );
   }
 
@@ -67,17 +63,17 @@ const InventoryListSection = ({
   const visible = showAll ? items : items.slice(0, 2);
 
   return (
-    <InventoryList>
+    <PartList>
       {visible.map((item, idx) => (
         <DetailGrid
-          key={`${item.inventoryCode}-${idx}`}
+          key={`${item.partCode}-${idx}`}
           style={{ marginBottom: "4px" }}
         >
           <DetailItem>
-            <Value>{item.inventoryName}</Value>
+            <Value>{item.partName}</Value>
           </DetailItem>
           <DetailItem>
-            <Value>{item.inventoryCode}</Value>
+            <Value>{item.partCode}</Value>
           </DetailItem>
           <DetailItem>
             <Value>{item.requestQuantity} EA</Value>
@@ -100,7 +96,7 @@ const InventoryListSection = ({
           </button>
         </div>
       )}
-    </InventoryList>
+    </PartList>
   );
 };
 
@@ -220,7 +216,7 @@ const DetailModal = ({
               <Label>수량</Label>
             </DetailItem>
           </DetailGrid>
-          <InventoryListSection items={record.inventoryItems} />
+          <PartListSection items={record.partItems} />
         </Section>
 
         {/* 대리점 정보 */}
