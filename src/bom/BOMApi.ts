@@ -1,4 +1,4 @@
-import type { BOMRecord } from "./BOMTypes";
+import type { BOMRecord, BOMCreateDTO, BOMUpdateDTO } from "./BOMTypes";
 
 export const bomKeys = {
   records: ["bom", "records"] as const,
@@ -15,15 +15,9 @@ export type BOMListParams = {
 
 export type ListResponse<T> = {
   data: T;
-  meta?: {
-    total: number;
-    page: number;
-    pageSize: number;
-    totalPages: number;
-  };
+  meta?: { total: number; page: number; pageSize: number; totalPages: number };
 };
 
-// 목록 조회
 export async function fetchBOMRecords(
   params?: BOMListParams
 ): Promise<ListResponse<BOMRecord[]>> {
@@ -44,38 +38,39 @@ export async function fetchBOMRecords(
   return res.json();
 }
 
-// 상세 조회
 export async function fetchBOMDetail(id: string): Promise<BOMRecord> {
   const res = await fetch(`/api/bom/records/${id}`);
   if (!res.ok) throw new Error(`BOM 상세 요청 실패 (${res.status})`);
   return res.json();
 }
 
-// 생성
-export async function createBOM(payload: Omit<BOMRecord, "bomId">) {
+export async function createBOM(payload: BOMCreateDTO): Promise<BOMRecord> {
   const res = await fetch(`/api/bom/records`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
   if (!res.ok) throw new Error(`BOM 생성 실패 (${res.status})`);
-  return res.json() as Promise<BOMRecord>;
+  return res.json();
 }
 
-// 수정
-export async function updateBOM(id: string, patch: Partial<BOMRecord>) {
+export async function updateBOM(
+  id: string,
+  patch: BOMUpdateDTO
+): Promise<BOMRecord> {
   const res = await fetch(`/api/bom/records/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(patch),
   });
   if (!res.ok) throw new Error(`BOM 수정 실패 (${res.status})`);
-  return res.json() as Promise<BOMRecord>;
+  return res.json();
 }
 
-// 삭제
-export async function deleteBOM(id: string) {
+export async function deleteBOM(
+  id: string
+): Promise<{ ok: boolean; removedId: string }> {
   const res = await fetch(`/api/bom/records/${id}`, { method: "DELETE" });
   if (!res.ok) throw new Error(`BOM 삭제 실패 (${res.status})`);
-  return res.json() as Promise<{ ok: boolean; removedId: string }>;
+  return res.json();
 }

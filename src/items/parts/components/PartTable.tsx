@@ -1,48 +1,51 @@
+// src/features/part/components/PartTable.tsx
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { Table, Td, Th } from "../../components/common/PageLayout";
-import BOMDetailModal from "./BOMDetailModal";
-import BOMRegisterModal from "./BOMRegisterModal";
+import { Table, Td, Th } from "../../../components/common/PageLayout";
+
+import PartRegisterModal from "./PartRegisterModal";
+import PartDetailModal from "./PartDetailModal";
 
 import {
-  type BOMRecord,
-  type BOMFormModel,
-  type BOMUpdateDTO,
-  toBOMPatchPayload,
-} from "../BOMTypes";
-import { bomKeys, deleteBOM, updateBOM } from "../BOMApi";
+  toPartPatchPayload,
+  type PartFormModel,
+  type PartRecords,
+  type PartUpdateDTO,
+} from "../PartTypes";
+import { partKeys, deletePart, updatePart } from "../PartApi";
 
-export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
-  const [selectedRecord, setSelectedRecord] = useState<BOMRecord | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+export default function PartTable({ rows }: { rows: PartRecords[] }) {
+  const [selectedRecord, setSelectedRecord] = useState<PartRecords | null>(
+    null
+  );
+  const [isDetailOpen, setIsDetailOpen] = useState(false);
 
-  // 등록/수정 모달
+  // 등록/수정 겸용 모달
   const [isRegOpen, setIsRegOpen] = useState(false);
-  const [regMode, setRegMode] = useState<"create" | "edit">("edit"); // 이 테이블에선 수정만 사용
-  const [initialForEdit, setInitialForEdit] = useState<BOMFormModel | null>(
+  const [regMode, setRegMode] = useState<"create" | "edit">("create");
+  const [initialForEdit, setInitialForEdit] = useState<PartFormModel | null>(
     null
   );
 
   const queryClient = useQueryClient();
 
-  const openDetail = (rec: BOMRecord) => {
+  const openDetail = (rec: PartRecords) => {
     setSelectedRecord(rec);
-    setIsModalOpen(true);
+    setIsDetailOpen(true);
   };
-
   const closeDetail = () => {
-    setIsModalOpen(false);
+    setIsDetailOpen(false);
     setTimeout(() => setSelectedRecord(null), 0);
   };
 
   const updateMut = useMutation<
-    BOMRecord,
+    PartRecords,
     Error,
-    { id: string; patch: BOMUpdateDTO }
+    { id: string; patch: PartUpdateDTO }
   >({
-    mutationFn: ({ id, patch }) => updateBOM(id, patch),
+    mutationFn: ({ id, patch }) => updatePart(id, patch),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bomKeys.records });
+      queryClient.invalidateQueries({ queryKey: partKeys.records });
       setIsRegOpen(false);
     },
   });
@@ -52,16 +55,16 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
     Error,
     string
   >({
-    mutationFn: (id) => deleteBOM(id),
+    mutationFn: (id) => deletePart(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bomKeys.records });
+      queryClient.invalidateQueries({ queryKey: partKeys.records });
       closeDetail();
     },
   });
 
   const handleDelete = async () => {
     if (!selectedRecord) return;
-    await deleteMut.mutateAsync(selectedRecord.bomId);
+    await deleteMut.mutateAsync(selectedRecord.partId);
   };
 
   return (
@@ -69,22 +72,24 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
       <Table>
         <thead>
           <tr>
-            <Th>BOM 번호</Th>
+            <Th>Part 번호</Th>
             <Th>부품코드</Th>
             <Th>부품명</Th>
-            <Th>작성일시</Th>
+            <Th>카테고리</Th>
+            <Th>작성일자</Th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr
-              key={r.bomId}
+              key={r.partId}
               style={{ cursor: "pointer" }}
               onClick={() => openDetail(r)}
             >
-              <Td>{r.bomId}</Td>
+              <Td>{r.partId}</Td>
               <Td>{r.partCode}</Td>
               <Td>{r.partName}</Td>
+              <Td>{r.category}</Td>
               <Td>{r.createdDate}</Td>
             </tr>
           ))}
@@ -92,16 +97,16 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
       </Table>
 
       {/* 상세 모달 */}
-      <BOMDetailModal
+      <PartDetailModal
         record={selectedRecord}
-        isOpen={isModalOpen}
+        isOpen={isDetailOpen}
         onClose={closeDetail}
         onDelete={handleDelete}
         onEdit={(rec) => {
           closeDetail();
           setRegMode("edit");
           setInitialForEdit({
-            bomId: rec.bomId,
+            partId: rec.partId,
             partCode: rec.partCode,
             partName: rec.partName,
             category: rec.category,
@@ -110,23 +115,22 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
               materialName: m.materialName,
               materialQty: m.materialQty,
             })),
-            createdDate: rec.createdDate, // 표시용
           });
           setIsRegOpen(true);
         }}
       />
 
-      {/* 등록/수정 모달 (여기서는 수정에만 사용) */}
-      <BOMRegisterModal
+      {/* 등록/수정 모달 */}
+      <PartRegisterModal
         isOpen={isRegOpen}
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async (payload: BOMFormModel) => {
-          if (!payload.bomId) return;
+        onSubmit={async (payload: PartFormModel) => {
+          if (!payload.partId) return;
           await updateMut.mutateAsync({
-            id: payload.bomId,
-            patch: toBOMPatchPayload(payload),
+            id: payload.partId,
+            patch: toPartPatchPayload(payload),
           });
         }}
       />

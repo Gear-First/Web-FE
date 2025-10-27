@@ -1,4 +1,3 @@
-// src/features/bom/BOMPage.tsx
 import { useCallback, useMemo, useState } from "react";
 import Layout from "../components/common/Layout";
 import {
@@ -10,16 +9,24 @@ import {
   SectionTitle,
   Select,
 } from "../components/common/PageLayout";
-import type { BOMDTO, BOMRecord, PartCate } from "./BOMTypes";
+import {
+  toBOMCreatePayload,
+  type BOMDTO, // 폼 모델(등록/수정 공용)
+  type BOMRecord, // 서버 응답 타입
+  type PartCate,
+  type BOMCreateDTO, // 생성 요청 DTO
+} from "./BOMTypes";
 import BOMTable from "./components/BOMTable";
-import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
-import type { QueryKey } from "@tanstack/react-query";
-
+import {
+  useQuery,
+  useQueryClient,
+  useMutation,
+  type QueryKey,
+} from "@tanstack/react-query";
 import {
   bomKeys,
   fetchBOMRecords,
   createBOM,
-  updateBOM,
   type ListResponse,
 } from "./BOMApi";
 import Button from "../components/common/Button";
@@ -29,7 +36,6 @@ import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
 import Pagination from "../components/common/Pagination";
-import { toCreatePayload, toPatchPayload } from "./payload";
 
 type CateFilter = PartCate | "ALL";
 type AppliedFilters = {
@@ -53,14 +59,14 @@ export default function BOMPage() {
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  // 검색 적용 상태 (버튼 클릭 시에만 반영)
+  // 검색 적용 상태
   const [applied, setApplied] = useState<AppliedFilters>({
     keyword: "",
     startDate: null,
     endDate: null,
   });
 
-  // 페이지네이션 상태
+  // 페이지네이션
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -71,10 +77,10 @@ export default function BOMPage() {
 
   const queryClient = useQueryClient();
 
-  // queryKey는 순수 원시값으로 구성해 캐시 hit 안정화
+  // queryKey는 순수 원시값으로 구성
   const queryKey: QueryKey = useMemo(
     () => [
-      ...bomKeys.records, // ["bom","records"]
+      ...bomKeys.records,
       cate,
       applied.keyword,
       applied.startDate,
@@ -98,8 +104,8 @@ export default function BOMPage() {
     queryKey,
     queryFn: () => fetchBOMRecords(params),
     staleTime: 5 * 60 * 1000,
-    placeholderData: (prev) => prev, // 이전 페이지 데이터 유지 (깜빡임X)
-    gcTime: 30 * 60 * 1000, // 캐시 보존 조금 길게 (선택)
+    placeholderData: (prev) => prev,
+    gcTime: 30 * 60 * 1000,
   });
 
   const isFetching = fetchStatus === "fetching";
@@ -107,7 +113,7 @@ export default function BOMPage() {
   const total = data?.meta?.total ?? 0;
   const totalPages = data?.meta?.totalPages ?? 1;
 
-  // 핸들러는 useCallback으로 고정해 하위 컴포넌트 렌더 최적화
+  // 핸들러
   const onSearch = useCallback(() => {
     setApplied({
       keyword: keyword.trim(),
@@ -136,20 +142,9 @@ export default function BOMPage() {
     setPage(1);
   }, []);
 
-  const createMut = useMutation<BOMRecord, Error, Omit<BOMRecord, "bomId">>({
+  // 생성/수정 뮤테이션 — 타입 시그니처 정리
+  const createMut = useMutation<BOMRecord, Error, BOMCreateDTO>({
     mutationFn: createBOM,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bomKeys.records });
-      setIsRegOpen(false);
-    },
-  });
-
-  const updateMut = useMutation<
-    BOMRecord,
-    Error,
-    { id: string; patch: Partial<BOMRecord> }
-  >({
-    mutationFn: ({ id, patch }) => updateBOM(id, patch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bomKeys.records });
       setIsRegOpen(false);
@@ -246,7 +241,7 @@ export default function BOMPage() {
               </span>
             </div>
 
-            {/* 페이지네이션 (디자인 유지) */}
+            {/* 페이지네이션 */}
             <Pagination
               page={page}
               totalPages={Math.max(1, totalPages)}
@@ -275,12 +270,7 @@ export default function BOMPage() {
         initial={initialForEdit}
         onSubmit={async (payload: BOMDTO) => {
           if (regMode === "create") {
-            await createMut.mutateAsync(toCreatePayload(payload));
-          } else if (initialForEdit?.bomId) {
-            await updateMut.mutateAsync({
-              id: initialForEdit.bomId,
-              patch: toPatchPayload(payload),
-            });
+            await createMut.mutateAsync(toBOMCreatePayload(payload));
           }
         }}
       />

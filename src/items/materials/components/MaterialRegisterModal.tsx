@@ -1,0 +1,139 @@
+import { useState, useEffect } from "react";
+import {
+  CloseButton,
+  DetailGrid,
+  DetailItem,
+  Header,
+  HeaderLeft,
+  Label,
+  ModalContainer,
+  Overlay,
+  Section,
+  SectionTitle,
+  Title,
+} from "../../../components/common/ModalPageLayout";
+import Button from "../../../components/common/Button";
+import styled from "styled-components";
+
+export type MaterialDTO = {
+  materialId?: string; // edit 시에만 존재
+  materialCode: string;
+  materialName: string;
+};
+
+interface Props {
+  isOpen: boolean;
+  onClose: () => void;
+  mode?: "create" | "edit";
+  initial?: MaterialDTO | null;
+  onSubmit?: (payload: MaterialDTO) => void;
+}
+
+const MaterialRegisterModal = ({
+  isOpen,
+  onClose,
+  mode = "create",
+  initial = null,
+  onSubmit,
+}: Props) => {
+  const [materialCode, setMaterialCode] = useState("");
+  const [materialName, setMaterialName] = useState("");
+
+  /* 초기값 주입 */
+  useEffect(() => {
+    if (!isOpen) return;
+    if (mode === "edit" && initial) {
+      setMaterialCode(initial.materialCode ?? "");
+      setMaterialName(initial.materialName ?? "");
+    } else {
+      setMaterialCode("");
+      setMaterialName("");
+    }
+  }, [isOpen, mode, initial]);
+
+  const handleSubmit = () => {
+    if (!materialCode.trim()) return alert("자재코드를 입력하세요.");
+    if (!materialName.trim()) return alert("자재명을 입력하세요.");
+
+    const payload: MaterialDTO = {
+      ...(initial?.materialId ? { partId: initial.materialId } : {}),
+      materialCode: materialCode.trim(),
+      materialName: materialName.trim(),
+    };
+
+    onSubmit?.(payload);
+    onClose();
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <Overlay onClick={onClose}>
+      <ModalContainer onClick={(e) => e.stopPropagation()}>
+        <Header>
+          <HeaderLeft>
+            <Title>{mode === "edit" ? "자재 수정" : "자재 등록"}</Title>
+          </HeaderLeft>
+          <CloseButton onClick={onClose} aria-label="닫기">
+            &times;
+          </CloseButton>
+        </Header>
+
+        {/* 자재 정보 */}
+        <Section>
+          <SectionTitle>자재 정보</SectionTitle>
+          <DetailGrid>
+            <DetailItem>
+              <Label>자재 코드</Label>
+              <Input
+                placeholder="예) PRT-FAN-501"
+                value={materialCode}
+                onChange={(e) => setMaterialCode(e.target.value)}
+              />
+            </DetailItem>
+
+            <DetailItem>
+              <Label>자재명</Label>
+              <Input
+                placeholder="예) 냉각 팬"
+                value={materialName}
+                onChange={(e) => setMaterialName(e.target.value)}
+              />
+            </DetailItem>
+          </DetailGrid>
+        </Section>
+
+        {/* 액션 */}
+        <Section>
+          <Actions>
+            <Button color="gray" onClick={onClose}>
+              취소
+            </Button>
+            <Button onClick={handleSubmit}>
+              {mode === "edit" ? "수정 저장" : "등록"}
+            </Button>
+          </Actions>
+        </Section>
+      </ModalContainer>
+    </Overlay>
+  );
+};
+
+export default MaterialRegisterModal;
+
+// 모달 상단 인풋
+const Input = styled.input`
+  width: 50%;
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.92rem;
+  background: #fff;
+`;
+
+// 하단 액션
+const Actions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+`;

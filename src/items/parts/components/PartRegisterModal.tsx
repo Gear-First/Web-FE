@@ -11,19 +11,32 @@ import {
   Section,
   SectionTitle,
   Title,
-} from "../../components/common/ModalPageLayout";
-import Button from "../../components/common/Button";
+} from "../../../components/common/ModalPageLayout";
+import Button from "../../../components/common/Button";
 import styled from "styled-components";
-import { Select } from "../../components/common/PageLayout";
-import type { BOMDTO, PartCate } from "../BOMTypes";
-import MaterialsTable from "./MaterialsTable";
+import { Select } from "../../../components/common/PageLayout";
+import type { PartCate } from "../../../bom/BOMTypes";
+import MaterialsTable from "../../../bom/components/MaterialsTable";
+
+/** Part 등록/수정 DTO */
+export type PartDTO = {
+  partId?: string; // edit 시에만 존재
+  partCode: string;
+  partName: string;
+  category: PartCate;
+  materials: {
+    materialCode: string;
+    materialName: string;
+    materialQty: number;
+  }[];
+};
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   mode?: "create" | "edit";
-  initial?: BOMDTO | null;
-  onSubmit?: (payload: BOMDTO) => void;
+  initial?: PartDTO | null;
+  onSubmit?: (payload: PartDTO) => void;
 }
 
 // UI 전용 행 타입
@@ -41,14 +54,13 @@ const cateOptions: PartCate[] = [
   "카테고리 D",
 ];
 
-const BOMRegisterModal = ({
+const PartRegisterModal = ({
   isOpen,
   onClose,
   mode = "create",
   initial = null,
   onSubmit,
 }: Props) => {
-  const [bomNo, setBomNo] = useState(""); // = bomId
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
   const [partCate, setPartCate] = useState<PartCate>("카테고리 A");
@@ -67,7 +79,6 @@ const BOMRegisterModal = ({
   useEffect(() => {
     if (!isOpen) return;
     if (mode === "edit" && initial) {
-      setBomNo(initial.bomId ?? "");
       setPartCode(initial.partCode ?? "");
       setPartName(initial.partName ?? "");
       setPartCate(initial.category ?? "카테고리 A");
@@ -78,7 +89,6 @@ const BOMRegisterModal = ({
         ).map((m) => ({ id: crypto.randomUUID(), ...m }))
       );
     } else {
-      setBomNo("");
       setPartCode("");
       setPartName("");
       setPartCate("카테고리 A");
@@ -125,7 +135,6 @@ const BOMRegisterModal = ({
   };
 
   const handleSubmit = () => {
-    if (!bomNo.trim()) return alert("BOM 번호를 입력하세요.");
     if (!partCode.trim()) return alert("부품 코드를 입력하세요.");
     if (!partName.trim()) return alert("부품명을 입력하세요.");
     if (!partCate?.trim()) return alert("카테고리를 선택하세요.");
@@ -136,8 +145,8 @@ const BOMRegisterModal = ({
     )
       return alert("자재 수량은 1 이상이어야 합니다.");
 
-    const payload: BOMDTO = {
-      bomId: bomNo.trim(),
+    const payload: PartDTO = {
+      ...(initial?.partId ? { partId: initial.partId } : {}),
       partCode: partCode.trim(),
       partName: partName.trim(),
       category: partCate,
@@ -159,7 +168,7 @@ const BOMRegisterModal = ({
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
-            <Title>{mode === "edit" ? "BOM 수정" : "BOM 등록"}</Title>
+            <Title>{mode === "edit" ? "부품 수정" : "부품 등록"}</Title>
           </HeaderLeft>
           <CloseButton onClick={onClose} aria-label="닫기">
             &times;
@@ -170,16 +179,6 @@ const BOMRegisterModal = ({
         <Section>
           <SectionTitle>부품 정보</SectionTitle>
           <DetailGrid>
-            <DetailItem>
-              <Label>BOM 번호</Label>
-              <Input
-                placeholder="예) BOM-250101-05"
-                value={bomNo}
-                onChange={(e) => setBomNo(e.target.value)}
-                disabled={mode === "edit"} // 수정 시 식별자 잠금 권장
-              />
-            </DetailItem>
-
             <DetailItem>
               <Label>부품 코드</Label>
               <Input
@@ -224,13 +223,15 @@ const BOMRegisterModal = ({
             </Button>
           </HeaderRow>
 
-          <MaterialsTable
-            rows={materials}
-            onChange={updateMaterial}
-            onRemove={removeMaterial}
-            maxHeight={220} // 필요 시 조절
-            compact // 컴팩트 모드 on
-          />
+          <div ref={listRef}>
+            <MaterialsTable
+              rows={materials}
+              onChange={updateMaterial}
+              onRemove={removeMaterial}
+              maxHeight={220}
+              compact
+            />
+          </div>
         </Section>
 
         {/* 액션 */}
@@ -249,7 +250,7 @@ const BOMRegisterModal = ({
   );
 };
 
-export default BOMRegisterModal;
+export default PartRegisterModal;
 
 // 상단 자재 목록 행
 const HeaderRow = styled.div`

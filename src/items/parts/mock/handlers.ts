@@ -1,19 +1,17 @@
-// src/mocks/bom.handlers.ts (혹은 기존 파일)
 import { http, HttpResponse } from "msw";
-import { mockdata as bomRecords } from "./mockdata";
-import { paginate } from "../../mocks/shared/utils";
-import type { BOMRecord, BOMCreateDTO, BOMUpdateDTO } from "../BOMTypes";
+import type { PartCreateDTO, PartRecords, PartUpdateDTO } from "../PartTypes";
+import { PartMockdata } from "./mockdata";
+import { paginate } from "../../../mocks/shared/utils";
 
-// 공통 응답 타입
 type ListResponse<T> = {
   data: T;
   meta?: { total: number; page: number; pageSize: number; totalPages: number };
 };
 
-export const bomHandlers = [
-  // 목록 + 검색/필터/페이지네이션
-  http.get<never, never, ListResponse<BOMRecord[]>>(
-    "/api/bom/records",
+export const partHandlers = [
+  // 목록 조회
+  http.get<never, never, ListResponse<PartRecords[]>>(
+    "/api/parts/records",
     ({ request }) => {
       const url = new URL(request.url);
       const q = url.searchParams.get("q");
@@ -23,7 +21,7 @@ export const bomHandlers = [
       const page = Number(url.searchParams.get("page") ?? 1);
       const pageSize = Number(url.searchParams.get("pageSize") ?? 50);
 
-      let data = bomRecords.slice();
+      let data = PartMockdata.slice();
 
       if (category && category !== "ALL") {
         data = data.filter((r) => r.category === category);
@@ -33,7 +31,7 @@ export const bomHandlers = [
         const lower = q.toLowerCase();
         data = data.filter((r) => {
           const base =
-            `${r.bomId} ${r.partName} ${r.partCode} ${r.category}`.toLowerCase();
+            `${r.partId} ${r.partName} ${r.partCode} ${r.category}`.toLowerCase();
           const mats = r.materials
             .map((m) => `${m.materialName} ${m.materialCode}`.toLowerCase())
             .join(" ");
@@ -51,29 +49,30 @@ export const bomHandlers = [
       }
 
       const { data: pageData, meta } = paginate(data, page, pageSize);
-      return HttpResponse.json({ data: pageData, meta });
+      const resp: ListResponse<typeof pageData> = { data: pageData, meta };
+      return HttpResponse.json(resp);
     }
   ),
 
-  // 상세
-  http.get<{ id: string }, never, BOMRecord | { message: string }>(
-    "/api/bom/records/:id",
+  // 상세 조회 (성공 PartRecords | 실패 {message})
+  http.get<{ id: string }, never, PartRecords | { message: string }>(
+    "/api/parts/records/:id",
     ({ params }) => {
-      const rec = bomRecords.find((r) => r.bomId === params.id);
+      const rec = PartMockdata.find((r) => r.partId === params.id);
       return rec
         ? HttpResponse.json(rec)
         : HttpResponse.json({ message: "Not found" }, { status: 404 });
     }
   ),
 
-  // 생성
-  http.post<never, BOMCreateDTO, BOMRecord>(
-    "/api/bom/records",
+  // 생성 (RequestBody=PartCreateDTO, ResponseBody=PartRecords)
+  http.post<never, PartCreateDTO, PartRecords>(
+    "/api/parts/records",
     async ({ request }) => {
-      const body = await request.json();
+      const body = await request.json(); // PartCreateDTO
 
-      const created: BOMRecord = {
-        bomId: `BOM-${Date.now()}`,
+      const created: PartRecords = {
+        partId: `PART-${Date.now()}`,
         partName: body.partName.trim(),
         partCode: body.partCode.trim(),
         category: body.category,
@@ -85,57 +84,54 @@ export const bomHandlers = [
         createdDate: new Date().toISOString().slice(0, 10),
       };
 
-      bomRecords.unshift(created);
+      PartMockdata.unshift(created);
       return HttpResponse.json(created, { status: 201 });
     }
   ),
 
-  // 수정: bomId/createdDate 무시
-  http.patch<{ id: string }, BOMUpdateDTO, BOMRecord | { message: string }>(
-    "/api/bom/records/:id",
+  // 수정 (성공 PartRecords | 실패 {message})
+  http.patch<{ id: string }, PartUpdateDTO, PartRecords | { message: string }>(
+    "/api/parts/records/:id",
     async ({ params, request }) => {
-      const idx = bomRecords.findIndex((r) => r.bomId === params.id);
+      const idx = PartMockdata.findIndex((r) => r.partId === params.id);
       if (idx < 0) {
         return HttpResponse.json({ message: "Not found" }, { status: 404 });
       }
 
-      const patch = (await request.json()) as BOMUpdateDTO;
-      const runtimePatch = patch as Record<string, unknown>;
+      // runtime에서 들어온 partId 제거 (any 대신 Record 사용)
+      const patch = (await request.json()) as PartUpdateDTO;
+      const runtimePatch = patch as unknown as Record<string, unknown>;
+      delete runtimePatch.partId;
 
-      // 식별/시스템 필드 차단
-      delete runtimePatch.bomId;
-      delete runtimePatch.createdDate;
+      let safePatch: PartUpdateDTO = runtimePatch as PartUpdateDTO;
 
-      // materials 정제
-      if (Array.isArray(runtimePatch.materials)) {
-        runtimePatch.materials = (
-          runtimePatch.materials as Array<Record<string, unknown>>
-        ).map((m) => ({
-          materialCode: String(m.materialCode ?? "").trim(),
-          materialName: String(m.materialName ?? "").trim(),
-          materialQty: Number(m.materialQty ?? 0),
-        }));
+      if (safePatch.materials) {
+        safePatch = {
+          ...safePatch,
+          materials: safePatch.materials.map((m) => ({
+            materialCode: m.materialCode.trim(),
+            materialName: m.materialName.trim(),
+            materialQty: Number(m.materialQty),
+          })),
+        };
       }
 
-      bomRecords[idx] = {
-        ...bomRecords[idx],
-        ...(runtimePatch as BOMUpdateDTO),
-      };
-      return HttpResponse.json(bomRecords[idx]);
+      PartMockdata[idx] = { ...PartMockdata[idx], ...safePatch };
+      return HttpResponse.json(PartMockdata[idx]);
     }
   ),
 
-  // 삭제
+  // 삭제 (성공 {ok, removedId} | 실패 {message})
   http.delete<
     { id: string },
     never,
     { ok: boolean; removedId: string } | { message: string }
-  >("/api/bom/records/:id", ({ params }) => {
-    const idx = bomRecords.findIndex((r) => r.bomId === params.id);
+  >("/api/parts/records/:id", ({ params }) => {
+    const idx = PartMockdata.findIndex((r) => r.partId === params.id);
     if (idx < 0) {
       return HttpResponse.json({ message: "Not found" }, { status: 404 });
     }
-    const removed = bomRecords.splice(idx, 1)[0];
-    return HttpResponse.json({ ok: true, removedId: removed.bomId });
+    const removed = PartMockdata.splice(idx, 1)[0];
+    return HttpResponse.json({ ok: true, removedId: removed.partId });
   }),
 ];

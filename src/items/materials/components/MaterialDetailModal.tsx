@@ -1,0 +1,115 @@
+import { useEffect } from "react";
+import {
+  CloseButton,
+  DetailGrid,
+  DetailItem,
+  Header,
+  HeaderLeft,
+  Label,
+  ModalContainer,
+  Overlay,
+  Section,
+  SectionTitle,
+  Title,
+  Value,
+} from "../../../components/common/ModalPageLayout";
+import Button from "../../../components/common/Button";
+import type { MaterialRecords } from "../MaterialTypes";
+
+interface Props {
+  record: MaterialRecords | null;
+  isOpen: boolean;
+  onClose: () => void;
+  onEdit?: (record: MaterialRecords) => void;
+  onDelete?: (record: MaterialRecords) => void;
+  disableOverlayClose?: boolean;
+}
+
+const MaterialDetailModal = ({
+  record,
+  isOpen,
+  onClose,
+  onEdit,
+  onDelete,
+  disableOverlayClose = false,
+}: Props) => {
+  // ESC로 닫기
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || !record) return null;
+
+  const handleDelete = () => {
+    if (!onDelete) return;
+    const ok = window.confirm(
+      `정말 삭제하시겠어요?\nPart 번호: ${record.materialId}`
+    );
+    if (ok) onDelete(record);
+  };
+
+  return (
+    <Overlay onClick={disableOverlayClose ? undefined : onClose}>
+      <ModalContainer onClick={(e) => e.stopPropagation()} role="dialog">
+        <Header>
+          <HeaderLeft>
+            <Title>자재 상세 정보</Title>
+          </HeaderLeft>
+          <CloseButton onClick={onClose}>&times;</CloseButton>
+        </Header>
+
+        {/* 자재 정보 */}
+        <Section>
+          <SectionTitle>자재 정보</SectionTitle>
+          <DetailGrid>
+            <DetailItem>
+              <Label>자재 번호</Label>
+              <Value>{record.materialId}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>부품 코드</Label>
+              <Value>{record.materialCode}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>부품명</Label>
+              <Value>{record.materialName}</Value>
+            </DetailItem>
+          </DetailGrid>
+        </Section>
+
+        {/* 작성 정보 */}
+        <Section>
+          <SectionTitle>작성 정보</SectionTitle>
+          <DetailGrid>
+            <DetailItem>
+              <Label>작성일자</Label>
+              <Value>{record.createdDate}</Value>
+            </DetailItem>
+            {/* 필요 시 확장:
+            <DetailItem><Label>작성자</Label><Value>{record.createdBy}</Value></DetailItem>
+            */}
+          </DetailGrid>
+        </Section>
+
+        {/* 액션 */}
+        <Section
+          style={{ display: "flex", justifyContent: "center", gap: "0.75rem" }}
+        >
+          <Button onClick={() => onEdit?.(record)} title="수정">
+            수정
+          </Button>
+          <Button color="danger" onClick={handleDelete} title="삭제">
+            삭제
+          </Button>
+        </Section>
+      </ModalContainer>
+    </Overlay>
+  );
+};
+
+export default MaterialDetailModal;
