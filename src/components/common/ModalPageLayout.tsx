@@ -93,10 +93,12 @@ export const SectionTitle = styled.h4`
   padding-left: 0.5rem;
 `;
 
+type DetailGridProps = { $cols?: number };
+
 /* 상세 정보 그리드 */
-export const DetailGrid = styled.div`
+export const DetailGrid = styled.div<DetailGridProps>`
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(${({ $cols = 3 }) => $cols}, 1fr);
   gap: 0.8rem 1.5rem;
 `;
 

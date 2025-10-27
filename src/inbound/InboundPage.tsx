@@ -134,7 +134,7 @@ export default function InboundPage() {
                 onKeywordChange={setKeyword}
                 onSearch={onSearch}
                 onReset={onReset}
-                placeholder="입고번호 / 부품명 / 공급업체 검색"
+                placeholder="입고번호 / 입고대상 / 공급업체 검색"
               />
               <Button variant="icon" onClick={onSearch}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />

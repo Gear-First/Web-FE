@@ -24,8 +24,8 @@ export default function InboundTable({ rows }: { rows: InboundRecord[] }) {
         <thead>
           <tr>
             <Th>입고 번호</Th>
-            <Th>부품</Th>
-            <Th>입고 수량</Th>
+            <Th>입고 대상</Th>
+            <Th>공급업체</Th>
             <Th>접수 일시</Th>
             {/* <Th>입고 예정일</Th> */}
             <Th>입고 일시</Th>
@@ -45,8 +45,8 @@ export default function InboundTable({ rows }: { rows: InboundRecord[] }) {
               }}
             >
               <Td>{r.inboundId}</Td>
-              <Td>{r.partName}</Td>
-              <Td>{r.inboundQty}</Td>
+              <Td>{r.warehouse}</Td>
+              <Td>{r.vendor}</Td>
               <Td>{r.receivedDate}</Td>
               {/* <Td>{r.expectedInDate}</Td> */}
               <Td>{r.inDate}</Td>
