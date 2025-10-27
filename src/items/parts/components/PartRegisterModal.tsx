@@ -16,7 +16,7 @@ import Button from "../../../components/common/Button";
 import styled from "styled-components";
 import { Select } from "../../../components/common/PageLayout";
 import type { PartCate } from "../../../bom/BOMTypes";
-import MaterialsTable from "../../../bom/components/materialsTable";
+import MaterialsTable from "../../../bom/components/MaterialsTable";
 
 /** Part 등록/수정 DTO */
 export type PartDTO = {

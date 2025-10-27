@@ -1,19 +1,27 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Table, Td, Th } from "../../components/common/PageLayout";
 import BOMDetailModal from "./BOMDetailModal";
 import BOMRegisterModal from "./BOMRegisterModal";
-import type { BOMDTO, BOMRecord } from "../BOMTypes";
+
+import {
+  type BOMRecord,
+  type BOMFormModel,
+  type BOMUpdateDTO,
+  toBOMPatchPayload,
+} from "../BOMTypes";
 import { bomKeys, deleteBOM, updateBOM } from "../BOMApi";
 
 export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
   const [selectedRecord, setSelectedRecord] = useState<BOMRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // 수정(겸용) 등록 모달 상태
+  // 등록/수정 모달
   const [isRegOpen, setIsRegOpen] = useState(false);
-  const [regMode, setRegMode] = useState<"create" | "edit">("create");
-  const [initialForEdit, setInitialForEdit] = useState<BOMDTO | null>(null);
+  const [regMode, setRegMode] = useState<"create" | "edit">("edit"); // 이 테이블에선 수정만 사용
+  const [initialForEdit, setInitialForEdit] = useState<BOMFormModel | null>(
+    null
+  );
 
   const queryClient = useQueryClient();
 
@@ -24,14 +32,36 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
 
   const closeDetail = () => {
     setIsModalOpen(false);
-    // 다음 열림을 위해 선택값 정리
     setTimeout(() => setSelectedRecord(null), 0);
   };
 
+  const updateMut = useMutation<
+    BOMRecord,
+    Error,
+    { id: string; patch: BOMUpdateDTO }
+  >({
+    mutationFn: ({ id, patch }) => updateBOM(id, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bomKeys.records });
+      setIsRegOpen(false);
+    },
+  });
+
+  const deleteMut = useMutation<
+    { ok: boolean; removedId: string },
+    Error,
+    string
+  >({
+    mutationFn: (id) => deleteBOM(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: bomKeys.records });
+      closeDetail();
+    },
+  });
+
   const handleDelete = async () => {
-    await deleteBOM();
-    queryClient.invalidateQueries({ queryKey: bomKeys.records });
-    closeDetail();
+    if (!selectedRecord) return;
+    await deleteMut.mutateAsync(selectedRecord.bomId);
   };
 
   return (
@@ -68,7 +98,6 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
         onClose={closeDetail}
         onDelete={handleDelete}
         onEdit={(rec) => {
-          // 상세 닫고, 등록 모달을 edit 모드로 오픈
           closeDetail();
           setRegMode("edit");
           setInitialForEdit({
@@ -81,20 +110,24 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
               materialName: m.materialName,
               materialQty: m.materialQty,
             })),
+            createdDate: rec.createdDate, // 표시용
           });
           setIsRegOpen(true);
         }}
       />
 
-      {/* 등록/수정 겸용 모달 (여기서는 수정에만 사용) */}
+      {/* 등록/수정 모달 (여기서는 수정에만 사용) */}
       <BOMRegisterModal
         isOpen={isRegOpen}
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async () => {
-          await updateBOM();
-          queryClient.invalidateQueries({ queryKey: bomKeys.records });
+        onSubmit={async (payload: BOMFormModel) => {
+          if (!payload.bomId) return;
+          await updateMut.mutateAsync({
+            id: payload.bomId,
+            patch: toBOMPatchPayload(payload),
+          });
         }}
       />
     </>

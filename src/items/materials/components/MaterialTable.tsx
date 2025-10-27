@@ -1,28 +1,19 @@
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Table, Td, Th } from "../../../components/common/PageLayout";
-
-// import PartRegisterModal from "./PartRegisterModal";
-// import type { MaterialDTO } from "./PartRegisterModal";
-
-// import PartDetailModal from "./PartDetailModal";
-import type {
-  MaterialRecords,
-  MaterialCreateDTO,
-  MaterialUpdateDTO,
-  MaterialDTO,
-} from "../MaterialTypes";
 import {
-  materialKeys,
-  deleteMaterial,
-  createMaterial,
-  updateMaterial,
-} from "../MaterialApi";
+  type MaterialRecord,
+  type MaterialDTO,
+  type MaterialFormModel,
+  toMaterialPatchPayload,
+  type MaterialUpdateDTO,
+} from "../MaterialTypes";
+import { materialKeys, deleteMaterial, updateMaterial } from "../MaterialApi";
 import MaterialDetailModal from "./MaterialDetailModal";
 import MaterialRegisterModal from "./MaterialRegisterModal";
 
-export default function MaterialTable({ rows }: { rows: MaterialRecords[] }) {
-  const [selectedRecord, setSelectedRecord] = useState<MaterialRecords | null>(
+export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
+  const [selectedRecord, setSelectedRecord] = useState<MaterialRecord | null>(
     null
   );
   const [isDetailOpen, setIsDetailOpen] = useState(false);
@@ -35,7 +26,7 @@ export default function MaterialTable({ rows }: { rows: MaterialRecords[] }) {
 
   const queryClient = useQueryClient();
 
-  const openDetail = (rec: MaterialRecords) => {
+  const openDetail = (rec: MaterialRecord) => {
     setSelectedRecord(rec);
     setIsDetailOpen(true);
   };
@@ -44,23 +35,24 @@ export default function MaterialTable({ rows }: { rows: MaterialRecords[] }) {
     setTimeout(() => setSelectedRecord(null), 0);
   };
 
+  const updateMut = useMutation<
+    MaterialRecord,
+    Error,
+    { id: string; patch: MaterialUpdateDTO }
+  >({
+    mutationFn: ({ id, patch }) => updateMaterial(id, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: materialKeys.records });
+      setIsRegOpen(false);
+    },
+  });
+
   const handleDelete = async () => {
     if (!selectedRecord) return;
     await deleteMaterial(selectedRecord.materialId);
     await queryClient.invalidateQueries({ queryKey: materialKeys.records });
     closeDetail();
   };
-
-  // DTO -> API payload 변환기
-  const toCreatePayload = (dto: MaterialDTO): MaterialCreateDTO => ({
-    materialName: dto.materialName.trim(),
-    materialCode: dto.materialCode.trim(),
-  });
-
-  const toPatchPayload = (dto: MaterialDTO): MaterialUpdateDTO => ({
-    materialName: dto.materialName.trim(),
-    materialCode: dto.materialCode.trim(),
-  });
 
   return (
     <>
@@ -113,16 +105,12 @@ export default function MaterialTable({ rows }: { rows: MaterialRecords[] }) {
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async (payload) => {
-          if (regMode === "edit" && payload.materialId) {
-            await updateMaterial(payload.materialId, toPatchPayload(payload));
-          } else {
-            await createMaterial(toCreatePayload(payload));
-          }
-          await queryClient.invalidateQueries({
-            queryKey: materialKeys.records,
+        onSubmit={async (payload: MaterialFormModel) => {
+          if (!payload.materialId) return;
+          await updateMut.mutateAsync({
+            id: payload.materialId,
+            patch: toMaterialPatchPayload(payload),
           });
-          setIsRegOpen(false);
         }}
       />
     </>

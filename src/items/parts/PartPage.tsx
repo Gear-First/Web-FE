@@ -23,10 +23,13 @@ import {
   partKeys,
   fetchPartRecords,
   createPart,
-  updatePart,
   type ListResponse,
 } from "./PartApi";
-import type { PartRecords, PartCreateDTO, PartUpdateDTO } from "./PartTypes";
+import {
+  type PartRecords,
+  type PartCreateDTO,
+  toPartCreatePayload,
+} from "./PartTypes";
 
 import Button from "../../components/common/Button";
 import resetIcon from "../../assets/reset.svg";
@@ -62,30 +65,6 @@ const CATE_OPTIONS: CateFilter[] = [
   "카테고리 C",
   "카테고리 D",
 ];
-
-/** DTO → 생성 payload (서버에서 partId/createdDate 채움) */
-const toCreatePayload = (dto: PartDTO): PartCreateDTO => ({
-  partName: dto.partName.trim(),
-  partCode: dto.partCode.trim(),
-  category: dto.category,
-  materials: dto.materials.map((m) => ({
-    materialCode: m.materialCode.trim(),
-    materialName: m.materialName.trim(),
-    materialQty: Number(m.materialQty),
-  })),
-});
-
-/** DTO → 부분수정 payload */
-const toPatchPayload = (dto: PartDTO): PartUpdateDTO => ({
-  partName: dto.partName.trim(),
-  partCode: dto.partCode.trim(),
-  category: dto.category,
-  materials: dto.materials.map((m) => ({
-    materialCode: m.materialCode.trim(),
-    materialName: m.materialName.trim(),
-    materialQty: Number(m.materialQty),
-  })),
-});
 
 export default function PartPage() {
   // 필터 상태
@@ -180,18 +159,6 @@ export default function PartPage() {
   // 생성/수정 뮤테이션 (정확한 타입 지정)
   const createMut = useMutation<PartRecords, Error, PartCreateDTO>({
     mutationFn: createPart,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: partKeys.records });
-      setIsRegOpen(false);
-    },
-  });
-
-  const updateMut = useMutation<
-    PartRecords,
-    Error,
-    { id: string; patch: PartUpdateDTO }
-  >({
-    mutationFn: ({ id, patch }) => updatePart(id, patch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: partKeys.records });
       setIsRegOpen(false);
@@ -311,12 +278,7 @@ export default function PartPage() {
         initial={initialForEdit}
         onSubmit={async (payload: PartDTO) => {
           if (regMode === "create") {
-            await createMut.mutateAsync(toCreatePayload(payload));
-          } else if (initialForEdit?.partId) {
-            await updateMut.mutateAsync({
-              id: initialForEdit.partId,
-              patch: toPatchPayload(payload),
-            });
+            await createMut.mutateAsync(toPartCreatePayload(payload));
           }
         }}
       />

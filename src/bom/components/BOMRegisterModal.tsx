@@ -16,7 +16,7 @@ import Button from "../../components/common/Button";
 import styled from "styled-components";
 import { Select } from "../../components/common/PageLayout";
 import type { BOMDTO, PartCate } from "../BOMTypes";
-import MaterialsTable from "./materialsTable";
+import MaterialsTable from "./MaterialsTable";
 
 interface Props {
   isOpen: boolean;

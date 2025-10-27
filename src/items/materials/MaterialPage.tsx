@@ -8,10 +8,10 @@ import {
   SectionHeader,
   SectionTitle,
 } from "../../components/common/PageLayout";
-import type {
-  MaterialCreateDTO,
-  MaterialRecords,
-  MaterialUpdateDTO,
+import {
+  toMaterialCreatePayload,
+  type MaterialCreateDTO,
+  type MaterialRecord,
 } from "./MaterialTypes";
 import {
   useMutation,
@@ -24,7 +24,6 @@ import {
   fetchMaterialRecords,
   type ListResponse,
   materialKeys,
-  updateMaterial,
 } from "./MaterialApi";
 import SearchBox from "../../components/common/SearchBox";
 import searchIcon from "../../assets/search.svg";
@@ -44,16 +43,6 @@ type AppliedFilters = {
   startDate: string | null;
   endDate: string | null;
 };
-
-const toCreatePayload = (dto: MaterialDTO): MaterialCreateDTO => ({
-  materialName: dto.materialName.trim(),
-  materialCode: dto.materialCode.trim(),
-});
-
-const toPatchPayload = (dto: MaterialDTO): MaterialUpdateDTO => ({
-  materialName: dto.materialName.trim(),
-  materialCode: dto.materialCode.trim(),
-});
 
 export default function MaterialPage() {
   const [keyword, setKeyword] = useState("");
@@ -97,16 +86,15 @@ export default function MaterialPage() {
     pageSize,
   };
 
-  const { data, fetchStatus } = useQuery<
-    ListResponse<MaterialRecords[]>,
-    Error
-  >({
-    queryKey,
-    queryFn: () => fetchMaterialRecords(params),
-    staleTime: 5 * 60 * 1000,
-    placeholderData: (prev) => prev,
-    gcTime: 30 * 60 * 1000,
-  });
+  const { data, fetchStatus } = useQuery<ListResponse<MaterialRecord[]>, Error>(
+    {
+      queryKey,
+      queryFn: () => fetchMaterialRecords(params),
+      staleTime: 5 * 60 * 1000,
+      placeholderData: (prev) => prev,
+      gcTime: 30 * 60 * 1000,
+    }
+  );
 
   const isFetching = fetchStatus === "fetching";
   const records = data?.data ?? [];
@@ -135,20 +123,8 @@ export default function MaterialPage() {
     setPage(1);
   }, []);
 
-  const createMut = useMutation<MaterialRecords, Error, MaterialCreateDTO>({
+  const createMut = useMutation<MaterialRecord, Error, MaterialCreateDTO>({
     mutationFn: createMaterial,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: materialKeys.records });
-      setIsRegOpen(false);
-    },
-  });
-
-  const updateMut = useMutation<
-    MaterialRecords,
-    Error,
-    { id: string; patch: MaterialUpdateDTO }
-  >({
-    mutationFn: ({ id, patch }) => updateMaterial(id, patch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: materialKeys.records });
       setIsRegOpen(false);
@@ -244,12 +220,7 @@ export default function MaterialPage() {
         initial={initialForEdit}
         onSubmit={async (payload: MaterialDTO) => {
           if (regMode === "create") {
-            await createMut.mutateAsync(toCreatePayload(payload));
-          } else if (initialForEdit?.materialId) {
-            await updateMut.mutateAsync({
-              id: initialForEdit.materialId,
-              patch: toPatchPayload(payload),
-            });
+            await createMut.mutateAsync(toMaterialCreatePayload(payload));
           }
         }}
       />

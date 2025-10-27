@@ -1,4 +1,4 @@
-export interface MaterialRecords {
+export interface MaterialRecord {
   materialId: string;
   materialName: string;
   materialCode: string;

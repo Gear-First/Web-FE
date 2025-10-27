@@ -1,13 +1,18 @@
+// src/features/part/components/PartTable.tsx
 import { useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Table, Td, Th } from "../../../components/common/PageLayout";
 
 import PartRegisterModal from "./PartRegisterModal";
-import type { PartDTO } from "./PartRegisterModal";
-
 import PartDetailModal from "./PartDetailModal";
-import type { PartRecords, PartCreateDTO, PartUpdateDTO } from "../PartTypes";
-import { partKeys, deletePart, createPart, updatePart } from "../PartApi";
+
+import {
+  toPartPatchPayload,
+  type PartFormModel,
+  type PartRecords,
+  type PartUpdateDTO,
+} from "../PartTypes";
+import { partKeys, deletePart, updatePart } from "../PartApi";
 
 export default function PartTable({ rows }: { rows: PartRecords[] }) {
   const [selectedRecord, setSelectedRecord] = useState<PartRecords | null>(
@@ -18,7 +23,9 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
   // 등록/수정 겸용 모달
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
-  const [initialForEdit, setInitialForEdit] = useState<PartDTO | null>(null);
+  const [initialForEdit, setInitialForEdit] = useState<PartFormModel | null>(
+    null
+  );
 
   const queryClient = useQueryClient();
 
@@ -31,35 +38,34 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
     setTimeout(() => setSelectedRecord(null), 0);
   };
 
+  const updateMut = useMutation<
+    PartRecords,
+    Error,
+    { id: string; patch: PartUpdateDTO }
+  >({
+    mutationFn: ({ id, patch }) => updatePart(id, patch),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: partKeys.records });
+      setIsRegOpen(false);
+    },
+  });
+
+  const deleteMut = useMutation<
+    { ok: boolean; removedId: string },
+    Error,
+    string
+  >({
+    mutationFn: (id) => deletePart(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: partKeys.records });
+      closeDetail();
+    },
+  });
+
   const handleDelete = async () => {
     if (!selectedRecord) return;
-    await deletePart(selectedRecord.partId);
-    await queryClient.invalidateQueries({ queryKey: partKeys.records });
-    closeDetail();
+    await deleteMut.mutateAsync(selectedRecord.partId);
   };
-
-  // DTO -> API payload 변환기
-  const toCreatePayload = (dto: PartDTO): PartCreateDTO => ({
-    partName: dto.partName.trim(),
-    partCode: dto.partCode.trim(),
-    category: dto.category,
-    materials: dto.materials.map((m) => ({
-      materialCode: m.materialCode.trim(),
-      materialName: m.materialName.trim(),
-      materialQty: Number(m.materialQty),
-    })),
-  });
-
-  const toPatchPayload = (dto: PartDTO): PartUpdateDTO => ({
-    partName: dto.partName.trim(),
-    partCode: dto.partCode.trim(),
-    category: dto.category,
-    materials: dto.materials.map((m) => ({
-      materialCode: m.materialCode.trim(),
-      materialName: m.materialName.trim(),
-      materialQty: Number(m.materialQty),
-    })),
-  });
 
   return (
     <>
@@ -120,14 +126,12 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async (payload) => {
-          if (regMode === "edit" && payload.partId) {
-            await updatePart(payload.partId, toPatchPayload(payload));
-          } else {
-            await createPart(toCreatePayload(payload));
-          }
-          await queryClient.invalidateQueries({ queryKey: partKeys.records });
-          setIsRegOpen(false);
+        onSubmit={async (payload: PartFormModel) => {
+          if (!payload.partId) return;
+          await updateMut.mutateAsync({
+            id: payload.partId,
+            patch: toPartPatchPayload(payload),
+          });
         }}
       />
     </>
