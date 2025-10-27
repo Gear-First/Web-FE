@@ -1,12 +1,8 @@
-<<<<<<< Updated upstream
 import type {
   InboundPartItem,
   InboundRecord,
   InboundStatus,
 } from "../InboundTypes";
-=======
-import type { InboundRecord, InboundStatus } from "../InboundTypes";
->>>>>>> Stashed changes
 import { createRNG, dateAdd } from "../../mocks/shared/utils";
 
 /**
@@ -50,11 +46,7 @@ export function generateInboundMock(
     "공급처H",
   ];
 
-<<<<<<< Updated upstream
   const partCodes = [
-=======
-  const partPrefixes = [
->>>>>>> Stashed changes
     "MAT-WIR",
     "MAT-SCR",
     "MAT-PLT",
@@ -77,7 +69,6 @@ export function generateInboundMock(
 
   const baseDate = new Date("2025-09-20");
 
-<<<<<<< Updated upstream
   const makePart = (): InboundPartItem => {
     const prefix = partCodes[Math.floor(rng() * partCodes.length)];
     const name = partNames[Math.floor(rng() * partNames.length)];
@@ -94,10 +85,6 @@ export function generateInboundMock(
 
   return Array.from({ length: count }).map((_, i) => {
     const prefix = partCodes[Math.floor(rng() * partCodes.length)];
-=======
-  return Array.from({ length: count }).map((_, i) => {
-    const prefix = partPrefixes[Math.floor(rng() * partPrefixes.length)];
->>>>>>> Stashed changes
     const partName = partNames[Math.floor(rng() * partNames.length)];
     const partCode = `${prefix}-${String(Math.floor(rng() * 900 + 100))}`;
 
@@ -115,7 +102,6 @@ export function generateInboundMock(
     ); // 예정일
     const inDate = dateAdd(new Date(receivedDate), 1 + Math.floor(rng() * 3)); // 실제 입고일
 
-<<<<<<< Updated upstream
     const partQty = 1 + Math.floor(rng() * 4);
     const parts = Array.from({ length: partQty }, makePart);
 
@@ -137,11 +123,6 @@ export function generateInboundMock(
       ? "보류"
       : "합격";
 
-=======
-    const inboundQty = Math.floor(rng() * 1000) + 50;
-    const warehouse = warehouses[Math.floor(rng() * warehouses.length)];
-    const status = statuses[Math.floor(rng() * statuses.length)];
->>>>>>> Stashed changes
     const inspector = inspectors[Math.floor(rng() * inspectors.length)];
     const vendor = vendors[Math.floor(rng() * vendors.length)];
 
@@ -161,12 +142,9 @@ export function generateInboundMock(
       receivedDate,
       expectedInDate,
       inDate,
-<<<<<<< Updated upstream
       parts,
       partQty,
       partStatus,
-=======
->>>>>>> Stashed changes
       warehouse,
       status,
       inspector,
