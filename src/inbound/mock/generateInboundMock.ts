@@ -85,7 +85,6 @@ export function generateInboundMock(
 
   return Array.from({ length: count }).map((_, i) => {
     const prefix = partCodes[Math.floor(rng() * partCodes.length)];
-
     const partName = partNames[Math.floor(rng() * partNames.length)];
     const partCode = `${prefix}-${String(Math.floor(rng() * 900 + 100))}`;
 
