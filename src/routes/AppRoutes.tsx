@@ -4,6 +4,7 @@ import OutboundPage from "../outbound/OutboundPage";
 import BOMPage from "../bom/BOMPage";
 import RequestPage from "../request/RequestPage";
 import InventoryPage from "../inventory/InventoryPage";
+import PropertyPage from "../property/PropertyPage";
 
 const AppRoutes = () => {
   return (
@@ -12,6 +13,7 @@ const AppRoutes = () => {
       <Route path="/mrp" element={<BOMPage />} />
       <Route path="/request" element={<RequestPage />} />
       <Route path="/inventory" element={<InventoryPage />} />
+      <Route path="/property" element={<PropertyPage />} />
       <Route path="/inbound" element={<InboundPage />} />
       <Route path="/outbound" element={<OutboundPage />} />
       <Route path="/supplierOrder" element={<OutboundPage />} />
