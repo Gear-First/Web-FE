@@ -3,7 +3,7 @@ import InboundPage from "../inbound/InboundPage";
 import OutboundPage from "../outbound/OutboundPage";
 import BOMPage from "../bom/BOMPage";
 import RequestPage from "../request/RequestPage";
-import InventoryPage from "../inventory/InventoryPage";
+import PartPage from "../part/PartPage";
 import PropertyPage from "../property/PropertyPage";
 
 const AppRoutes = () => {
@@ -12,7 +12,7 @@ const AppRoutes = () => {
       <Route path="/" element={<Navigate to="/outbound" replace />} />
       <Route path="/mrp" element={<BOMPage />} />
       <Route path="/request" element={<RequestPage />} />
-      <Route path="/inventory" element={<InventoryPage />} />
+      <Route path="/part" element={<PartPage />} />
       <Route path="/property" element={<PropertyPage />} />
       <Route path="/inbound" element={<InboundPage />} />
       <Route path="/outbound" element={<OutboundPage />} />
