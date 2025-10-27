@@ -54,8 +54,8 @@ export default function OutboundPage() {
         status === "ALL" ? rows : rows.filter((r) => r.status === status);
       const byKeyword = applied.keyword.trim()
         ? byCate.filter((r) => {
-            const itemText = r.inventoryItems
-              .map((item) => `${item.inventoryCode} ${item.inventoryName}`)
+            const itemText = r.partItems
+              .map((item) => `${item.partCode} ${item.partName}`)
               .join(" ")
               .toLowerCase();
 

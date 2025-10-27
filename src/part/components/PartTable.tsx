@@ -1,7 +1,7 @@
 import { Table, Th, Td } from "../../components/common/PageLayout";
-import type { InventoryRecord } from "../InventoryTypes";
+import type { PartRecord } from "../PartTypes";
 
-export default function InventoryTable({ rows }: { rows: InventoryRecord[] }) {
+export default function PartTable({ rows }: { rows: PartRecord[] }) {
   return (
     <>
       <Table>
@@ -17,9 +17,9 @@ export default function InventoryTable({ rows }: { rows: InventoryRecord[] }) {
           {rows.map((r) => (
             <tr key={r.id}>
               <Td>{r.warehouseId}</Td>
-              <Td>{r.inventoryCode}</Td>
-              <Td>{r.inventoryName}</Td>
-              <Td>{r.inventoryQuantity.toLocaleString()}</Td>
+              <Td>{r.partCode}</Td>
+              <Td>{r.partName}</Td>
+              <Td>{r.partQuantity.toLocaleString()}</Td>
             </tr>
           ))}
         </tbody>

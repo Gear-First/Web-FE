@@ -1,4 +1,4 @@
-import type { InventoryRecord } from "../InventoryTypes";
+import type { PropertyRecord } from "../PropertyTypes";
 
 /** 간단한 LCG(Linear Congruential Generator) — 재현 가능한 난수 */
 function createRNG(seed = 123456789) {
@@ -68,12 +68,12 @@ const PART_POOL = [
 ];
 
 /** id 필드 포함 */
-export function generateInventoryMock(
+export function generatePropertyMock(
   count: number,
   seed = 20251026
-): InventoryRecord[] {
+): PropertyRecord[] {
   const rng = createRNG(seed);
-  const rows: InventoryRecord[] = [];
+  const rows: PropertyRecord[] = [];
 
   // for문 그대로, seen 제거
   for (let i = 0; i < count; i++) {
@@ -82,9 +82,10 @@ export function generateInventoryMock(
     rows.push({
       id: crypto.randomUUID(),
       warehouseId: warehouse,
-      inventoryCode: part.code,
-      inventoryName: part.name,
-      inventoryQuantity: rng.int(0, 500),
+      partCode: part.code,
+      partName: part.name,
+      partQuantity: rng.int(0, 500),
+      partPrice: rng.int(1000, 10000),
     });
   }
 

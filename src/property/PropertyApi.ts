@@ -1,11 +1,11 @@
-import type { InventoryRecord } from "./InventoryTypes";
+import type { PropertyRecord } from "./PropertyTypes";
 
 // --- query keys ---
-export const inventoryKeys = {
-  records: ["inventory", "records"] as const,
+export const propertyKeys = {
+  records: ["property", "records"] as const,
 };
 
-export type InventoryQueryParams = {
+export type PropertyQueryParams = {
   warehouse?: string;
   keyword?: string; // 부품코드/부품명
   page: number;
@@ -18,7 +18,7 @@ export type ListResponse<T> = {
   facets?: { warehouses?: string[] };
 };
 
-export async function fetchInventoryRecords(params: InventoryQueryParams) {
+export async function fetchPropertyRecords(params: PropertyQueryParams) {
   const qs = new URLSearchParams({
     ...(params.warehouse && params.warehouse !== "ALL"
       ? { warehouse: params.warehouse }
@@ -28,7 +28,7 @@ export async function fetchInventoryRecords(params: InventoryQueryParams) {
     pageSize: String(params.pageSize),
   });
 
-  const res = await fetch(`/api/inventory/records?${qs.toString()}`);
-  if (!res.ok) throw new Error("Failed to fetch inventory records");
-  return (await res.json()) as ListResponse<InventoryRecord[]>;
+  const res = await fetch(`/api/property/records?${qs.toString()}`);
+  if (!res.ok) throw new Error("Failed to fetch property records");
+  return (await res.json()) as ListResponse<PropertyRecord[]>;
 }

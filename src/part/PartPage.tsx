@@ -10,14 +10,14 @@ import {
 } from "../components/common/PageLayout";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import InventoryTable from "./components/InventoryTable";
+import PartTable from "./components/PartTable";
 import {
-  fetchInventoryRecords,
-  inventoryKeys,
-  type InventoryQueryParams,
+  fetchPartRecords,
+  partKeys,
+  type PartQueryParams,
   type ListResponse,
-} from "./InventoryApi";
-import type { InventoryRecord } from "./InventoryTypes";
+} from "./PartApi";
+import type { PartRecord } from "./PartTypes";
 import SearchBox from "../components/common/SearchBox";
 import Button from "../components/common/Button";
 import resetIcon from "../assets/reset.svg";
@@ -26,7 +26,7 @@ import Pagination from "../components/common/Pagination";
 
 type WarehouseFilter = "ALL" | string;
 
-export default function InventoryPage() {
+export default function PartPage() {
   // 입력 상태
   const [warehouse, setWarehouse] = useState<WarehouseFilter>("ALL");
   const [keyword, setKeyword] = useState("");
@@ -39,7 +39,7 @@ export default function InventoryPage() {
   const [pageSize, setPageSize] = useState(10);
 
   // 서버(=MSW)로 위임할 파라미터
-  const params: InventoryQueryParams = {
+  const params: PartQueryParams = {
     warehouse: warehouse !== "ALL" ? warehouse : undefined,
     keyword: appliedKeyword || undefined,
     page,
@@ -47,11 +47,11 @@ export default function InventoryPage() {
   };
 
   const { data, fetchStatus, isLoading } = useQuery<
-    ListResponse<InventoryRecord[]>,
+    ListResponse<PartRecord[]>,
     Error
   >({
-    queryKey: [...inventoryKeys.records, params],
-    queryFn: () => fetchInventoryRecords(params),
+    queryKey: [...partKeys.records, params],
+    queryFn: () => fetchPartRecords(params),
     staleTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev, // 페이지 전환시 화면 유지
   });
@@ -122,7 +122,7 @@ export default function InventoryPage() {
             </FilterGroup>
           </SectionHeader>
 
-          <InventoryTable rows={items} />
+          <PartTable rows={items} />
 
           <div
             style={{
