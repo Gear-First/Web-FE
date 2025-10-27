@@ -1,4 +1,4 @@
-import type { PartRecord } from "../PartTypes";
+import type { PartRecord, PartStatus } from "../PartTypes";
 
 /** 간단한 LCG(Linear Congruential Generator) — 재현 가능한 난수 */
 function createRNG(seed = 123456789) {
@@ -76,12 +76,22 @@ export function generatePartMock(count: number, seed = 20251026): PartRecord[] {
   for (let i = 0; i < count; i++) {
     const part = rng.pick(PART_POOL);
     const warehouse = rng.pick(WAREHOUSES);
+    const partQuantity = rng.int(1, 3000);
+    const safetyStock = Math.round(rng.int(1, 20)) * 100;
+
+    let status: PartStatus;
+    if (partQuantity < safetyStock) status = "부족";
+    else if (partQuantity > safetyStock * 1.2) status = "여유";
+    else status = "적정";
+
     rows.push({
       id: crypto.randomUUID(),
       warehouseId: warehouse,
       partCode: part.code,
       partName: part.name,
-      partQuantity: rng.int(0, 500),
+      partQuantity,
+      safetyStock,
+      status,
     });
   }
 
