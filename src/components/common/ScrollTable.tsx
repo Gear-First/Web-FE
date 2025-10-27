@@ -8,7 +8,6 @@ export const TableScroll = styled.div<{ $maxHeight?: number | string }>`
   overflow: auto;
   border: 1px solid #edf1f5;
 
-  /* 스크롤바 커스텀 */
   &::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -19,7 +18,7 @@ export const TableScroll = styled.div<{ $maxHeight?: number | string }>`
   }
 `;
 
-// 스티키 테이블 (열·행 크기 제어 가능)
+// 스티키 테이블 (열·행 크기, 세로선 등 제어 가능)
 export const StickyTable = styled(Table)<{
   $stickyTop?: number;
   $headerBg?: string;
@@ -27,9 +26,12 @@ export const StickyTable = styled(Table)<{
   $colWidths?: string[];
   $rowHeight?: number | string;
   $compact?: boolean;
+  $verticalLines?: boolean;
+  $sticky?: boolean;
 }>`
   table-layout: fixed;
   width: 100%;
+  border-collapse: collapse;
 
   thead th {
     position: sticky;
@@ -46,6 +48,29 @@ export const StickyTable = styled(Table)<{
       }
     `}
 
+  th, td {
+    border-bottom: 1px solid #f0f0f0;
+  }
+
+  ${({ $verticalLines = true }) =>
+    $verticalLines
+      ? css`
+          th,
+          td {
+            border-right: 1px solid #e5e7eb;
+          }
+          th:last-child,
+          td:last-child {
+            // border-right: none;
+          }
+        `
+      : css`
+          th,
+          td {
+            border-right: none;
+          }
+        `}
+
   ${({ $colWidths }) =>
     $colWidths &&
     $colWidths
@@ -58,10 +83,10 @@ export const StickyTable = styled(Table)<{
         `
       )
       .reduce(
-        (acc, cur) => css`
-          ${acc}
-          ${cur}
-        `
+        (acc, cur) =>
+          css`
+            ${acc}${cur}
+          `
       )}
 
   ${({ $rowHeight }) =>
@@ -75,6 +100,7 @@ export const StickyTable = styled(Table)<{
         line-height: 1.4;
       }
     `}
+
   ${({ $compact }) =>
     $compact &&
     css`
@@ -90,5 +116,6 @@ export const StickyTable = styled(Table)<{
       }
     `}
 `;
+
 // 편의용 래퍼 (선택)
 export const ScrollStickyTable = styled(StickyTable)``;

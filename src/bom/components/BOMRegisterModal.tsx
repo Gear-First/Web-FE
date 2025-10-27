@@ -14,13 +14,9 @@ import {
 } from "../../components/common/ModalPageLayout";
 import Button from "../../components/common/Button";
 import styled from "styled-components";
-import {
-  Table,
-  Td,
-  Th,
-  Select as PLSelect,
-} from "../../components/common/PageLayout";
+import { Select } from "../../components/common/PageLayout";
 import type { BOMDTO, PartCate } from "../BOMTypes";
+import MaterialsTable from "./materialsTable";
 
 interface Props {
   isOpen: boolean;
@@ -204,7 +200,7 @@ const BOMRegisterModal = ({
 
             <DetailItem>
               <Label>부품 카테고리</Label>
-              <PLSelect
+              <Select
                 style={{ width: "50%" }}
                 value={partCate}
                 onChange={(e) => setPartCate(e.target.value as PartCate)}
@@ -214,7 +210,7 @@ const BOMRegisterModal = ({
                     {c}
                   </option>
                 ))}
-              </PLSelect>
+              </Select>
             </DetailItem>
           </DetailGrid>
         </Section>
@@ -228,66 +224,13 @@ const BOMRegisterModal = ({
             </Button>
           </HeaderRow>
 
-          <MaterialsScroll ref={listRef}>
-            <StickyTable>
-              <thead>
-                <tr>
-                  <Th style={{ width: "30%" }}>자재 코드</Th>
-                  <Th>자재명</Th>
-                  <Th style={{ width: "14%" }}>자재 수량</Th>
-                  <Th style={{ width: 64 }} />
-                </tr>
-              </thead>
-              <tbody>
-                {materials.map((m) => (
-                  <tr key={m.id}>
-                    <Td>
-                      <CellInput
-                        placeholder="예) MAT-BLD-130"
-                        value={m.materialCode}
-                        onChange={(e) =>
-                          updateMaterial(m.id, "materialCode", e.target.value)
-                        }
-                      />
-                    </Td>
-                    <Td>
-                      <CellInput
-                        placeholder="예) 팬 블레이드"
-                        value={m.materialName}
-                        onChange={(e) =>
-                          updateMaterial(m.id, "materialName", e.target.value)
-                        }
-                      />
-                    </Td>
-                    <Td>
-                      <CellNumberInput
-                        min={1}
-                        placeholder="1"
-                        value={m.materialQty}
-                        onChange={(e) =>
-                          updateMaterial(
-                            m.id,
-                            "materialQty",
-                            e.target.value === "" ? "" : Number(e.target.value)
-                          )
-                        }
-                      />
-                    </Td>
-                    <Td style={{ textAlign: "right" }}>
-                      <SmallGhostBtn
-                        type="button"
-                        onClick={() => removeMaterial(m.id)}
-                        aria-label="행 삭제"
-                        title="삭제"
-                      >
-                        ×
-                      </SmallGhostBtn>
-                    </Td>
-                  </tr>
-                ))}
-              </tbody>
-            </StickyTable>
-          </MaterialsScroll>
+          <MaterialsTable
+            rows={materials}
+            onChange={updateMaterial}
+            onRemove={removeMaterial}
+            maxHeight={220} // 필요 시 조절
+            compact // 컴팩트 모드 on
+          />
         </Section>
 
         {/* 액션 */}
@@ -316,7 +259,7 @@ const HeaderRow = styled.div`
   margin-bottom: 10px;
 `;
 
-//모달 상단 인풋
+// 모달 상단 인풋
 const Input = styled.input`
   width: 50%;
   border: 1px solid #e5e7eb;
@@ -324,65 +267,11 @@ const Input = styled.input`
   padding: 10px 12px;
   font-size: 0.92rem;
   background: #fff;
-  transition: box-shadow 0.12s, border-color 0.12s;
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.28);
-    border-color: #93c5fd;
-  }
-  &[aria-invalid="true"] {
-    border-color: #ef4444;
-  }
 `;
-
-// 자재 테이블 전용 인풋(셀 폭 100%)
-const CellInput = styled(Input)`
-  width: 50%;
-`;
-const CellNumberInput = styled(CellInput).attrs({ type: "number" })``;
 
 // 하단 액션
 const Actions = styled.div`
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-`;
-
-// 삭제 버튼
-const SmallGhostBtn = styled.button`
-  width: 28px;
-  height: 28px;
-  border: 1px solid transparent;
-  background: transparent;
-  border-radius: 6px;
-  font-size: 18px;
-  line-height: 1;
-  cursor: pointer;
-  color: #6b7280;
-  transition: background 0.12s, color 0.12s;
-  &:hover {
-    background: #f3f4f6;
-    color: #111827;
-  }
-`;
-
-// 자재 테이블
-const MaterialsScroll = styled.div`
-  max-height: 360px;
-  overflow: auto;
-  border: 1px solid #edf1f5;
-  border-radius: 10px;
-`;
-
-// sticky thead
-const StickyTable = styled(Table)`
-  thead th {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-    background: #fafbfc;
-  }
-  tbody tr:nth-child(even) td {
-    background: #fcfdff;
-  }
 `;

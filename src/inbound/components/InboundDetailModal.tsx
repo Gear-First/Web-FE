@@ -110,7 +110,7 @@ const InboundDetailModal = ({ record, isOpen, onClose }: Props) => {
               $headerBg="#fafbfc"
               $zebra
               $colWidths={["20%", "20%", "15%", "15%"]}
-              $compact
+              // $compact
             >
               <thead>
                 <tr>
