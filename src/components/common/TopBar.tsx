@@ -51,10 +51,11 @@ const TopBar: React.FC = () => {
     { id: 0, name: "요청관리", path: "/request" },
     { id: 1, name: "자재 소요량 산출 및 계획", path: "/mrp" },
     { id: 2, name: "구매 활동", path: "/supplierOrder" },
-    { id: 3, name: "재고 관리", path: "/part" },
-    { id: 4, name: "자산 관리", path: "/property" },
-    { id: 5, name: "입고 관리", path: "/inbound" },
-    { id: 6, name: "출고 관리", path: "/outbound" },
+    { id: 4, name: "품목 관리", path: "/items" },
+    { id: 5, name: "재고 관리", path: "/part" },
+    { id: 6, name: "자산 관리", path: "/property" },
+    { id: 7, name: "입고 관리", path: "/inbound" },
+    { id: 8, name: "출고 관리", path: "/outbound" },
   ];
 
   return (
