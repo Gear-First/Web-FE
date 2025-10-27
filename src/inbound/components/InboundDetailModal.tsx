@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { StatusBadge } from "../../components/common/PageLayout";
+import { StatusBadge, Td, Th } from "../../components/common/PageLayout";
 import {
   CloseButton,
   DetailGrid,
@@ -16,6 +16,7 @@ import {
   Value,
 } from "../../components/common/ModalPageLayout";
 import type { InboundRecord, InboundStatus } from "../InboundTypes";
+import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
 
 interface Props {
   record: InboundRecord | null;
@@ -60,20 +61,6 @@ const InboundDetailModal = ({ record, isOpen, onClose }: Props) => {
         </Header>
 
         <Section>
-          <SectionTitle>부품 정보</SectionTitle>
-          <DetailGrid>
-            <DetailItem>
-              <Label>부품명</Label>
-              <Value>{record.partName}</Value>
-            </DetailItem>
-            <DetailItem>
-              <Label>부품코드</Label>
-              <Value>{record.partCode}</Value>
-            </DetailItem>
-          </DetailGrid>
-        </Section>
-
-        <Section>
           <SectionTitle>입고 정보</SectionTitle>
           <DetailGrid>
             <DetailItem>
@@ -112,6 +99,46 @@ const InboundDetailModal = ({ record, isOpen, onClose }: Props) => {
               <Value>{record.vendor}</Value>
             </DetailItem>
           </DetailGrid>
+        </Section>
+
+        <Section>
+          <SectionTitle>부품 정보</SectionTitle>
+
+          <TableScroll $maxHeight={200}>
+            <StickyTable
+              $stickyTop={0}
+              $headerBg="#fafbfc"
+              $zebra
+              $colWidths={["20%", "20%", "15%", "15%"]}
+              $compact
+            >
+              <thead>
+                <tr>
+                  <Th>부품명</Th>
+                  <Th>부품코드</Th>
+                  <Th>수량</Th>
+                  <Th>상태</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {record.parts.map((p) => (
+                  <tr key={p.partCode}>
+                    <Td>{p.partName}</Td>
+                    <Td>{p.partCode}</Td>
+                    <Td>{p.partQty.toLocaleString()}</Td>
+                    <Td>
+                      <StatusBadge
+                        style={{ fontSize: "0.7rem" }}
+                        $variant={statusVariant[p.status]}
+                      >
+                        {p.status}
+                      </StatusBadge>
+                    </Td>
+                  </tr>
+                ))}
+              </tbody>
+            </StickyTable>
+          </TableScroll>
         </Section>
 
         <Section>

@@ -1,10 +1,16 @@
 export type InboundStatus = "합격" | "보류" | "불합격";
 
+export interface InboundPartItem {
+  partCode: string;
+  partName: string;
+  partQty: number;
+  status: InboundStatus;
+}
+
 export interface InboundRecord {
   inboundId: string;
   lotId: string;
-  partName: string;
-  partCode: string;
+  parts: InboundPartItem[];
   inboundQty: number;
   receivedDate: string;
   expectedInDate: string;

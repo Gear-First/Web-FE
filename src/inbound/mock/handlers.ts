@@ -20,7 +20,7 @@ export const handlers = [
     if (q && q.trim()) {
       const lower = q.toLowerCase();
       data = data.filter((r) =>
-        `${r.inboundId} ${r.partName} ${r.vendor} ${r.partCode}`
+        `${r.inboundId} ${r.inboundId} ${r.vendor} ${r.warehouse}`
           .toLowerCase()
           .includes(lower)
       );

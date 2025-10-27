@@ -1,4 +1,8 @@
-import type { InboundRecord, InboundStatus } from "../InboundTypes";
+import type {
+  InboundPartItem,
+  InboundRecord,
+  InboundStatus,
+} from "../InboundTypes";
 import { createRNG, dateAdd } from "../../mocks/shared/utils";
 
 /**
@@ -42,7 +46,7 @@ export function generateInboundMock(
     "공급처H",
   ];
 
-  const partPrefixes = [
+  const partCodes = [
     "MAT-WIR",
     "MAT-SCR",
     "MAT-PLT",
@@ -65,8 +69,22 @@ export function generateInboundMock(
 
   const baseDate = new Date("2025-09-20");
 
+  const makePart = (): InboundPartItem => {
+    const prefix = partCodes[Math.floor(rng() * partCodes.length)];
+    const name = partNames[Math.floor(rng() * partNames.length)];
+    const code = `${prefix}-${String(Math.floor(rng() * 900 + 100))}`;
+    const qty = Math.floor(rng() * 400) + 10; // 10~409
+    const st = statuses[Math.floor(rng() * statuses.length)];
+    return {
+      partCode: code,
+      partName: name,
+      partQty: qty,
+      status: st,
+    };
+  };
+
   return Array.from({ length: count }).map((_, i) => {
-    const prefix = partPrefixes[Math.floor(rng() * partPrefixes.length)];
+    const prefix = partCodes[Math.floor(rng() * partCodes.length)];
     const partName = partNames[Math.floor(rng() * partNames.length)];
     const partCode = `${prefix}-${String(Math.floor(rng() * 900 + 100))}`;
 
@@ -84,9 +102,27 @@ export function generateInboundMock(
     ); // 예정일
     const inDate = dateAdd(new Date(receivedDate), 1 + Math.floor(rng() * 3)); // 실제 입고일
 
-    const inboundQty = Math.floor(rng() * 1000) + 50;
+    const partQty = 1 + Math.floor(rng() * 4);
+    const parts = Array.from({ length: partQty }, makePart);
+
+    const statusRank = (s: InboundStatus) =>
+      s === "불합격" ? 3 : s === "보류" ? 2 : 1;
+    const partStatus: InboundStatus = parts.reduce(
+      (acc, p) => (statusRank(p.status) > statusRank(acc) ? p.status : acc),
+      "합격" as InboundStatus
+    );
+
+    const inboundQty = parts.reduce((sum, p) => sum + p.partQty, 0);
     const warehouse = warehouses[Math.floor(rng() * warehouses.length)];
-    const status = statuses[Math.floor(rng() * statuses.length)];
+
+    const hasFail = parts.some((p) => p.status === "불합격");
+    const hasHold = parts.some((p) => p.status === "보류");
+    const status: InboundStatus = hasFail
+      ? "불합격"
+      : hasHold
+      ? "보류"
+      : "합격";
+
     const inspector = inspectors[Math.floor(rng() * inspectors.length)];
     const vendor = vendors[Math.floor(rng() * vendors.length)];
 
@@ -106,6 +142,9 @@ export function generateInboundMock(
       receivedDate,
       expectedInDate,
       inDate,
+      parts,
+      partQty,
+      partStatus,
       warehouse,
       status,
       inspector,
