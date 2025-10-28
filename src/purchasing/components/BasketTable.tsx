@@ -62,14 +62,8 @@ export default function BasketTable({
               {/* <Td>{b.eta}</Td> */}
               <Td>
                 <Button
-                  style={{
-                    background: "#f3f4f6",
-                    color: "#374151",
-                    fontSize: 13,
-                    padding: "6px 10px",
-                    borderRadius: 8,
-                    transition: "all 0.2s",
-                  }}
+                  size="sm"
+                  color="gray"
                   onClick={() => onRemove(b.materialCode)}
                 >
                   삭제
@@ -113,18 +107,7 @@ export default function BasketTable({
           marginTop: 8,
         }}
       >
-        <Button
-          style={{
-            background: "black",
-            color: "white",
-            padding: "10px 16px",
-            borderRadius: 8,
-            fontWeight: 600,
-            fontSize: 14,
-            transition: "opacity 0.2s",
-          }}
-          onClick={onCreatePO}
-        >
+        <Button color="black" onClick={onCreatePO}>
           PO 생성
         </Button>
       </div>

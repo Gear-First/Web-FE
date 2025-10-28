@@ -59,11 +59,7 @@ export default function PurchasingPage() {
               <SectionCaption>자재 견적/발주 레코드</SectionCaption>
             </div>
             <Button
-              style={{
-                backgroundColor: "#111827",
-                color: "#fff",
-                marginRight: 8,
-              }}
+              color="black"
               onClick={() => {
                 setModalMode("register");
                 setSelectedRecord(null);

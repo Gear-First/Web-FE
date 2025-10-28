@@ -277,18 +277,14 @@ export default function PurchasingModal({
             <>
               <Button
                 style={{
-                  backgroundColor: "#111827",
-                  color: "#fff",
                   marginRight: 8,
                 }}
+                color="black"
                 onClick={handleSubmit}
               >
                 등록
               </Button>
-              <Button
-                style={{ backgroundColor: "#6b7280", color: "#fff" }}
-                onClick={onClose}
-              >
+              <Button color="gray" onClick={onClose}>
                 취소
               </Button>
             </>
@@ -299,21 +295,14 @@ export default function PurchasingModal({
             <>
               <Button
                 style={{
-                  backgroundColor: "#111827",
-                  color: "#fff",
                   marginRight: 8,
                 }}
+                color="black"
                 onClick={() => setMode("edit")}
               >
                 수정
               </Button>
-              <Button
-                style={{
-                  backgroundColor: "#b91c1c",
-                  color: "#fff",
-                }}
-                onClick={handleDelete}
-              >
+              <Button color="danger" onClick={handleDelete}>
                 삭제
               </Button>
             </>
@@ -324,21 +313,14 @@ export default function PurchasingModal({
             <>
               <Button
                 style={{
-                  backgroundColor: "#111827",
-                  color: "#fff",
                   marginRight: 8,
                 }}
+                color="black"
                 onClick={handleSubmit}
               >
                 저장
               </Button>
-              <Button
-                style={{
-                  backgroundColor: "#6b7280",
-                  color: "#fff",
-                }}
-                onClick={onClose}
-              >
+              <Button color="gray" onClick={onClose}>
                 취소
               </Button>
             </>
