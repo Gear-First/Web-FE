@@ -40,6 +40,7 @@ type AppliedFilters = {
 };
 
 export default function PartPage() {
+  // 검색 상태
   const [keyword, setKeyword] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -50,7 +51,7 @@ export default function PartPage() {
     endDate: null,
   });
 
-  // 페이지네이션 (UI: 1-based)
+  // 페이지네이션 (UI 1-based)
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
@@ -63,7 +64,7 @@ export default function PartPage() {
 
   const queryClient = useQueryClient();
 
-  // 쿼리키 & 파라미터
+  // 쿼리 키
   const queryKey: QueryKey = useMemo(
     () => [
       ...partKeys.records,
@@ -76,10 +77,11 @@ export default function PartPage() {
     [applied.keyword, applied.startDate, applied.endDate, page, pageSize]
   );
 
+  // 리스트 파라미터 (서버 변환은 PartApi에서 처리)
   const params = {
     q: applied.keyword || undefined,
-    startDate: applied.startDate || undefined, // 서버 미지원시 PartApi에서 제외 처리
-    endDate: applied.endDate || undefined, // 서버 미지원시 PartApi에서 제외 처리
+    startDate: applied.startDate || undefined, // 서버 미지원 시 PartApi에서 제외
+    endDate: applied.endDate || undefined, // 서버 미지원 시 PartApi에서 제외
     page,
     pageSize,
   };
@@ -97,7 +99,7 @@ export default function PartPage() {
   const total = data?.meta?.total ?? 0;
   const totalPages = data?.meta?.totalPages ?? 1;
 
-  // 핸들러
+  // 검색/리셋
   const onSearch = useCallback(() => {
     setApplied({
       keyword: keyword.trim(),
@@ -111,8 +113,8 @@ export default function PartPage() {
     setKeyword("");
     setStartDate("");
     setEndDate("");
-    setPage(1);
     setApplied({ keyword: "", startDate: null, endDate: null });
+    setPage(1);
   }, []);
 
   const onChangePageSize = useCallback((n: number) => {
@@ -120,10 +122,11 @@ export default function PartPage() {
     setPage(1);
   }, []);
 
-  // 생성 뮤테이션
+  // 생성 뮤테이션 (UI DTO → 서버 바디 매핑은 createPart 내부에서 처리)
   const createMut = useMutation<PartRecords, Error, PartCreateDTO>({
     mutationFn: createPart,
     onSuccess: () => {
+      // 현재 페이지 포함 전체 리스트 무효화
       queryClient.invalidateQueries({ queryKey: partKeys.records });
       setIsRegOpen(false);
     },
@@ -139,6 +142,7 @@ export default function PartPage() {
               부품 기본정보 및 자재구성을 관리합니다.
             </SectionCaption>
           </div>
+          {/* 우측으로 이동 */}
         </SectionHeader>
 
         <SectionHeader>
@@ -149,9 +153,8 @@ export default function PartPage() {
               setIsRegOpen(true);
             }}
           >
-            Part +
+            부품 +
           </Button>
-
           <FilterGroup>
             <DateRange
               startDate={startDate}
@@ -166,10 +169,10 @@ export default function PartPage() {
               onReset={onReset}
               placeholder="부품코드 / 부품명 / 자재명 검색"
             />
-            <Button variant="icon" onClick={onSearch}>
+            <Button variant="icon" onClick={onSearch} aria-label="검색">
               <img src={searchIcon} width={18} height={18} alt="검색" />
             </Button>
-            <Button variant="icon" onClick={onReset}>
+            <Button variant="icon" onClick={onReset} aria-label="초기화">
               <img src={resetIcon} width={18} height={18} alt="초기화" />
             </Button>
           </FilterGroup>
@@ -218,9 +221,10 @@ export default function PartPage() {
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async (payload: PartFormModel) => {
+        onSubmit={async (form: PartFormModel) => {
           if (regMode === "create") {
-            await createMut.mutateAsync(toPartCreatePayload(payload));
+            const dto = toPartCreatePayload(form);
+            await createMut.mutateAsync(dto);
           }
         }}
       />

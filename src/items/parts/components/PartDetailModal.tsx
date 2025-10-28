@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { PartRecords } from "../PartTypes"; // 프로젝트 경로에 맞게 조정
+import type { PartRecords } from "../PartTypes";
 import {
   CloseButton,
   DetailGrid,
@@ -21,7 +21,7 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   onEdit?: (record: PartRecords) => void;
-  onDelete?: (record: PartRecords) => void;
+  onDelete?: () => void;
   disableOverlayClose?: boolean;
 }
 
@@ -50,19 +50,23 @@ const PartDetailModal = ({
     const ok = window.confirm(
       `정말 삭제하시겠어요?\nPart 번호: ${record.partId}`
     );
-    if (ok) onDelete(record);
+    if (ok) onDelete();
   };
-
-  const mats = Array.isArray(record.materials) ? record.materials : [];
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()} role="dialog">
+      <ModalContainer
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-labelledby="part-detail-title"
+      >
         <Header>
           <HeaderLeft>
             <Title id="part-detail-title">Part 상세 정보</Title>
           </HeaderLeft>
-          <CloseButton onClick={onClose}>&times;</CloseButton>
+          <CloseButton onClick={onClose} aria-label="닫기">
+            &times;
+          </CloseButton>
         </Header>
 
         {/* 부품 정보 */}
@@ -83,39 +87,16 @@ const PartDetailModal = ({
             </DetailItem>
             <DetailItem>
               <Label>카테고리</Label>
-              <Value>{record.category}</Value>
+              <Value>
+                {record.category.name}
+                {record.category.id != null && record.category.id !== 0 ? (
+                  <span style={{ color: "#6b7280", marginLeft: 8 }}>
+                    (ID: {record.category.id})
+                  </span>
+                ) : null}
+              </Value>
             </DetailItem>
           </DetailGrid>
-        </Section>
-
-        {/* 자재 정보 */}
-        <Section>
-          <SectionTitle>자재 정보</SectionTitle>
-
-          {mats.length === 0 ? (
-            <p style={{ color: "#6b7280", margin: "8px 0 0" }}>
-              등록된 자재가 없습니다.
-            </p>
-          ) : (
-            mats.map((mat, idx) => (
-              <div key={`${mat.materialCode}-${idx}`}>
-                <DetailGrid>
-                  <DetailItem>
-                    <Label>자재코드</Label>
-                    <Value>{mat.materialCode}</Value>
-                  </DetailItem>
-                  <DetailItem>
-                    <Label>자재명</Label>
-                    <Value>{mat.materialName}</Value>
-                  </DetailItem>
-                  <DetailItem>
-                    <Label>자재수량</Label>
-                    <Value>{mat.materialQty}</Value>
-                  </DetailItem>
-                </DetailGrid>
-              </div>
-            ))
-          )}
         </Section>
 
         {/* 작성 정보 */}

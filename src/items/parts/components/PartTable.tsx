@@ -7,7 +7,7 @@ import PartRegisterModal from "./PartRegisterModal";
 import PartDetailModal from "./PartDetailModal";
 
 import {
-  toPartPatchPayload,
+  toPartUpdatePayload,
   type PartFormModel,
   type PartRecords,
   type PartUpdateDTO,
@@ -26,6 +26,9 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
   const [initialForEdit, setInitialForEdit] = useState<PartFormModel | null>(
     null
   );
+
+  // 수정 대상 id를 별도로 저장 (form에는 id가 없으므로)
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -87,7 +90,7 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
             >
               <Td>{r.partCode}</Td>
               <Td>{r.partName}</Td>
-              <Td>{r.category}</Td>
+              <Td>{r.category.name}</Td>
               <Td>{r.createdDate}</Td>
             </tr>
           ))}
@@ -103,17 +106,18 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
         onEdit={(rec) => {
           closeDetail();
           setRegMode("edit");
+          setEditingId(rec.partId); // ⛳️ 수정 대상 id 저장
+
+          // ⛳️ 주의: PartRecords에는 price가 없음. 상세 프리필이 필요하면
+          // PartDetail을 fetch해서 채워 넣거나, 일단 기본값으로 둡니다.
           setInitialForEdit({
-            partId: rec.partId,
             partCode: rec.partCode,
             partName: rec.partName,
-            category: rec.category,
-            materials: rec.materials.map((m) => ({
-              materialCode: m.materialCode,
-              materialName: m.materialName,
-              materialQty: m.materialQty,
-            })),
+            partPrice: 0, // TODO: 편집 시에는 상세 조회로 실제 가격을 불러오세요.
+            categoryId: rec.category.id,
+            // imageUrl / enabled 등 필요시 여기서 추가
           });
+
           setIsRegOpen(true);
         }}
       />
@@ -124,12 +128,11 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async (payload: PartFormModel) => {
-          if (!payload.partId) return;
-          await updateMut.mutateAsync({
-            id: payload.partId,
-            patch: toPartPatchPayload(payload),
-          });
+        onSubmit={async (form: PartFormModel) => {
+          if (regMode !== "edit") return;
+          if (!editingId) return;
+          const patch = toPartUpdatePayload(form);
+          await updateMut.mutateAsync({ id: editingId, patch });
         }}
       />
     </>

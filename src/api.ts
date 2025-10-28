@@ -33,4 +33,5 @@ export const WAREHOUSE_BASE_PATH = `${BASE_URL}/warehouse/api/v1`;
 
 export const WAREHOUSE_ENDPOINTS = {
   PARTS_LIST: `${WAREHOUSE_BASE_PATH}/parts`,
+  PART_CATEGORIES: `${WAREHOUSE_BASE_PATH}/parts/categories`,
 };

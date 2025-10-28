@@ -1,94 +1,138 @@
-import type { PartCate } from "../../bom/BOMTypes";
-import type { PartRecords, PartCreateDTO, PartUpdateDTO } from "./PartTypes";
+import type {
+  PartRecords,
+  PartCreateDTO,
+  PartUpdateDTO,
+  PartDetail,
+  PartCategory,
+} from "./PartTypes";
 import {
   type ApiResponse,
   type ListResponse,
   WAREHOUSE_ENDPOINTS,
 } from "../../api";
+import { toPartCreateBody, toPartUpdateBody } from "./PartTypes";
 
 /** React Query keys */
 export const partKeys = {
   records: ["part", "records"] as const,
-  detail: (id: string) => ["part", "detail", id] as const,
+  detail: (id: string | number) => ["part", "detail", String(id)] as const,
+};
+export const partCategoryKeys = {
+  list: ["partCategory", "list"] as const,
 };
 
-// 목록 조회 파라미터 (UI 기준: 1-based page)
+/** 목록 조회 파라미터 */
 export type PartListParams = {
-  q?: string; // 서버는 name/code로 받음 → 아래에서 둘 다에 매핑
-  category?: PartCate | "ALL";
-  startDate?: string | null; // 서버 미지원 → 전송 안 함
-  endDate?: string | null; // 서버 미지원 → 전송 안 함
+  q?: string;
+  /** 기본 auto: 코드처럼 보이면 code, 아니면 name */
+  searchBy?: "auto" | "code" | "name";
+  categoryId?: number;
   page?: number; // 1-based
   pageSize?: number;
+  /** 정렬을 커스텀하려면 넣음. 예: ["name,desc","code,asc"] */
+  sort?: string[] | string;
 };
 
-type ServerPartItem = {
+/* ========== 서버 스키마 ========== */
+type ServerPartCategory = { id: number; name: string };
+type ServerPartListItem = {
   id: number | string;
   code: string;
   name: string;
-  category?: {
-    id: number | string;
-    name: string;
-  };
+  category?: ServerPartCategory;
 };
-
 type ServerPartList = {
-  items: ServerPartItem[];
-  page: number; // 서버 반환 page (예시 상 1-based로 보임)
+  items: ServerPartListItem[];
+  page: number; // 0-based
   size: number;
-  total: number; // totalElements
+  total: number;
 };
 
-/* -------------------- 매핑 유틸 -------------------- */
-
-/** (선택) PartCate → 서버 categoryId 매핑
- *  백엔드 카테고리 아이디 테이블이 정해지면 채워주세요.
- */
-const PART_CATE_TO_ID: Partial<Record<PartCate, number | string>> = {
-  // 예: engine: 1, electrical: 2, body: 3, ...
+type ServerPartDetail = {
+  id: number | string;
+  code: string;
+  name: string;
+  price: number;
+  category?: ServerPartCategory;
+  imageUrl?: string;
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
-/** 서버 → 앱 모델 */
-function toPartRecord(s: ServerPartItem): PartRecords {
+/* ========== 유틸/매핑 ========== */
+const looksLikeCode = (q: string) => /^[A-Za-z0-9._-]+$/.test(q);
+
+function toPartRecord(s: ServerPartListItem | ServerPartDetail): PartRecords {
   return {
     partId: String(s.id),
     partCode: s.code,
     partName: s.name,
-    category: (s.category?.name as PartCate) ?? ("기타" as PartCate),
-    materials: [], // 서버 응답에 없음 → 빈 배열로
-    createdDate: "", // 서버 응답에 없음 → 필요시 서버 확장
+    category: {
+      id: s.category?.id ?? 0,
+      name: s.category?.name ?? "",
+    },
+    createdDate: "createdAt" in s ? s.createdAt ?? "" : "",
   };
 }
 
-// 쿼리스트링 빌더 (서버 지원 파라미터만 전송)
+function toPartDetail(s: ServerPartDetail): PartDetail {
+  return {
+    partId: String(s.id),
+    partCode: s.code,
+    partName: s.name,
+    price: Number(s.price ?? 0),
+    category: {
+      id: s.category?.id ?? 0,
+      name: s.category?.name ?? "",
+    },
+    imageUrl: s.imageUrl || undefined,
+    enabled: Boolean(s.enabled),
+    createdDate: s.createdAt ?? "",
+    updatedDate: s.updatedAt ?? "",
+  };
+}
+
 function buildQuery(params?: PartListParams) {
   const qs = new URLSearchParams();
-  if (!params) return qs;
+  if (!params) {
+    // 기본 정렬
+    qs.append("sort", "name,asc");
+    qs.append("sort", "code,asc");
+    return qs;
+  }
 
-  // 페이지: UI 1-based → 서버도 1-based로 보임(예시 쿼리 page=1)
-  if (params.page != null) qs.set("page", String(Math.max(1, params.page)));
+  // UI 1-based → 서버 0-based
+  if (params.page != null) qs.set("page", String(Math.max(1, params.page) - 1));
   if (params.pageSize != null) qs.set("size", String(params.pageSize));
 
-  // 검색어: 서버는 code/name 각각 지원 → 둘 다에 같은 값 전송(OR 검색 기대)
   const q = params.q?.trim();
   if (q) {
-    qs.set("code", q);
-    qs.set("name", q);
+    const mode = params.searchBy ?? "auto";
+    if (mode === "code") qs.set("code", q);
+    else if (mode === "name") qs.set("name", q);
+    else qs.set(looksLikeCode(q) ? "code" : "name", q); // auto
   }
 
-  // 카테고리: "ALL"은 전송 안 함. 매핑 테이블에 있으면 id 전송
-  if (params.category && params.category !== "ALL") {
-    const cateId = PART_CATE_TO_ID[params.category];
-    if (cateId != null) qs.set("categoryId", String(cateId));
+  if (params.categoryId != null) {
+    qs.set("categoryId", String(params.categoryId));
   }
 
-  // 날짜 필터는 서버 미지원 → 전송 생략
+  // 정렬
+  if (params.sort) {
+    const sorts = Array.isArray(params.sort) ? params.sort : [params.sort];
+    sorts.forEach((s) => qs.append("sort", s));
+  } else {
+    qs.append("sort", "name,asc");
+    qs.append("sort", "code,asc");
+  }
+
   return qs;
 }
 
-/* -------------------- API -------------------- */
+/* ========== API ========== */
 
-// 목록 조회: 실서버 사용 (/warehouse/api/v1/parts)
+/** 목록 조회 */
 export async function fetchPartRecords(
   params?: PartListParams
 ): Promise<ListResponse<PartRecords[]>> {
@@ -97,7 +141,7 @@ export async function fetchPartRecords(
     ? `${WAREHOUSE_ENDPOINTS.PARTS_LIST}?${qs.toString()}`
     : `${WAREHOUSE_ENDPOINTS.PARTS_LIST}`;
 
-  const res = await fetch(url);
+  const res = await fetch(url, { method: "GET" });
   if (!res.ok) throw new Error(`Part 목록 요청 실패 (${res.status})`);
 
   const json: ApiResponse<ServerPartList> = await res.json();
@@ -105,8 +149,6 @@ export async function fetchPartRecords(
 
   const page = json.data;
   const rows = page.items.map(toPartRecord);
-
-  // totalPages는 서버가 주지 않으므로 계산
   const totalPages =
     page.size > 0 ? Math.max(1, Math.ceil(page.total / page.size)) : 1;
 
@@ -114,47 +156,101 @@ export async function fetchPartRecords(
     data: rows,
     meta: {
       total: page.total,
-      page: page.page ?? 1, // 서버 1-based로 가정
+      page: (page.page ?? 0) + 1,
       pageSize: page.size,
       totalPages,
     },
   };
 }
 
-// 상세/생성/수정/삭제: 기존(MSW) 엔드포인트 유지
-export async function fetchPartDetail(id: string): Promise<PartRecords> {
-  const res = await fetch(`/api/parts/records/${id}`);
+/** 상세 조회 */
+export async function fetchPartDetail(
+  id: string | number
+): Promise<PartDetail> {
+  const res = await fetch(`${WAREHOUSE_ENDPOINTS.PARTS_LIST}/${id}`, {
+    method: "GET",
+  });
   if (!res.ok) throw new Error(`Part 상세 요청 실패 (${res.status})`);
-  return res.json();
+  const json: ApiResponse<ServerPartDetail> = await res.json();
+  if (!json.success) throw new Error(json.message || "부품 상세 조회 실패");
+  return toPartDetail(json.data);
 }
 
+/** 생성 — UI DTO → 서버 바디 매핑 사용 */
 export async function createPart(payload: PartCreateDTO): Promise<PartRecords> {
-  const res = await fetch(`/api/parts/records`, {
+  const body = toPartCreateBody({
+    // PartCreateDTO(화면명)과 PartFormModel 구조가 같다는 전제. 필요시 변환.
+    partCode: payload.partCode,
+    partName: payload.partName,
+    partPrice: payload.partPrice,
+    categoryId: payload.categoryId,
+    imageUrl: payload.imageUrl,
+  });
+
+  const res = await fetch(`${WAREHOUSE_ENDPOINTS.PARTS_LIST}`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`Part 생성 실패 (${res.status})`);
-  return res.json();
+  const json: ApiResponse<ServerPartDetail> = await res.json();
+  if (!json.success) throw new Error(json.message || "부품 생성 실패");
+  return toPartRecord(json.data);
 }
 
+/** 수정 — PATCH로 부분 수정 */
 export async function updatePart(
-  id: string,
+  id: string | number,
   patch: PartUpdateDTO
 ): Promise<PartRecords> {
-  const res = await fetch(`/api/parts/records/${id}`, {
+  const body = toPartUpdateBody({
+    partCode: patch.partCode ?? "",
+    partName: patch.partName ?? "",
+    partPrice: patch.partPrice as number,
+    categoryId: patch.categoryId as number,
+    imageUrl: patch.imageUrl,
+    enabled: patch.enabled,
+  });
+
+  const res = await fetch(`${WAREHOUSE_ENDPOINTS.PARTS_LIST}/${id}`, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(patch),
+    body: JSON.stringify(body),
   });
   if (!res.ok) throw new Error(`Part 수정 실패 (${res.status})`);
-  return res.json();
+  const json: ApiResponse<ServerPartDetail> = await res.json();
+  if (!json.success) throw new Error(json.message || "부품 수정 실패");
+  return toPartRecord(json.data);
 }
 
+/** 삭제 */
 export async function deletePart(
-  id: string
+  id: string | number
 ): Promise<{ ok: boolean; removedId: string }> {
-  const res = await fetch(`/api/parts/records/${id}`, { method: "DELETE" });
+  const res = await fetch(`${WAREHOUSE_ENDPOINTS.PARTS_LIST}/${id}`, {
+    method: "DELETE",
+  });
   if (!res.ok) throw new Error(`Part 삭제 실패 (${res.status})`);
-  return res.json();
+  const json: ApiResponse<Record<string, boolean>> = await res.json();
+  if (!json.success) throw new Error(json.message || "부품 삭제 실패");
+  return { ok: true, removedId: String(id) };
+}
+
+/** 카테고리 목록 조회 */
+export async function fetchPartCategories(
+  keyword?: string
+): Promise<PartCategory[]> {
+  const base =
+    WAREHOUSE_ENDPOINTS.PART_CATEGORIES ??
+    `${WAREHOUSE_ENDPOINTS.PARTS_LIST}/categories`;
+  const url =
+    keyword && keyword.trim()
+      ? `${base}?keyword=${encodeURIComponent(keyword.trim())}`
+      : base;
+
+  const res = await fetch(url, { method: "GET" });
+  if (!res.ok) throw new Error(`카테고리 목록 요청 실패 (${res.status})`);
+  const json: ApiResponse<PartCategory[]> = await res.json();
+  if (!json.success) throw new Error(json.message || "카테고리 목록 조회 실패");
+  return json.data;
 }
