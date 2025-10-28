@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   CloseButton,
   DetailGrid,
@@ -15,44 +15,17 @@ import {
 import Button from "../../../components/common/Button";
 import styled from "styled-components";
 import { Select } from "../../../components/common/PageLayout";
-import type { PartCate } from "../../../bom/BOMTypes";
-import MaterialsTable from "../../../bom/components/MaterialsTable";
 
-/** Part 등록/수정 DTO */
-export type PartDTO = {
-  partId?: string; // edit 시에만 존재
-  partCode: string;
-  partName: string;
-  category: PartCate;
-  materials: {
-    materialCode: string;
-    materialName: string;
-    materialQty: number;
-  }[];
-};
+import type { PartFormModel, PartCategory } from "../PartTypes";
+import { fetchPartCategories } from "../PartApi";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   mode?: "create" | "edit";
-  initial?: PartDTO | null;
-  onSubmit?: (payload: PartDTO) => void;
+  initial?: PartFormModel | null;
+  onSubmit?: (payload: PartFormModel) => void;
 }
-
-// UI 전용 행 타입
-type MaterialRow = {
-  id: string;
-  materialCode: string;
-  materialName: string;
-  materialQty: number | "";
-};
-
-const cateOptions: PartCate[] = [
-  "카테고리 A",
-  "카테고리 B",
-  "카테고리 C",
-  "카테고리 D",
-];
 
 const PartRegisterModal = ({
   isOpen,
@@ -63,98 +36,53 @@ const PartRegisterModal = ({
 }: Props) => {
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
-  const [partCate, setPartCate] = useState<PartCate>("카테고리 A");
-  const [materials, setMaterials] = useState<MaterialRow[]>([
-    {
-      id: crypto.randomUUID(),
-      materialCode: "",
-      materialName: "",
-      materialQty: 1,
-    },
-  ]);
+  const [partPrice, setPartPrice] = useState<number | "">("");
+  const [categoryId, setCategoryId] = useState<number | "">("");
+  const [categories, setCategories] = useState<PartCategory[]>([]);
 
-  const listRef = useRef<HTMLDivElement | null>(null);
+  /* 카테고리 로드 */
+  useEffect(() => {
+    if (!isOpen) return;
+    (async () => {
+      try {
+        const list = await fetchPartCategories(); // 서버: /parts/categories?keyword=
+        setCategories(list);
+      } catch {
+        setCategories([]); // 실패 시 빈 목록
+      }
+    })();
+  }, [isOpen]);
 
   /* 초기값 주입 */
   useEffect(() => {
     if (!isOpen) return;
+
     if (mode === "edit" && initial) {
       setPartCode(initial.partCode ?? "");
       setPartName(initial.partName ?? "");
-      setPartCate(initial.category ?? "카테고리 A");
-      setMaterials(
-        (initial.materials?.length
-          ? initial.materials
-          : [{ materialCode: "", materialName: "", materialQty: 1 }]
-        ).map((m) => ({ id: crypto.randomUUID(), ...m }))
-      );
+      setPartPrice(initial.partPrice ?? 0);
+      setCategoryId(initial.categoryId ?? "");
     } else {
       setPartCode("");
       setPartName("");
-      setPartCate("카테고리 A");
-      setMaterials([
-        {
-          id: crypto.randomUUID(),
-          materialCode: "",
-          materialName: "",
-          materialQty: 1,
-        },
-      ]);
+      setPartPrice("");
+      setCategoryId("");
     }
   }, [isOpen, mode, initial]);
-
-  /* 자재 행 추가 시 자동 스크롤 */
-  useEffect(() => {
-    if (!listRef.current) return;
-    listRef.current.scrollTop = listRef.current.scrollHeight;
-  }, [materials.length]);
-
-  const addMaterial = () => {
-    setMaterials((arr) => [
-      ...arr,
-      {
-        id: crypto.randomUUID(),
-        materialCode: "",
-        materialName: "",
-        materialQty: 1,
-      },
-    ]);
-  };
-  const removeMaterial = (id: string) => {
-    if (materials.length === 1) return;
-    setMaterials((arr) => arr.filter((m) => m.id !== id));
-  };
-  const updateMaterial = <K extends keyof MaterialRow>(
-    id: string,
-    key: K,
-    value: MaterialRow[K]
-  ) => {
-    setMaterials((arr) =>
-      arr.map((m) => (m.id === id ? { ...m, [key]: value } : m))
-    );
-  };
 
   const handleSubmit = () => {
     if (!partCode.trim()) return alert("부품 코드를 입력하세요.");
     if (!partName.trim()) return alert("부품명을 입력하세요.");
-    if (!partCate?.trim()) return alert("카테고리를 선택하세요.");
-    if (materials.some((m) => !m.materialCode.trim() || !m.materialName.trim()))
-      return alert("자재 코드/명을 입력하세요.");
-    if (
-      materials.some((m) => m.materialQty === "" || Number(m.materialQty) <= 0)
-    )
-      return alert("자재 수량은 1 이상이어야 합니다.");
+    if (categoryId === "" || categoryId == null)
+      return alert("카테고리를 선택하세요.");
+    if (partPrice === "" || Number(partPrice) < 0)
+      return alert("가격을 0 이상으로 입력하세요.");
 
-    const payload: PartDTO = {
-      ...(initial?.partId ? { partId: initial.partId } : {}),
+    const payload: PartFormModel = {
       partCode: partCode.trim(),
       partName: partName.trim(),
-      category: partCate,
-      materials: materials.map((m) => ({
-        materialCode: m.materialCode.trim(),
-        materialName: m.materialName.trim(),
-        materialQty: Number(m.materialQty),
-      })),
+      partPrice: Number(partPrice),
+      categoryId: Number(categoryId),
     };
 
     onSubmit?.(payload);
@@ -198,40 +126,40 @@ const PartRegisterModal = ({
             </DetailItem>
 
             <DetailItem>
+              <Label>가격</Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="예) 15000"
+                value={partPrice}
+                onChange={(e) =>
+                  setPartPrice(
+                    e.target.value === "" ? "" : Number(e.target.value)
+                  )
+                }
+              />
+            </DetailItem>
+
+            <DetailItem>
               <Label>부품 카테고리</Label>
               <Select
                 style={{ width: "50%" }}
-                value={partCate}
-                onChange={(e) => setPartCate(e.target.value as PartCate)}
+                value={categoryId}
+                onChange={(e) =>
+                  setCategoryId(
+                    e.target.value === "" ? "" : Number(e.target.value)
+                  )
+                }
               >
-                {cateOptions.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
+                <option value="">선택하세요</option>
+                {categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
                   </option>
                 ))}
               </Select>
             </DetailItem>
           </DetailGrid>
-        </Section>
-
-        {/* 자재 목록 */}
-        <Section>
-          <HeaderRow>
-            <SectionTitle>자재 목록</SectionTitle>
-            <Button color="gray" onClick={addMaterial}>
-              자재 추가
-            </Button>
-          </HeaderRow>
-
-          <div ref={listRef}>
-            <MaterialsTable
-              rows={materials}
-              onChange={updateMaterial}
-              onRemove={removeMaterial}
-              maxHeight={220}
-              compact
-            />
-          </div>
         </Section>
 
         {/* 액션 */}
@@ -251,14 +179,6 @@ const PartRegisterModal = ({
 };
 
 export default PartRegisterModal;
-
-// 상단 자재 목록 행
-const HeaderRow = styled.div`
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-`;
 
 // 모달 상단 인풋
 const Input = styled.input`

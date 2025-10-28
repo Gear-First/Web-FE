@@ -1,4 +1,3 @@
-// src/features/inbound/InboundPage.tsx
 import { useState } from "react";
 import Layout from "../components/common/Layout";
 import {

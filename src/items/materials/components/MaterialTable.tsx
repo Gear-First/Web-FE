@@ -1,16 +1,15 @@
 import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Table, Td, Th } from "../../../components/common/PageLayout";
 import {
-  type MaterialRecord,
-  type MaterialDTO,
-  type MaterialFormModel,
   toMaterialPatchPayload,
+  type MaterialFormModel,
+  type MaterialRecord,
   type MaterialUpdateDTO,
 } from "../MaterialTypes";
-import { materialKeys, deleteMaterial, updateMaterial } from "../MaterialApi";
 import MaterialDetailModal from "./MaterialDetailModal";
 import MaterialRegisterModal from "./MaterialRegisterModal";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { deleteMaterial, materialKeys, updateMaterial } from "../MaterialApi";
+import { Table, Td, Th } from "../../../components/common/PageLayout";
 
 export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
   const [selectedRecord, setSelectedRecord] = useState<MaterialRecord | null>(
@@ -20,9 +19,8 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
 
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
-  const [initialForEdit, setInitialForEdit] = useState<MaterialDTO | null>(
-    null
-  );
+  const [initialForEdit, setInitialForEdit] =
+    useState<MaterialFormModel | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -35,6 +33,7 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
     setTimeout(() => setSelectedRecord(null), 0);
   };
 
+  // 현재 update/delete는 MSW용 가짜 API 경로
   const updateMut = useMutation<
     MaterialRecord,
     Error,
@@ -49,7 +48,9 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
 
   const handleDelete = async () => {
     if (!selectedRecord) return;
-    await deleteMaterial(selectedRecord.materialId);
+    // materialId가 없을 수 있으므로 materialCode로 대체 (임시)
+    const idOrCode = selectedRecord.materialId ?? selectedRecord.materialCode;
+    await deleteMaterial(idOrCode);
     await queryClient.invalidateQueries({ queryKey: materialKeys.records });
     closeDetail();
   };
@@ -59,7 +60,6 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
       <Table>
         <thead>
           <tr>
-            <Th>자재 번호</Th>
             <Th>자재 코드</Th>
             <Th>자재명</Th>
             <Th>작성일자</Th>
@@ -68,20 +68,18 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
         <tbody>
           {rows.map((r) => (
             <tr
-              key={r.materialId}
+              key={r.materialCode}
               style={{ cursor: "pointer" }}
               onClick={() => openDetail(r)}
             >
-              <Td>{r.materialId}</Td>
               <Td>{r.materialCode}</Td>
               <Td>{r.materialName}</Td>
-              <Td>{r.createdDate}</Td>
+              <Td>{r.createdDate || "-"}</Td>
             </tr>
           ))}
         </tbody>
       </Table>
 
-      {/* 상세 모달 */}
       <MaterialDetailModal
         record={selectedRecord}
         isOpen={isDetailOpen}
@@ -91,7 +89,6 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
           closeDetail();
           setRegMode("edit");
           setInitialForEdit({
-            materialId: rec.materialId,
             materialCode: rec.materialCode,
             materialName: rec.materialName,
           });
@@ -99,16 +96,14 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
         }}
       />
 
-      {/* 등록/수정 모달 */}
       <MaterialRegisterModal
         isOpen={isRegOpen}
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
         onSubmit={async (payload: MaterialFormModel) => {
-          if (!payload.materialId) return;
           await updateMut.mutateAsync({
-            id: payload.materialId,
+            id: payload.materialCode,
             patch: toMaterialPatchPayload(payload),
           });
         }}
