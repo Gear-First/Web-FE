@@ -177,3 +177,16 @@ export const Button = styled.button<{ color?: string }>`
     cursor: not-allowed;
   }
 `;
+
+/* 입력창 */
+export const Input = styled.input`
+  padding: 10px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+
+  &:focus {
+    border-color: #111827;
+  }
+`;

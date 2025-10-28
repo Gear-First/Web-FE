@@ -6,6 +6,7 @@ import RequestPage from "../request/RequestPage";
 import PartPage from "../part/PartPage";
 import PropertyPage from "../property/PropertyPage";
 import ItemPage from "../items/ItemPage";
+import PurchasingPage from "../purchasing/PurchasingPage";
 
 const AppRoutes = () => {
   return (
@@ -18,7 +19,7 @@ const AppRoutes = () => {
       <Route path="/property" element={<PropertyPage />} />
       <Route path="/inbound" element={<InboundPage />} />
       <Route path="/outbound" element={<OutboundPage />} />
-      <Route path="/supplierOrder" element={<OutboundPage />} />
+      <Route path="/purchasing" element={<PurchasingPage />} />
     </Routes>
   );
 };

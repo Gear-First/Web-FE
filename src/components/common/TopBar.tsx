@@ -50,7 +50,7 @@ const TopBar: React.FC = () => {
   const menus = [
     { id: 0, name: "요청관리", path: "/request" },
     { id: 1, name: "자재 소요량 산출 및 계획", path: "/mrp" },
-    { id: 2, name: "구매 활동", path: "/supplierOrder" },
+    { id: 2, name: "구매 관리", path: "/purchasing" },
     { id: 4, name: "품목 관리", path: "/items" },
     { id: 5, name: "재고 관리", path: "/part" },
     { id: 6, name: "자산 관리", path: "/property" },

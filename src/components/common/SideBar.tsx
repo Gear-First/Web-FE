@@ -71,7 +71,7 @@ const ToggleButton = styled.button<{ $open: boolean }>`
 const menuItems = [
   { to: "/request", label: "요청 관리" },
   { to: "/mrp", label: "자재 소요량 산출 및 계획" },
-  { to: "/supplierOrder", label: "구매 활동" },
+  { to: "/purchasing", label: "구매 관리" },
   { to: "/items", label: "품목 관리" },
   { to: "/part", label: "재고 관리" },
   { to: "/property", label: "자산 관리" },
