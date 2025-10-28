@@ -154,7 +154,7 @@ const InputWrap = styled.div`
 `;
 const InputField = styled.input`
   width: 150px;
-  padding: 7px 36px 7px 10px; /* 아이콘 자리 */
+  padding: 8px 36px 8px 10px; /* 아이콘 자리 */
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   font-size: 0.9rem;

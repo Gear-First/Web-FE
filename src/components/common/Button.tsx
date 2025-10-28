@@ -2,7 +2,7 @@ import React from "react";
 import styled, { css } from "styled-components";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  color?: "primary" | "gray" | "danger";
+  color?: "primary" | "gray" | "danger" | "black";
   size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
   loading?: boolean;
@@ -34,7 +34,7 @@ export default function Button({
 }
 
 const StyledButton = styled.button<{
-  $color: "primary" | "gray" | "danger";
+  $color: "primary" | "gray" | "danger" | "black";
   $size: "sm" | "md" | "lg";
   $full?: boolean;
   $variant: "default" | "icon";
@@ -64,7 +64,7 @@ const StyledButton = styled.button<{
         `
       : css`
           /* ---- size ---- */
-          ${($size) =>
+          ${({ $size }) =>
             $size === "sm"
               ? `padding: 6px 12px; font-size: 0.85rem;`
               : $size === "lg"
@@ -90,6 +90,13 @@ const StyledButton = styled.button<{
             color: white;
             &:hover { background: #dc2626; }
             &:active { background: #b91c1c; }
+          `;
+        case "black":
+          return `
+            background: #111827;
+            color: white;
+            &:hover { background: #1f2937; }
+            &:active { background: #0f172a; }
           `;
         default:
           return `

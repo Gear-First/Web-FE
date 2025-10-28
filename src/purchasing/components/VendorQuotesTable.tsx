@@ -51,16 +51,8 @@ export default function VendorQuotesTable({
                 <Button
                   disabled={!meet}
                   onClick={() => onSelect(c)}
-                  style={{
-                    padding: "6px 12px",
-                    borderRadius: 8,
-                    fontSize: 13,
-                    fontWeight: 500,
-                    background: meet ? "black" : "#f3f4f6",
-                    color: meet ? "white" : "#9ca3af",
-                    cursor: meet ? "pointer" : "not-allowed",
-                    transition: "all 0.2s ease",
-                  }}
+                  color={meet ? "black" : "gray"}
+                  size="sm"
                   onMouseEnter={(e) => {
                     if (meet) e.currentTarget.style.opacity = "0.85";
                   }}
