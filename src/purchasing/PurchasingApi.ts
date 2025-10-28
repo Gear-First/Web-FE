@@ -1,0 +1,177 @@
+// PurchasingApi.ts
+import type { PurchasingRecord } from "./PurchasingTypes";
+
+export const purchasingKeys = {
+  records: ["purchasing", "records"] as const,
+};
+
+export const mockRecords: PurchasingRecord[] = [
+  {
+    purchasingId: "PR-250910-01",
+    materialCode: "MAT01",
+    materialName: "자재1",
+    purchasingQuantity: 20,
+    purchasingDate: "",
+    company: "LG",
+    purchasingPrice: 10000,
+    surveyDate: "2025-09-01",
+    status: "등록",
+    expiryDate: "2025-12-31",
+    requiredQuantityPerPeriod: 100,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-02",
+    materialCode: "MAT01",
+    materialName: "자재1",
+    purchasingQuantity: 50,
+    purchasingDate: "",
+    company: "SAMSUNG",
+    purchasingPrice: 8500,
+    surveyDate: "2025-09-02",
+    status: "등록",
+    expiryDate: "2025-11-30",
+    requiredQuantityPerPeriod: 200,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-03",
+    materialCode: "MAT01",
+    materialName: "자재1",
+    purchasingQuantity: 120,
+    purchasingDate: "2025-09-05",
+    company: "HYUNDAI",
+    purchasingPrice: 9500,
+    surveyDate: "2025-09-03",
+    status: "선정",
+    expiryDate: "2025-12-15",
+    requiredQuantityPerPeriod: 150,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-04",
+    materialCode: "MAT04",
+    materialName: "자재4",
+    purchasingQuantity: 75,
+    purchasingDate: "",
+    company: "KIA",
+    purchasingPrice: 7800,
+    surveyDate: "2025-09-04",
+    status: "등록",
+    expiryDate: "2025-12-01",
+    requiredQuantityPerPeriod: 80,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-05",
+    materialCode: "MAT05",
+    materialName: "자재5",
+    purchasingQuantity: 200,
+    purchasingDate: "2025-09-08",
+    company: "LG",
+    purchasingPrice: 10200,
+    surveyDate: "2025-09-05",
+    status: "선정",
+    expiryDate: "2026-01-10",
+    requiredQuantityPerPeriod: 180,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-06",
+    materialCode: "MAT06",
+    materialName: "자재6",
+    purchasingQuantity: 30,
+    purchasingDate: "",
+    company: "SAMSUNG",
+    purchasingPrice: 9000,
+    surveyDate: "2025-09-03",
+    status: "등록",
+    expiryDate: "2025-11-25",
+    requiredQuantityPerPeriod: 50,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-07",
+    materialCode: "MAT07",
+    materialName: "자재7",
+    purchasingQuantity: 95,
+    purchasingDate: "",
+    company: "HYUNDAI",
+    purchasingPrice: 8700,
+    surveyDate: "2025-09-06",
+    status: "등록",
+    expiryDate: "2025-12-05",
+    requiredQuantityPerPeriod: 100,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-08",
+    materialCode: "MAT08",
+    materialName: "자재8",
+    purchasingQuantity: 60,
+    purchasingDate: "2025-09-11",
+    company: "KIA",
+    purchasingPrice: 8100,
+    surveyDate: "2025-09-07",
+    status: "선정",
+    expiryDate: "2025-12-20",
+    requiredQuantityPerPeriod: 70,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-09",
+    materialCode: "MAT09",
+    materialName: "자재9",
+    purchasingQuantity: 40,
+    purchasingDate: "",
+    company: "LG",
+    purchasingPrice: 9900,
+    surveyDate: "2025-09-08",
+    status: "등록",
+    expiryDate: "2025-12-30",
+    requiredQuantityPerPeriod: 60,
+    requiredPeriodInDays: 1,
+  },
+  {
+    purchasingId: "PR-250910-10",
+    materialCode: "MAT10",
+    materialName: "자재10",
+    purchasingQuantity: 150,
+    purchasingDate: "",
+    company: "SAMSUNG",
+    purchasingPrice: 8800,
+    surveyDate: "2025-09-09",
+    status: "등록",
+    expiryDate: "2023-01-05",
+    requiredQuantityPerPeriod: 160,
+    requiredPeriodInDays: 1,
+  },
+];
+
+// --- API 함수 ---
+export async function fetchPurchasingRecords(): Promise<PurchasingRecord[]> {
+  return mockRecords;
+}
+
+// --- MaterialRequirement / VendorQuote 생성 ---
+export const getMaterialRequirements = () => {
+  return mockRecords.map((r) => ({
+    materialCode: r.materialCode,
+    materialName: r.materialName,
+    required: r.purchasingQuantity,
+    needDate: r.surveyDate,
+  }));
+};
+
+export const getVendorQuotes = () => {
+  return mockRecords.map((r) => ({
+    materialCode: r.materialCode,
+    materialName: r.materialName,
+    vendorId: `${r.company}-V1`,
+    vendorName: r.company,
+    unitPrice: r.purchasingPrice,
+    requiredQuantityPerPeriod: r.requiredQuantityPerPeriod,
+    requiredPeriodInDays: r.requiredPeriodInDays,
+    expiryDate: r.expiryDate,
+  }));
+};
