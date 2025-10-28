@@ -72,7 +72,6 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
       <Table>
         <thead>
           <tr>
-            <Th>Part 번호</Th>
             <Th>부품코드</Th>
             <Th>부품명</Th>
             <Th>카테고리</Th>
@@ -82,11 +81,10 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
         <tbody>
           {rows.map((r) => (
             <tr
-              key={r.partId}
+              key={r.partCode}
               style={{ cursor: "pointer" }}
               onClick={() => openDetail(r)}
             >
-              <Td>{r.partId}</Td>
               <Td>{r.partCode}</Td>
               <Td>{r.partName}</Td>
               <Td>{r.category}</Td>

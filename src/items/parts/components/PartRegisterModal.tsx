@@ -17,6 +17,7 @@ import styled from "styled-components";
 import { Select } from "../../../components/common/PageLayout";
 import type { PartCate } from "../../../bom/BOMTypes";
 import MaterialsTable from "../../../bom/components/MaterialsTable";
+import type { PartFormModel } from "../PartTypes";
 
 /** Part 등록/수정 DTO */
 export type PartDTO = {
@@ -35,8 +36,8 @@ interface Props {
   isOpen: boolean;
   onClose: () => void;
   mode?: "create" | "edit";
-  initial?: PartDTO | null;
-  onSubmit?: (payload: PartDTO) => void;
+  initial?: PartFormModel | null;
+  onSubmit?: (payload: PartFormModel) => void;
 }
 
 // UI 전용 행 타입
@@ -145,7 +146,7 @@ const PartRegisterModal = ({
     )
       return alert("자재 수량은 1 이상이어야 합니다.");
 
-    const payload: PartDTO = {
+    const payload: PartFormModel = {
       ...(initial?.partId ? { partId: initial.partId } : {}),
       partCode: partCode.trim(),
       partName: partName.trim(),
