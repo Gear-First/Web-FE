@@ -15,6 +15,8 @@ import {
 } from "../../components/common/ModalPageLayout";
 import type { PurchasingRecord } from "../PurchasingTypes";
 import Button from "../../components/common/Button";
+import SingleDatePicker from "../../components/common/SingleDatePicker";
+import styled from "styled-components";
 
 type Mode = "register" | "view" | "edit";
 
@@ -25,6 +27,30 @@ interface PurchasingModalProps {
   initialData?: PurchasingRecord;
   mode: Mode;
 }
+
+const ReadonlyBox = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 100%;
+  padding: 10px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  color: #111;
+  box-sizing: border-box;
+  outline: none;
+
+  &:focus {
+    border-color: #111827;
+  }
+`;
+
+const Suffix = styled.span`
+  margin-left: 4px;
+  color: #6b7280;
+`;
 
 export default function PurchasingModal({
   isOpen,
@@ -42,7 +68,6 @@ export default function PurchasingModal({
     return {
       materialCode: "",
       materialName: "",
-      purchasingQuantity: 0,
       purchasingPrice: 0,
       company: "",
       surveyDate: "",
@@ -64,7 +89,6 @@ export default function PurchasingModal({
         setForm({
           materialCode: "",
           materialName: "",
-          purchasingQuantity: 0,
           purchasingPrice: 0,
           company: "",
           surveyDate: "",
@@ -146,7 +170,10 @@ export default function PurchasingModal({
       <ModalContainer>
         <Header>
           <HeaderLeft>
-            <Title>구매 요청 등록</Title>
+            <Title>
+              구매 요청{" "}
+              {mode === "register" ? "등록" : mode === "edit" ? "수정" : "상세"}
+            </Title>
           </HeaderLeft>
           <CloseButton onClick={onClose}>×</CloseButton>
         </Header>
@@ -184,16 +211,6 @@ export default function PurchasingModal({
           <SectionTitle>구매 정보</SectionTitle>
           <DetailGrid $cols={3}>
             <DetailItem>
-              <Label>요청 수량</Label>
-              <Input
-                type="number"
-                name="purchasingQuantity"
-                value={form.purchasingQuantity}
-                onChange={handleChange}
-                readOnly={readOnly}
-              />
-            </DetailItem>
-            <DetailItem>
               <Label>단가</Label>
               <Input
                 type="number"
@@ -213,40 +230,7 @@ export default function PurchasingModal({
                 readOnly={readOnly}
               />
             </DetailItem>
-          </DetailGrid>
-        </Section>
-
-        {/* 일정 관련 */}
-        <Section>
-          <SectionTitle>일정 정보</SectionTitle>
-          <DetailGrid $cols={3}>
-            <DetailItem>
-              <Label>조사일</Label>
-              <Input
-                type="date"
-                name="surveyDate"
-                value={form.surveyDate}
-                onChange={handleChange}
-                readOnly={readOnly}
-              />
-            </DetailItem>
-            <DetailItem>
-              <Label>유효기간</Label>
-              <Input
-                type="date"
-                name="expiryDate"
-                value={form.expiryDate}
-                onChange={handleChange}
-                readOnly={readOnly}
-              />
-            </DetailItem>
-          </DetailGrid>
-        </Section>
-
-        {/* 소요량 정보 */}
-        <Section>
-          <SectionTitle>소요량 정보</SectionTitle>
-          <DetailGrid $cols={3}>
+            <DetailItem></DetailItem>
             <DetailItem>
               <Label>소요 수량</Label>
               <Input
@@ -265,6 +249,51 @@ export default function PurchasingModal({
                 value={form.requiredPeriodInDays}
                 onChange={handleChange}
                 readOnly={readOnly}
+              />
+            </DetailItem>
+            {mode === "view" && (
+              <>
+                <DetailItem>
+                  <Label>1일 기준 소요량</Label>
+                  <ReadonlyBox>
+                    {Math.ceil(
+                      form.requiredQuantityPerPeriod /
+                        (form.requiredPeriodInDays || 1)
+                    )}
+                    <Suffix>/1일</Suffix>
+                  </ReadonlyBox>
+                </DetailItem>
+              </>
+            )}
+          </DetailGrid>
+        </Section>
+
+        {/* 일정 관련 */}
+        <Section>
+          <SectionTitle>일정 정보</SectionTitle>
+          <DetailGrid $cols={3}>
+            <DetailItem>
+              <Label>조사일</Label>
+              <SingleDatePicker
+                value={form.surveyDate} // "YYYY-MM-DD"
+                onChange={(v) =>
+                  setForm((prev) => ({ ...prev, surveyDate: v }))
+                }
+                placeholder="조사일"
+                disabled={readOnly}
+                // max={form.expiryDate}                   // 필요 시 상한
+              />
+            </DetailItem>
+            <DetailItem>
+              <Label>유효기간</Label>
+              <SingleDatePicker
+                value={form.expiryDate}
+                onChange={(v) =>
+                  setForm((prev) => ({ ...prev, expiryDate: v }))
+                }
+                placeholder="유효기간"
+                disabled={readOnly}
+                min={form.surveyDate}
               />
             </DetailItem>
           </DetailGrid>
