@@ -80,7 +80,7 @@ export default function Pagination({
 
   if (totalPages <= 1) {
     // 총건수나 페이지 크기 선택은 보여주고 싶다면 이 아래 return을 지우고 Wrap는 유지 가능
-    return null;
+    // return null;
   }
 
   return (

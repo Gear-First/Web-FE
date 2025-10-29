@@ -11,6 +11,7 @@ import {
 import {
   toMaterialCreatePayload,
   type MaterialCreateDTO,
+  type MaterialFormModel,
   type MaterialRecord,
 } from "./MaterialTypes";
 import {
@@ -22,7 +23,6 @@ import {
 import {
   createMaterial,
   fetchMaterialRecords,
-  type ListResponse,
   materialKeys,
 } from "./MaterialApi";
 import SearchBox from "../../components/common/SearchBox";
@@ -31,12 +31,7 @@ import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
 import MaterialTable from "./components/MaterialTable";
 import MaterialRegisterModal from "./components/MaterialRegisterModal";
-
-type MaterialDTO = {
-  materialId?: string;
-  materialName: string;
-  materialCode: string;
-};
+import type { ListResponse } from "../../api";
 
 type AppliedFilters = {
   keyword: string;
@@ -60,9 +55,8 @@ export default function MaterialPage() {
 
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
-  const [initialForEdit, setInitialForEdit] = useState<MaterialDTO | null>(
-    null
-  );
+  const [initialForEdit, setInitialForEdit] =
+    useState<MaterialFormModel | null>(null);
 
   const queryClient = useQueryClient();
 
@@ -79,7 +73,7 @@ export default function MaterialPage() {
   );
 
   const params = {
-    q: applied.keyword || undefined,
+    keyword: applied.keyword || undefined,
     startDate: applied.startDate || undefined,
     endDate: applied.endDate || undefined,
     page,
@@ -136,7 +130,7 @@ export default function MaterialPage() {
       <SectionCard>
         <SectionHeader>
           <div>
-            <SectionTitle>Materials</SectionTitle>
+            <SectionTitle>자재 관리</SectionTitle>
             <SectionCaption>자재 기본정보를 관리합니다.</SectionCaption>
           </div>
         </SectionHeader>
@@ -149,7 +143,7 @@ export default function MaterialPage() {
               setIsRegOpen(true);
             }}
           >
-            Materials +
+            자재 +
           </Button>
 
           <FilterGroup>
@@ -218,7 +212,7 @@ export default function MaterialPage() {
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async (payload: MaterialDTO) => {
+        onSubmit={async (payload: MaterialFormModel) => {
           if (regMode === "create") {
             await createMut.mutateAsync(toMaterialCreatePayload(payload));
           }

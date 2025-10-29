@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { PartRecords } from "../PartTypes"; // 프로젝트 경로에 맞게 조정
+import type { PartRecords } from "../PartTypes";
 import {
   CloseButton,
   DetailGrid,
@@ -15,13 +15,15 @@ import {
   Value,
 } from "../../../components/common/ModalPageLayout";
 import Button from "../../../components/common/Button";
+import { fetchPartDetail, partKeys } from "../PartApi";
+import { useQuery } from "@tanstack/react-query";
 
 interface Props {
   record: PartRecords | null;
   isOpen: boolean;
   onClose: () => void;
   onEdit?: (record: PartRecords) => void;
-  onDelete?: (record: PartRecords) => void;
+  onDelete?: () => void;
   disableOverlayClose?: boolean;
 }
 
@@ -43,6 +45,13 @@ const PartDetailModal = ({
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
+  const { data: detail, isLoading } = useQuery({
+    queryKey: partKeys.detail(record?.partId ?? 0),
+    queryFn: () => fetchPartDetail(record?.partId ?? 0),
+    enabled: !!record && isOpen,
+    staleTime: 5 * 60 * 1000,
+  });
+
   if (!isOpen || !record) return null;
 
   const handleDelete = () => {
@@ -50,17 +59,27 @@ const PartDetailModal = ({
     const ok = window.confirm(
       `정말 삭제하시겠어요?\nPart 번호: ${record.partId}`
     );
-    if (ok) onDelete(record);
+    if (ok) onDelete();
   };
 
-  const mats = Array.isArray(record.materials) ? record.materials : [];
+  const enabledText = isLoading
+    ? "로딩중…"
+    : detail?.enabled === true
+    ? "사용"
+    : detail?.enabled === false
+    ? "중지"
+    : "—";
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()} role="dialog">
+      <ModalContainer
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-labelledby="part-detail-title"
+      >
         <Header>
           <HeaderLeft>
-            <Title id="part-detail-title">Part 상세 정보</Title>
+            <Title id="part-detail-title">부품 상세 정보</Title>
           </HeaderLeft>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
@@ -69,10 +88,6 @@ const PartDetailModal = ({
         <Section>
           <SectionTitle>부품 정보</SectionTitle>
           <DetailGrid>
-            <DetailItem>
-              <Label>Part 번호</Label>
-              <Value>{record.partId}</Value>
-            </DetailItem>
             <DetailItem>
               <Label>부품 코드</Label>
               <Value>{record.partCode}</Value>
@@ -83,39 +98,24 @@ const PartDetailModal = ({
             </DetailItem>
             <DetailItem>
               <Label>카테고리</Label>
-              <Value>{record.category}</Value>
+              <Value>
+                {record.category.name}
+                {record.category.id != null && record.category.id !== 0 ? (
+                  <span style={{ color: "#6b7280", marginLeft: 8 }}>
+                    (ID: {record.category.id})
+                  </span>
+                ) : null}
+              </Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>단가</Label>
+              <Value>{detail?.price}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>상태</Label>
+              <Value>{enabledText}</Value>
             </DetailItem>
           </DetailGrid>
-        </Section>
-
-        {/* 자재 정보 */}
-        <Section>
-          <SectionTitle>자재 정보</SectionTitle>
-
-          {mats.length === 0 ? (
-            <p style={{ color: "#6b7280", margin: "8px 0 0" }}>
-              등록된 자재가 없습니다.
-            </p>
-          ) : (
-            mats.map((mat, idx) => (
-              <div key={`${mat.materialCode}-${idx}`}>
-                <DetailGrid>
-                  <DetailItem>
-                    <Label>자재코드</Label>
-                    <Value>{mat.materialCode}</Value>
-                  </DetailItem>
-                  <DetailItem>
-                    <Label>자재명</Label>
-                    <Value>{mat.materialName}</Value>
-                  </DetailItem>
-                  <DetailItem>
-                    <Label>자재수량</Label>
-                    <Value>{mat.materialQty}</Value>
-                  </DetailItem>
-                </DetailGrid>
-              </div>
-            ))
-          )}
         </Section>
 
         {/* 작성 정보 */}
@@ -124,11 +124,16 @@ const PartDetailModal = ({
           <DetailGrid>
             <DetailItem>
               <Label>작성일자</Label>
-              <Value>{record.createdDate}</Value>
+              <Value>{detail?.createdDate ?? record.createdDate}</Value>
             </DetailItem>
-            {/* 필요 시 확장:
-            <DetailItem><Label>작성자</Label><Value>{record.createdBy}</Value></DetailItem>
-            */}
+            <DetailItem>
+              <Label>최근 수정일</Label>
+              <Value>{detail?.updatedDate}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>작성자</Label>
+              <Value>박우진</Value>
+            </DetailItem>
           </DetailGrid>
         </Section>
 

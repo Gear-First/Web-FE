@@ -14,19 +14,14 @@ import {
 } from "../../../components/common/ModalPageLayout";
 import Button from "../../../components/common/Button";
 import styled from "styled-components";
-
-export type MaterialDTO = {
-  materialId?: string; // edit 시에만 존재
-  materialCode: string;
-  materialName: string;
-};
+import type { MaterialFormModel } from "../MaterialTypes";
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   mode?: "create" | "edit";
-  initial?: MaterialDTO | null;
-  onSubmit?: (payload: MaterialDTO) => void;
+  initial?: MaterialFormModel | null;
+  onSubmit?: (payload: MaterialFormModel) => void;
 }
 
 const MaterialRegisterModal = ({
@@ -39,7 +34,6 @@ const MaterialRegisterModal = ({
   const [materialCode, setMaterialCode] = useState("");
   const [materialName, setMaterialName] = useState("");
 
-  /* 초기값 주입 */
   useEffect(() => {
     if (!isOpen) return;
     if (mode === "edit" && initial) {
@@ -55,14 +49,14 @@ const MaterialRegisterModal = ({
     if (!materialCode.trim()) return alert("자재코드를 입력하세요.");
     if (!materialName.trim()) return alert("자재명을 입력하세요.");
 
-    const payload: MaterialDTO = {
-      ...(initial?.materialId ? { partId: initial.materialId } : {}),
+    const payload: MaterialFormModel = {
+      materialId: initial?.materialId,
       materialCode: materialCode.trim(),
       materialName: materialName.trim(),
+      createdDate: initial?.createdDate,
     };
 
     onSubmit?.(payload);
-    onClose();
   };
 
   if (!isOpen) return null;
@@ -79,7 +73,6 @@ const MaterialRegisterModal = ({
           </CloseButton>
         </Header>
 
-        {/* 자재 정보 */}
         <Section>
           <SectionTitle>자재 정보</SectionTitle>
           <DetailGrid>
@@ -103,7 +96,6 @@ const MaterialRegisterModal = ({
           </DetailGrid>
         </Section>
 
-        {/* 액션 */}
         <Section>
           <Actions>
             <Button color="gray" onClick={onClose}>
@@ -121,7 +113,6 @@ const MaterialRegisterModal = ({
 
 export default MaterialRegisterModal;
 
-// 모달 상단 인풋
 const Input = styled.input`
   width: 50%;
   border: 1px solid #e5e7eb;
@@ -131,7 +122,6 @@ const Input = styled.input`
   background: #fff;
 `;
 
-// 하단 액션
 const Actions = styled.div`
   display: flex;
   justify-content: flex-end;
