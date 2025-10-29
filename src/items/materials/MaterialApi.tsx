@@ -4,7 +4,7 @@ import type {
   MaterialUpdateDTO,
 } from "./MaterialTypes";
 import {
-  BASE_URL,
+  INVENTORY_ENDPOINTS,
   type ApiPage,
   type ApiResponse,
   type ListResponse,
@@ -25,7 +25,7 @@ type MaterialListItem = {
 
 // 목록 조회 파라미터 (서버가 지원하는 것만 전달)
 export type MaterialListParams = {
-  q?: string; // 서버가 지원하면 사용
+  keyword?: string; // 서버가 지원하면 사용
   startDate?: string | null; // 서버가 지원하면 사용
   endDate?: string | null; // 서버가 지원하면 사용
   page?: number; // 1-based(화면 기준) -> 서버 0-based로 변환
@@ -47,19 +47,16 @@ export async function fetchMaterialRecords(
 ): Promise<ListResponse<MaterialRecord[]>> {
   const qs = new URLSearchParams();
 
-  // 페이지/사이즈: 화면은 1-based, 서버는 0-based
+  if (params?.startDate) qs.set("startDate", params.startDate);
+  if (params?.endDate) qs.set("endDate", params.endDate);
+  if (params?.keyword) qs.set("keyword", params.keyword.trim());
   if (params?.page != null)
     qs.set("page", String(Math.max(0, params.page - 1)));
   if (params?.pageSize != null) qs.set("size", String(params.pageSize));
 
-  // 검색/날짜: 서버가 지원하는 경우에만 전달 (미지원이면 제거)
-  if (params?.q) qs.set("q", params.q.trim());
-  if (params?.startDate) qs.set("startDate", params.startDate);
-  if (params?.endDate) qs.set("endDate", params.endDate);
-
   const url = qs.toString()
-    ? `${BASE_URL}/inventory/api/v1/getMaterialList?${qs.toString()}`
-    : `${BASE_URL}/inventory/api/v1/getMaterialList`;
+    ? `${INVENTORY_ENDPOINTS.MATERIALS_LIST}/getMaterialList?${qs.toString()}`
+    : `${INVENTORY_ENDPOINTS.MATERIALS_LIST}/getMaterialList`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`Material 목록 요청 실패 (${res.status})`);
@@ -92,12 +89,12 @@ export async function fetchMaterialDetail(id: string): Promise<MaterialRecord> {
 export async function createMaterial(
   payload: MaterialCreateDTO
 ): Promise<MaterialRecord> {
-  const res = await fetch(`/api/materials/records`, {
+  const res = await fetch(`${INVENTORY_ENDPOINTS.MATERIALS_LIST}/addMaterial`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload),
   });
-  if (!res.ok) throw new Error(`Material 생성 실패 (${res.status})`);
+  if (!res.ok) throw new Error(`자재 생성 실패 (${res.status})`);
   return res.json();
 }
 
@@ -105,11 +102,14 @@ export async function updateMaterial(
   id: string,
   patch: MaterialUpdateDTO
 ): Promise<MaterialRecord> {
-  const res = await fetch(`/api/materials/records/${id}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(patch),
-  });
+  const res = await fetch(
+    `${INVENTORY_ENDPOINTS.MATERIALS_LIST}/updateMaterial/${id}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch),
+    }
+  );
   if (!res.ok) throw new Error(`Material 수정 실패 (${res.status})`);
   return res.json();
 }
@@ -117,7 +117,10 @@ export async function updateMaterial(
 export async function deleteMaterial(
   id: string
 ): Promise<{ ok: boolean; removedId: string }> {
-  const res = await fetch(`/api/materials/records/${id}`, { method: "DELETE" });
+  const res = await fetch(
+    `/${INVENTORY_ENDPOINTS.MATERIALS_LIST}/deleteMaterial/${id}`,
+    { method: "DELETE" }
+  );
   if (!res.ok) throw new Error(`Material 삭제 실패 (${res.status})`);
   return res.json();
 }

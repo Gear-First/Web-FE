@@ -30,8 +30,13 @@ export type ListResponse<T> = {
 
 export const BASE_URL = "http://34.120.215.23";
 export const WAREHOUSE_BASE_PATH = `${BASE_URL}/warehouse/api/v1`;
+export const INVENTORY_BASE_PATH = `${BASE_URL}/inventory/api/v1`;
 
 export const WAREHOUSE_ENDPOINTS = {
   PARTS_LIST: `${WAREHOUSE_BASE_PATH}/parts`,
   PART_CATEGORIES: `${WAREHOUSE_BASE_PATH}/parts/categories`,
+};
+
+export const INVENTORY_ENDPOINTS = {
+  MATERIALS_LIST: `${INVENTORY_BASE_PATH}`,
 };

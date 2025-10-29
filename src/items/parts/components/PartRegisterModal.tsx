@@ -39,6 +39,7 @@ const PartRegisterModal = ({
   const [partPrice, setPartPrice] = useState<number | "">("");
   const [categoryId, setCategoryId] = useState<number | "">("");
   const [categories, setCategories] = useState<PartCategory[]>([]);
+  const [enabled, setEnabled] = useState<boolean>(true);
 
   /* 카테고리 로드 */
   useEffect(() => {
@@ -62,11 +63,13 @@ const PartRegisterModal = ({
       setPartName(initial.partName ?? "");
       setPartPrice(initial.partPrice ?? 0);
       setCategoryId(initial.categoryId ?? "");
+      setEnabled(initial.enabled ?? true);
     } else {
       setPartCode("");
       setPartName("");
       setPartPrice("");
       setCategoryId("");
+      setEnabled(true);
     }
   }, [isOpen, mode, initial]);
 
@@ -83,6 +86,7 @@ const PartRegisterModal = ({
       partName: partName.trim(),
       partPrice: Number(partPrice),
       categoryId: Number(categoryId),
+      enabled: mode === "edit" ? enabled : true,
     };
 
     onSubmit?.(payload);
@@ -126,21 +130,6 @@ const PartRegisterModal = ({
             </DetailItem>
 
             <DetailItem>
-              <Label>가격</Label>
-              <Input
-                type="number"
-                min={0}
-                placeholder="예) 15000"
-                value={partPrice}
-                onChange={(e) =>
-                  setPartPrice(
-                    e.target.value === "" ? "" : Number(e.target.value)
-                  )
-                }
-              />
-            </DetailItem>
-
-            <DetailItem>
               <Label>부품 카테고리</Label>
               <Select
                 style={{ width: "50%" }}
@@ -157,6 +146,35 @@ const PartRegisterModal = ({
                     {c.name}
                   </option>
                 ))}
+              </Select>
+            </DetailItem>
+
+            <DetailItem>
+              <Label>가격</Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="예) 15000"
+                value={partPrice}
+                onChange={(e) =>
+                  setPartPrice(
+                    e.target.value === "" ? "" : Number(e.target.value)
+                  )
+                }
+              />
+            </DetailItem>
+
+            <DetailItem>
+              <Label>상태</Label>
+              <Select
+                style={{ width: "50%" }}
+                value={String(enabled)}
+                onChange={(e) => setEnabled(e.target.value === "true")}
+                disabled={mode !== "edit"}
+                aria-label="사용 여부"
+              >
+                <option value="true">사용</option>
+                <option value="false">미사용</option>
               </Select>
             </DetailItem>
           </DetailGrid>
