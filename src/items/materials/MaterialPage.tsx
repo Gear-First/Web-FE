@@ -73,7 +73,7 @@ export default function MaterialPage() {
   );
 
   const params = {
-    q: applied.keyword || undefined,
+    keyword: applied.keyword || undefined,
     startDate: applied.startDate || undefined,
     endDate: applied.endDate || undefined,
     page,
@@ -130,7 +130,7 @@ export default function MaterialPage() {
       <SectionCard>
         <SectionHeader>
           <div>
-            <SectionTitle>Materials</SectionTitle>
+            <SectionTitle>자재 관리</SectionTitle>
             <SectionCaption>자재 기본정보를 관리합니다.</SectionCaption>
           </div>
         </SectionHeader>
@@ -143,7 +143,7 @@ export default function MaterialPage() {
               setIsRegOpen(true);
             }}
           >
-            Materials +
+            자재 +
           </Button>
 
           <FilterGroup>

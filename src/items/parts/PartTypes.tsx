@@ -59,6 +59,7 @@ export interface PartRecords {
   partName: string;
   partCode: string;
   category: PartCategory;
+  enabled?: boolean;
   createdDate: string;
 }
 

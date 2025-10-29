@@ -15,6 +15,8 @@ import {
   Value,
 } from "../../../components/common/ModalPageLayout";
 import Button from "../../../components/common/Button";
+import { fetchPartDetail, partKeys } from "../PartApi";
+import { useQuery } from "@tanstack/react-query";
 
 interface Props {
   record: PartRecords | null;
@@ -43,6 +45,13 @@ const PartDetailModal = ({
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
+  const { data: detail, isLoading } = useQuery({
+    queryKey: partKeys.detail(record?.partId ?? 0),
+    queryFn: () => fetchPartDetail(record?.partId ?? 0),
+    enabled: !!record && isOpen,
+    staleTime: 5 * 60 * 1000,
+  });
+
   if (!isOpen || !record) return null;
 
   const handleDelete = () => {
@@ -53,6 +62,14 @@ const PartDetailModal = ({
     if (ok) onDelete();
   };
 
+  const enabledText = isLoading
+    ? "로딩중…"
+    : detail?.enabled === true
+    ? "사용"
+    : detail?.enabled === false
+    ? "중지"
+    : "—";
+
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
       <ModalContainer
@@ -62,21 +79,15 @@ const PartDetailModal = ({
       >
         <Header>
           <HeaderLeft>
-            <Title id="part-detail-title">Part 상세 정보</Title>
+            <Title id="part-detail-title">부품 상세 정보</Title>
           </HeaderLeft>
-          <CloseButton onClick={onClose} aria-label="닫기">
-            &times;
-          </CloseButton>
+          <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
 
         {/* 부품 정보 */}
         <Section>
           <SectionTitle>부품 정보</SectionTitle>
           <DetailGrid>
-            <DetailItem>
-              <Label>Part 번호</Label>
-              <Value>{record.partId}</Value>
-            </DetailItem>
             <DetailItem>
               <Label>부품 코드</Label>
               <Value>{record.partCode}</Value>
@@ -96,6 +107,14 @@ const PartDetailModal = ({
                 ) : null}
               </Value>
             </DetailItem>
+            <DetailItem>
+              <Label>단가</Label>
+              <Value>{detail?.price}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>상태</Label>
+              <Value>{enabledText}</Value>
+            </DetailItem>
           </DetailGrid>
         </Section>
 
@@ -105,11 +124,16 @@ const PartDetailModal = ({
           <DetailGrid>
             <DetailItem>
               <Label>작성일자</Label>
-              <Value>{record.createdDate}</Value>
+              <Value>{detail?.createdDate ?? record.createdDate}</Value>
             </DetailItem>
-            {/* 필요 시 확장:
-            <DetailItem><Label>작성자</Label><Value>{record.createdBy}</Value></DetailItem>
-            */}
+            <DetailItem>
+              <Label>최근 수정일</Label>
+              <Value>{detail?.updatedDate}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>작성자</Label>
+              <Value>박우진</Value>
+            </DetailItem>
           </DetailGrid>
         </Section>
 

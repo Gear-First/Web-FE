@@ -17,6 +17,7 @@ export const partKeys = {
   records: ["part", "records"] as const,
   detail: (id: string | number) => ["part", "detail", String(id)] as const,
 };
+
 export const partCategoryKeys = {
   list: ["partCategory", "list"] as const,
 };
@@ -73,6 +74,7 @@ function toPartRecord(s: ServerPartListItem | ServerPartDetail): PartRecords {
       name: s.category?.name ?? "",
     },
     createdDate: "createdAt" in s ? s.createdAt ?? "" : "",
+    // enabled: "enabled" in s ? Boolean(s.enabled) : undefined,
   };
 }
 
@@ -142,7 +144,7 @@ export async function fetchPartRecords(
     : `${WAREHOUSE_ENDPOINTS.PARTS_LIST}`;
 
   const res = await fetch(url, { method: "GET" });
-  if (!res.ok) throw new Error(`Part 목록 요청 실패 (${res.status})`);
+  if (!res.ok) throw new Error(`부품 목록 요청 실패 (${res.status})`);
 
   const json: ApiResponse<ServerPartList> = await res.json();
   if (!json.success) throw new Error(json.message || "부품 목록 조회 실패");

@@ -137,7 +137,7 @@ export default function PartPage() {
       <SectionCard>
         <SectionHeader>
           <div>
-            <SectionTitle>Parts</SectionTitle>
+            <SectionTitle>부품 관리</SectionTitle>
             <SectionCaption>
               부품 기본정보 및 자재구성을 관리합니다.
             </SectionCaption>
@@ -167,7 +167,7 @@ export default function PartPage() {
               onKeywordChange={setKeyword}
               onSearch={onSearch}
               onReset={onReset}
-              placeholder="부품코드 / 부품명 / 자재명 검색"
+              placeholder="부품코드 / 부품명 검색"
             />
             <Button variant="icon" onClick={onSearch} aria-label="검색">
               <img src={searchIcon} width={18} height={18} alt="검색" />

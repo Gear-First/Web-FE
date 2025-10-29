@@ -78,6 +78,7 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
             <Th>부품코드</Th>
             <Th>부품명</Th>
             <Th>카테고리</Th>
+            {/* <Th>상태</Th> */}
             <Th>작성일자</Th>
           </tr>
         </thead>
@@ -91,6 +92,7 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
               <Td>{r.partCode}</Td>
               <Td>{r.partName}</Td>
               <Td>{r.category.name}</Td>
+              {/* <Td>{r.enabled}</Td> */}
               <Td>{r.createdDate}</Td>
             </tr>
           ))}
@@ -106,15 +108,16 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
         onEdit={(rec) => {
           closeDetail();
           setRegMode("edit");
-          setEditingId(rec.partId); // ⛳️ 수정 대상 id 저장
+          setEditingId(rec.partId); // 수정 대상 id 저장
 
-          // ⛳️ 주의: PartRecords에는 price가 없음. 상세 프리필이 필요하면
+          // PartRecords에는 price가 없음. 상세 프리필이 필요하면
           // PartDetail을 fetch해서 채워 넣거나, 일단 기본값으로 둡니다.
           setInitialForEdit({
             partCode: rec.partCode,
             partName: rec.partName,
             partPrice: 0, // TODO: 편집 시에는 상세 조회로 실제 가격을 불러오세요.
             categoryId: rec.category.id,
+            // enabled: rec.enabled,
             // imageUrl / enabled 등 필요시 여기서 추가
           });
 
