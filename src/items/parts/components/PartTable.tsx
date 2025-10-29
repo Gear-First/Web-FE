@@ -1,4 +1,3 @@
-// src/features/part/components/PartTable.tsx
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
 import { Table, Td, Th } from "../../../components/common/PageLayout";
