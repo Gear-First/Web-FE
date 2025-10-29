@@ -169,9 +169,8 @@ export async function fetchPartRecords(
 export async function fetchPartDetail(
   id: string | number
 ): Promise<PartDetail> {
-  const res = await fetch(`${WAREHOUSE_ENDPOINTS.PARTS_LIST}/${id}`, {
-    method: "GET",
-  });
+  const url = `${WAREHOUSE_ENDPOINTS.PARTS_LIST}/${id}`;
+  const res = await fetch(url, { method: "GET" });
   if (!res.ok) throw new Error(`Part 상세 요청 실패 (${res.status})`);
   const json: ApiResponse<ServerPartDetail> = await res.json();
   if (!json.success) throw new Error(json.message || "부품 상세 조회 실패");

@@ -35,6 +35,7 @@ export const INVENTORY_BASE_PATH = `${BASE_URL}/inventory/api/v1`;
 export const WAREHOUSE_ENDPOINTS = {
   PARTS_LIST: `${WAREHOUSE_BASE_PATH}/parts`,
   PART_CATEGORIES: `${WAREHOUSE_BASE_PATH}/parts/categories`,
+  INBOUND_LIST: `${WAREHOUSE_BASE_PATH}/receiving`,
 };
 
 export const INVENTORY_ENDPOINTS = {
