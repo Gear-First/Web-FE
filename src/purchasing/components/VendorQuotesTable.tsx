@@ -15,7 +15,7 @@ export default function VendorQuotesTable({
     if (!expiryDate || !needDate) return true;
     const exp = new Date(expiryDate);
     const need = new Date(needDate);
-    return need <= exp; // needDate가 유효기간 이내면 true, 이후면 false
+    return need <= exp;
   };
 
   return (
