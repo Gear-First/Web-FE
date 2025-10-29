@@ -4,7 +4,6 @@ export interface PurchasingRecord {
   purchasingId: string; // 요청번호
   materialCode: string; // 자재코드
   materialName: string; // 자재명
-  purchasingQuantity: number; // 요청수량
   purchasingDate?: string; // 계약일시
   company: string; // 공급업체
   purchasingPrice: number; // 단가

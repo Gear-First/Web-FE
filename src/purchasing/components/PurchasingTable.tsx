@@ -17,7 +17,6 @@ export default function PurchasingTable({
           <tr>
             <Th>요청 번호</Th>
             <Th>자재</Th>
-            <Th>요청 수량</Th>
             <Th>조사일</Th>
             {showContractDate ? <Th>계약일</Th> : null}
             <Th>공급업체</Th>
@@ -35,14 +34,16 @@ export default function PurchasingTable({
             >
               <Td>{r.purchasingId}</Td>
               <Td>{r.materialName}</Td>
-              <Td>{r.purchasingQuantity.toLocaleString()}</Td>
               <Td>{r.surveyDate}</Td>
               {showContractDate && <Td>{r.purchasingDate}</Td>}
               <Td>{r.company}</Td>
               <Td>{r.purchasingPrice.toLocaleString()}</Td>
               <Td>{r.expiryDate}</Td>
               <Td>
-                {r.requiredQuantityPerPeriod}/{r.requiredPeriodInDays}일
+                {Math.ceil(
+                  r.requiredQuantityPerPeriod / r.requiredPeriodInDays || 1
+                )}
+                /1일
               </Td>
             </tr>
           ))}
