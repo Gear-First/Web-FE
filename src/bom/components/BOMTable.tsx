@@ -13,6 +13,8 @@ import {
 import { bomKeys, deleteBOM, updateBOM } from "../BOMApi";
 
 export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
+  const safeRows: BOMRecord[] = Array.isArray(rows) ? rows : [];
+
   const [selectedRecord, setSelectedRecord] = useState<BOMRecord | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -61,7 +63,7 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
 
   const handleDelete = async () => {
     if (!selectedRecord) return;
-    await deleteMut.mutateAsync(selectedRecord.bomId);
+    await deleteMut.mutateAsync(selectedRecord.bomCodeId);
   };
 
   return (
@@ -76,18 +78,26 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
-            <tr
-              key={r.bomId}
-              style={{ cursor: "pointer" }}
-              onClick={() => openDetail(r)}
-            >
-              <Td>{r.bomId}</Td>
-              <Td>{r.partCode}</Td>
-              <Td>{r.partName}</Td>
-              <Td>{r.createdDate}</Td>
+          {safeRows.length === 0 ? (
+            <tr>
+              <Td colSpan={4} style={{ textAlign: "center", color: "#6b7280" }}>
+                등록된 BOM이 없습니다.
+              </Td>
             </tr>
-          ))}
+          ) : (
+            safeRows.map((r) => (
+              <tr
+                key={r.bomCodeId}
+                style={{ cursor: "pointer" }}
+                onClick={() => openDetail(r)}
+              >
+                <Td>{r.bomCodeId}</Td>
+                <Td>{r.partCode}</Td>
+                <Td>{r.partName}</Td>
+                <Td>{r.createdDate}</Td>
+              </tr>
+            ))
+          )}
         </tbody>
       </Table>
 
@@ -101,7 +111,7 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
           closeDetail();
           setRegMode("edit");
           setInitialForEdit({
-            bomId: rec.bomId,
+            bomId: rec.bomCodeId,
             partCode: rec.partCode,
             partName: rec.partName,
             category: rec.category,

@@ -12,10 +12,11 @@ export interface Material {
 
 /** 서버가 반환하는 레코드(조회/상세) */
 export interface BOMRecord {
-  bomId: string;
-  partName: string;
-  partCode: string;
+  bomCodeId: string;
+  bomCode: string;
   category: PartCate;
+  partCode: string;
+  partName: string;
   materials: Material[];
   createdDate: string;
 }

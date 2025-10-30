@@ -1,3 +1,4 @@
+import { INVENTORY_ENDPOINTS } from "../api";
 import type { BOMRecord, BOMCreateDTO, BOMUpdateDTO } from "./BOMTypes";
 
 export const bomKeys = {
@@ -22,16 +23,16 @@ export async function fetchBOMRecords(
   params?: BOMListParams
 ): Promise<ListResponse<BOMRecord[]>> {
   const qs = new URLSearchParams();
-  if (params?.q) qs.set("q", params.q);
   if (params?.category) qs.set("category", params.category);
   if (params?.startDate) qs.set("startDate", params.startDate);
   if (params?.endDate) qs.set("endDate", params.endDate);
+  if (params?.q) qs.set("keyword", params.q);
   if (params?.page) qs.set("page", String(params.page));
-  if (params?.pageSize) qs.set("pageSize", String(params.pageSize));
+  if (params?.pageSize) qs.set("size", String(params.pageSize));
 
   const url = qs.toString()
-    ? `/api/bom/records?${qs.toString()}`
-    : `/api/bom/records`;
+    ? `${INVENTORY_ENDPOINTS.BOM_LIST}/getBomList?${qs.toString()}`
+    : `${INVENTORY_ENDPOINTS.BOM_LIST}/getBomList`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error(`BOM 목록 요청 실패 (${res.status})`);
