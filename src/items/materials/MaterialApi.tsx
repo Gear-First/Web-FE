@@ -79,7 +79,6 @@ export async function fetchMaterialRecords(
   };
 }
 
-// 상세/생성/수정/삭제: 기존(MSW) 유지
 export async function fetchMaterialDetail(id: string): Promise<MaterialRecord> {
   const res = await fetch(`/api/materials/records/${id}`);
   if (!res.ok) throw new Error(`Material 상세 요청 실패 (${res.status})`);
@@ -88,11 +87,12 @@ export async function fetchMaterialDetail(id: string): Promise<MaterialRecord> {
 
 export async function createMaterial(
   payload: MaterialCreateDTO
-): Promise<MaterialRecord> {
-  const res = await fetch(`${INVENTORY_ENDPOINTS.MATERIALS_LIST}/addMaterial`, {
+): Promise<MaterialCreateDTO> {
+  const url = `${INVENTORY_ENDPOINTS.MATERIALS_LIST}/addMaterial`;
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
+    body: JSON.stringify([payload]),
   });
   if (!res.ok) throw new Error(`자재 생성 실패 (${res.status})`);
   return res.json();
