@@ -1,5 +1,5 @@
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
-import type { PartRecord, PartStatus } from "../PartTypes";
+import type { InventoryPartRecord, PartStatus } from "../PartTypes";
 
 // 요청 상태
 const statusVariant: Record<PartStatus, "rejected" | "info" | "success"> = {
@@ -8,7 +8,7 @@ const statusVariant: Record<PartStatus, "rejected" | "info" | "success"> = {
   부족: "rejected",
 };
 
-export default function PartTable({ rows }: { rows: PartRecord[] }) {
+export default function PartTable({ rows }: { rows: InventoryPartRecord[] }) {
   return (
     <>
       <Table>

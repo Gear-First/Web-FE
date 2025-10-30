@@ -1,199 +1,137 @@
-/** 서버 카테고리 모델 (응답용) */
-export interface ServerPartCategory {
-  id: number;
-  name: string;
-  description?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
+import { trimOrUndefined, toBoolean } from "../../utils/string";
 
-/** 서버 목록 아이템 */
+/** 서버 응답 스키마 */
+export interface ServerPartCategory {
+  id: number | string;
+  name: string;
+}
 export interface ServerPartListItem {
-  id: number;
+  id: number | string;
   code: string;
   name: string;
-  category: { id: number; name: string };
+  category?: ServerPartCategory;
   createdAt?: string;
 }
-
-/** 서버 상세 */
 export interface ServerPartDetail {
-  id: number;
+  id: number | string;
   code: string;
   name: string;
   price: number;
-  category: { id: number; name: string };
+  category?: ServerPartCategory;
   imageUrl?: string;
   enabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
 
-/** 공통 래퍼 */
-export interface ApiResponse<T> {
-  status: number;
-  success: boolean;
-  message: string;
-  data: T;
-}
-
-export interface PageData<T> {
-  items: T[];
-  page: number;
-  size: number;
-  total: number;
-}
-
-/* ================= 화면 모델 ================= */
-
-/** 서버 카테고리 모델 */
-export interface PartCategory {
-  id: number;
-  name: string;
-  description?: string;
-}
-
-/** 목록/테이블용 레코드 */
-export interface PartRecords {
+/** UI 레코드 (테이블) — 서버와 거의 동일, 필드만 평탄화 */
+export interface PartRecord {
   partId: string;
-  partName: string;
   partCode: string;
-  category: PartCategory;
-  enabled?: boolean;
-  createdDate: string;
-}
-
-/** 상세 전용(상세 화면/수정 프리필) */
-export interface PartDetail {
-  partId: string;
   partName: string;
-  partCode: string;
-  price: number;
-  category: PartCategory;
-  imageUrl?: string;
-  enabled: boolean;
+  category: { id: number | string; name: string };
   createdDate: string; // createdAt
+  enabled?: boolean; // 상세에는 필수, 목록에는 선택 (서버에 따라 없을 수 있음)
+}
+
+/** UI 상세 레코드 */
+export interface PartDetailRecord extends PartRecord {
+  price: number;
+  imageUrl?: string;
+  enabled: boolean; // 상세는 항상 존재
   updatedDate: string; // updatedAt
 }
 
-/** 생성 DTO (서버로 전달) — 서버 스펙에 enabled 없음 */
-export interface PartCreateDTO {
-  partCode: string;
-  partName: string;
-  partPrice: number;
-  categoryId: number;
-  imageUrl?: string;
-}
-
-/** 수정 DTO (PATCH/PUT) — enabled 허용 */
-export type PartUpdateDTO = Partial<PartCreateDTO> & { enabled?: boolean };
-
-/** 화면 폼 모델(등록/수정 공용) */
+/** UI 폼 모델 */
 export interface PartFormModel {
   partCode: string;
   partName: string;
   partPrice: number;
-  categoryId: number;
+  categoryId: number | string;
   imageUrl?: string;
   enabled?: boolean; // 수정에서만 사용
 }
 
-/** (옵션) 기존 코드 호환용 별칭 — 필요 없으면 제거 */
-export type PartDTO = PartFormModel;
+/** 서버 DTO (서버 키로 통일) */
+export interface PartCreateDTO {
+  code: string;
+  name: string;
+  price: number;
+  categoryId: number | string;
+  imageUrl?: string;
+}
+export type PartUpdateDTO = Partial<PartCreateDTO> & { enabled?: boolean };
 
-/* =============== 매퍼 =============== */
+/** ===== 정규화 & 매핑 ===== */
 
-/** 서버 → 화면: 목록 아이템 */
-export const mapSvrListItemToRecord = (
-  svr: ServerPartListItem
-): PartRecords => ({
-  partId: String(svr.id),
-  partCode: svr.code,
-  partName: svr.name,
-  category: { id: svr.category.id, name: svr.category.name },
-  createdDate: svr.createdAt ?? "",
-});
+/** 폼 → 내부 정규화(한 번만) */
+function normalizePartForm(form: PartFormModel) {
+  return {
+    code: form.partCode.trim(),
+    name: form.partName.trim(),
+    price: Number(form.partPrice),
+    categoryId:
+      typeof form.categoryId === "string"
+        ? form.categoryId.trim()
+        : Number(form.categoryId),
+    imageUrl: trimOrUndefined(form.imageUrl),
+    enabled: toBoolean(form.enabled),
+  };
+}
 
-/** 서버 → 화면: 상세 */
-export const mapSvrDetailToDetail = (svr: ServerPartDetail): PartDetail => ({
-  partId: String(svr.id),
-  partCode: svr.code,
-  partName: svr.name,
-  price: svr.price,
-  category: { id: svr.category.id, name: svr.category.name },
-  imageUrl: svr.imageUrl,
-  enabled: svr.enabled,
-  createdDate: svr.createdAt,
-  updatedDate: svr.updatedAt,
-});
+/** 폼 -> 생성 DTO */
+export function toPartCreateDTO(form: PartFormModel): PartCreateDTO {
+  const n = normalizePartForm(form);
+  const dto: PartCreateDTO = {
+    code: n.code,
+    name: n.name,
+    price: n.price,
+    // 문자열/숫자 모두 허용(서버 스펙에 맞게)
+    categoryId: n.categoryId,
+  };
+  if (n.imageUrl !== undefined) dto.imageUrl = n.imageUrl;
+  return dto;
+}
 
-/** 화면 폼 → 생성 payload(서버 바디) */
-export const toPartCreateBody = (dto: PartFormModel) => ({
-  code: dto.partCode.trim(),
-  name: dto.partName.trim(),
-  price: Number(dto.partPrice),
-  categoryId: Number(dto.categoryId),
-  ...(dto.imageUrl ? { imageUrl: dto.imageUrl.trim() } : {}),
-  // enabled는 생성 스펙에 없으므로 제외
-});
-
-/** 화면 폼 → 수정 payload(서버 바디) */
-export const toPartUpdateBody = (dto: PartFormModel) => {
-  const body: {
-    code?: string;
-    name?: string;
-    price?: number;
-    categoryId?: number;
-    imageUrl?: string;
-    enabled?: boolean;
-  } = {};
-  if (dto.partCode) body.code = dto.partCode.trim();
-  if (dto.partName) body.name = dto.partName.trim();
-  if (dto.partPrice != null) body.price = Number(dto.partPrice);
-  if (dto.categoryId != null) body.categoryId = Number(dto.categoryId);
-  if (dto.imageUrl != null && dto.imageUrl !== "")
-    body.imageUrl = dto.imageUrl.trim();
-  if (dto.enabled != null) body.enabled = Boolean(dto.enabled);
-  return body;
-};
-
-export const toPartCreatePayload = (form: PartFormModel): PartCreateDTO => ({
-  partCode: form.partCode.trim(),
-  partName: form.partName.trim(),
-  partPrice: Number(form.partPrice),
-  categoryId: Number(form.categoryId),
-  ...(form.imageUrl ? { imageUrl: form.imageUrl.trim() } : {}),
-});
-
-export const toPartUpdatePayload = (form: PartFormModel): PartUpdateDTO => {
+/** 폼 -> 수정 DTO (Partial, omit 정책) */
+export function toPartUpdateDTO(form: PartFormModel): PartUpdateDTO {
+  const n = normalizePartForm(form);
   const patch: PartUpdateDTO = {};
-
-  if (form.partCode && form.partCode.trim() !== "") {
-    patch.partCode = form.partCode.trim();
-  }
-  if (form.partName && form.partName.trim() !== "") {
-    patch.partName = form.partName.trim();
-  }
-  if (form.partPrice != null) {
-    patch.partPrice = Number(form.partPrice);
-  }
-  if (form.categoryId != null) {
-    patch.categoryId = Number(form.categoryId);
-  }
-  if (form.imageUrl != null) {
-    const v = form.imageUrl.trim();
-    if (v !== "") patch.imageUrl = v;
-  }
-  if (form.enabled != null) {
-    patch.enabled = Boolean(form.enabled);
-  }
-
+  if (n.code) patch.code = n.code;
+  if (n.name) patch.name = n.name;
+  if (!Number.isNaN(n.price)) patch.price = n.price;
+  if (n.categoryId !== undefined) patch.categoryId = n.categoryId;
+  if (n.imageUrl !== undefined) patch.imageUrl = n.imageUrl;
+  if (n.enabled !== undefined) patch.enabled = n.enabled;
   return patch;
-};
+}
 
-/* =============== 응답 타입 별칭 (편의) =============== */
+/** 서버 → UI(목록) */
+export function mapServerToPartRecord(
+  s: ServerPartListItem | ServerPartDetail
+): PartRecord {
+  return {
+    partId: String(s.id),
+    partCode: s.code,
+    partName: s.name,
+    category: { id: s.category?.id ?? 0, name: s.category?.name ?? "" },
+    createdDate: "createdAt" in s ? s.createdAt ?? "" : "",
+    enabled:
+      "enabled" in s ? Boolean((s as ServerPartDetail).enabled) : undefined,
+  };
+}
 
-export type PartListResponse = ApiResponse<PageData<ServerPartListItem>>;
-export type PartDetailResponse = ApiResponse<ServerPartDetail>;
-export type PartCreateResponse = ApiResponse<ServerPartDetail>; // 생성 응답도 상세와 동일 구조
-export type PartUpdateResponse = ApiResponse<ServerPartDetail>;
+/** 서버 → UI(상세) */
+export function mapServerToPartDetail(s: ServerPartDetail): PartDetailRecord {
+  return {
+    partId: String(s.id),
+    partCode: s.code,
+    partName: s.name,
+    price: Number(s.price ?? 0),
+    category: { id: s.category?.id ?? 0, name: s.category?.name ?? "" },
+    imageUrl: s.imageUrl || undefined,
+    enabled: Boolean(s.enabled),
+    createdDate: s.createdAt ?? "",
+    updatedDate: s.updatedAt ?? "",
+  };
+}

@@ -20,10 +20,10 @@ import PartRegisterModal from "./components/PartRegisterModal";
 
 import { partKeys, fetchPartRecords, createPart } from "./PartApi";
 import {
-  type PartRecords,
+  toPartCreateDTO,
   type PartCreateDTO,
-  toPartCreatePayload,
   type PartFormModel,
+  type PartRecord,
 } from "./PartTypes";
 import type { ListResponse } from "../../api";
 
@@ -85,7 +85,7 @@ export default function PartPage() {
     pageSize,
   };
 
-  const { data, fetchStatus } = useQuery<ListResponse<PartRecords[]>, Error>({
+  const { data, fetchStatus } = useQuery<ListResponse<PartRecord[]>, Error>({
     queryKey,
     queryFn: () => fetchPartRecords(params),
     staleTime: 5 * 60 * 1000,
@@ -122,7 +122,7 @@ export default function PartPage() {
   }, []);
 
   // 생성 뮤테이션 (UI DTO → 서버 바디 매핑은 createPart 내부에서 처리)
-  const createMut = useMutation<PartRecords, Error, PartCreateDTO>({
+  const createMut = useMutation<PartRecord, Error, PartCreateDTO>({
     mutationFn: createPart,
     onSuccess: () => {
       // 현재 페이지 포함 전체 리스트 무효화
@@ -222,7 +222,7 @@ export default function PartPage() {
         initial={initialForEdit}
         onSubmit={async (form: PartFormModel) => {
           if (regMode === "create") {
-            const dto = toPartCreatePayload(form);
+            const dto = toPartCreateDTO(form);
             await createMut.mutateAsync(dto);
           }
         }}

@@ -1,4 +1,4 @@
-import type { PartRecord } from "./PartTypes";
+import type { InventoryPartRecord } from "./PartTypes";
 
 // --- query keys ---
 export const partKeys = {
@@ -30,5 +30,5 @@ export async function fetchPartRecords(params: PartQueryParams) {
 
   const res = await fetch(`/api/part/records?${qs.toString()}`);
   if (!res.ok) throw new Error("Failed to fetch part records");
-  return (await res.json()) as ListResponse<PartRecord[]>;
+  return (await res.json()) as ListResponse<InventoryPartRecord[]>;
 }

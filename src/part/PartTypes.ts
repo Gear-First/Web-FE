@@ -1,6 +1,6 @@
 export type PartStatus = "여유" | "적정" | "부족";
 
-export interface PartRecord {
+export interface InventoryPartRecord {
   id: string; // 고유 식별자
   warehouseId: string; // 창고번호
   partCode: string; // 부품코드

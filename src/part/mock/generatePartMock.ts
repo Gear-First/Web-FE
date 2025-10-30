@@ -1,4 +1,4 @@
-import type { PartRecord, PartStatus } from "../PartTypes";
+import type { InventoryPartRecord, PartStatus } from "../PartTypes";
 
 /** 간단한 LCG(Linear Congruential Generator) — 재현 가능한 난수 */
 function createRNG(seed = 123456789) {
@@ -68,9 +68,12 @@ const PART_POOL = [
 ];
 
 /** id 필드 포함 */
-export function generatePartMock(count: number, seed = 20251026): PartRecord[] {
+export function generatePartMock(
+  count: number,
+  seed = 20251026
+): InventoryPartRecord[] {
   const rng = createRNG(seed);
-  const rows: PartRecord[] = [];
+  const rows: InventoryPartRecord[] = [];
 
   // for문 그대로, seen 제거
   for (let i = 0; i < count; i++) {

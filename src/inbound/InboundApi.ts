@@ -1,4 +1,8 @@
-import { WAREHOUSE_ENDPOINTS, type ApiResponse } from "../api";
+import {
+  WAREHOUSE_ENDPOINTS,
+  type ApiResponse,
+  type ListResponse,
+} from "../api";
 import type {
   InboundDetailRecord,
   InboundDetailStatusRaw,
@@ -25,16 +29,6 @@ export type InboundListParams = {
   /** 페이지네이션: 서버는 page/size 사용 */
   page?: number; // 주의: 서버가 0/1 기반 혼용 가능 – 아래 meta에서 +1로 UI 표기
   pageSize?: number; // 서버 파라미터명은 size
-};
-
-export type ListResponse<T> = {
-  data: T;
-  meta?: {
-    total: number;
-    page: number; // UI 표기용(1-based)
-    pageSize: number;
-    totalPages: number;
-  };
 };
 
 // ── 서버 응답 모델 ──────────────────────────────────────────

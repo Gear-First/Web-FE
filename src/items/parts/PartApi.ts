@@ -1,16 +1,16 @@
-import type {
-  PartRecords,
-  PartCreateDTO,
-  PartUpdateDTO,
-  PartDetail,
-  PartCategory,
+import {
+  type PartCreateDTO,
+  type PartUpdateDTO,
+  toPartUpdateDTO,
+  toPartCreateDTO,
+  type PartRecord,
+  type PartDetailRecord,
 } from "./PartTypes";
 import {
   type ApiResponse,
   type ListResponse,
   WAREHOUSE_ENDPOINTS,
 } from "../../api";
-import { toPartCreateBody, toPartUpdateBody } from "./PartTypes";
 
 /** React Query keys */
 export const partKeys = {
@@ -64,7 +64,7 @@ type ServerPartDetail = {
 /* ========== 유틸/매핑 ========== */
 const looksLikeCode = (q: string) => /^[A-Za-z0-9._-]+$/.test(q);
 
-function toPartRecord(s: ServerPartListItem | ServerPartDetail): PartRecords {
+function toPartRecord(s: ServerPartListItem | ServerPartDetail): PartRecord {
   return {
     partId: String(s.id),
     partCode: s.code,
@@ -78,7 +78,7 @@ function toPartRecord(s: ServerPartListItem | ServerPartDetail): PartRecords {
   };
 }
 
-function toPartDetail(s: ServerPartDetail): PartDetail {
+function toPartDetail(s: ServerPartDetail): PartDetailRecord {
   return {
     partId: String(s.id),
     partCode: s.code,
@@ -137,7 +137,7 @@ function buildQuery(params?: PartListParams) {
 /** 목록 조회 */
 export async function fetchPartRecords(
   params?: PartListParams
-): Promise<ListResponse<PartRecords[]>> {
+): Promise<ListResponse<PartRecord[]>> {
   const qs = buildQuery(params);
   const url = qs.toString()
     ? `${WAREHOUSE_ENDPOINTS.PARTS_LIST}?${qs.toString()}`
@@ -165,10 +165,9 @@ export async function fetchPartRecords(
   };
 }
 
-/** 상세 조회 */
 export async function fetchPartDetail(
   id: string | number
-): Promise<PartDetail> {
+): Promise<PartDetailRecord> {
   const url = `${WAREHOUSE_ENDPOINTS.PARTS_LIST}/${id}`;
   const res = await fetch(url, { method: "GET" });
   if (!res.ok) throw new Error(`Part 상세 요청 실패 (${res.status})`);
@@ -177,13 +176,12 @@ export async function fetchPartDetail(
   return toPartDetail(json.data);
 }
 
-/** 생성 — UI DTO → 서버 바디 매핑 사용 */
-export async function createPart(payload: PartCreateDTO): Promise<PartRecords> {
-  const body = toPartCreateBody({
+export async function createPart(payload: PartCreateDTO): Promise<PartRecord> {
+  const body = toPartCreateDTO({
     // PartCreateDTO(화면명)과 PartFormModel 구조가 같다는 전제. 필요시 변환.
-    partCode: payload.partCode,
-    partName: payload.partName,
-    partPrice: payload.partPrice,
+    partCode: payload.code,
+    partName: payload.name,
+    partPrice: payload.price,
     categoryId: payload.categoryId,
     imageUrl: payload.imageUrl,
   });
@@ -203,11 +201,11 @@ export async function createPart(payload: PartCreateDTO): Promise<PartRecords> {
 export async function updatePart(
   id: string | number,
   patch: PartUpdateDTO
-): Promise<PartRecords> {
-  const body = toPartUpdateBody({
-    partCode: patch.partCode ?? "",
-    partName: patch.partName ?? "",
-    partPrice: patch.partPrice as number,
+): Promise<PartRecord> {
+  const body = toPartUpdateDTO({
+    partCode: patch.code ?? "",
+    partName: patch.name ?? "",
+    partPrice: patch.price as number,
     categoryId: patch.categoryId as number,
     imageUrl: patch.imageUrl,
     enabled: patch.enabled,
@@ -240,7 +238,7 @@ export async function deletePart(
 /** 카테고리 목록 조회 */
 export async function fetchPartCategories(
   keyword?: string
-): Promise<PartCategory[]> {
+): Promise<ServerPartCategory[]> {
   const base =
     WAREHOUSE_ENDPOINTS.PART_CATEGORIES ??
     `${WAREHOUSE_ENDPOINTS.PARTS_LIST}/categories`;
@@ -251,7 +249,7 @@ export async function fetchPartCategories(
 
   const res = await fetch(url, { method: "GET" });
   if (!res.ok) throw new Error(`카테고리 목록 요청 실패 (${res.status})`);
-  const json: ApiResponse<PartCategory[]> = await res.json();
+  const json: ApiResponse<ServerPartCategory[]> = await res.json();
   if (!json.success) throw new Error(json.message || "카테고리 목록 조회 실패");
   return json.data;
 }

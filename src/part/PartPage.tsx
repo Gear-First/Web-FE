@@ -17,7 +17,7 @@ import {
   type PartQueryParams,
   type ListResponse,
 } from "./PartApi";
-import type { PartRecord } from "./PartTypes";
+import type { InventoryPartRecord } from "./PartTypes";
 import SearchBox from "../components/common/SearchBox";
 import Button from "../components/common/Button";
 import resetIcon from "../assets/reset.svg";
@@ -47,7 +47,7 @@ export default function PartPage() {
   };
 
   const { data, fetchStatus, isLoading } = useQuery<
-    ListResponse<PartRecord[]>,
+    ListResponse<InventoryPartRecord[]>,
     Error
   >({
     queryKey: [...partKeys.records, params],

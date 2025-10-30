@@ -6,17 +6,15 @@ import PartRegisterModal from "./PartRegisterModal";
 import PartDetailModal from "./PartDetailModal";
 
 import {
-  toPartUpdatePayload,
+  toPartUpdateDTO,
   type PartFormModel,
-  type PartRecords,
+  type PartRecord,
   type PartUpdateDTO,
 } from "../PartTypes";
 import { partKeys, deletePart, updatePart } from "../PartApi";
 
-export default function PartTable({ rows }: { rows: PartRecords[] }) {
-  const [selectedRecord, setSelectedRecord] = useState<PartRecords | null>(
-    null
-  );
+export default function PartTable({ rows }: { rows: PartRecord[] }) {
+  const [selectedRecord, setSelectedRecord] = useState<PartRecord | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
 
   // 등록/수정 겸용 모달
@@ -31,7 +29,7 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
 
   const queryClient = useQueryClient();
 
-  const openDetail = (rec: PartRecords) => {
+  const openDetail = (rec: PartRecord) => {
     setSelectedRecord(rec);
     setIsDetailOpen(true);
   };
@@ -41,7 +39,7 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
   };
 
   const updateMut = useMutation<
-    PartRecords,
+    PartRecord,
     Error,
     { id: string; patch: PartUpdateDTO }
   >({
@@ -133,7 +131,7 @@ export default function PartTable({ rows }: { rows: PartRecords[] }) {
         onSubmit={async (form: PartFormModel) => {
           if (regMode !== "edit") return;
           if (!editingId) return;
-          const patch = toPartUpdatePayload(form);
+          const patch = toPartUpdateDTO(form);
           await updateMut.mutateAsync({ id: editingId, patch });
         }}
       />
