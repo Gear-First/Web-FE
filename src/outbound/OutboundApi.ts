@@ -1,570 +1,126 @@
-import type { OutboundRecord } from "./OutboundTypes";
+// OutboundApi.ts
+import axios from "axios";
+import type {
+  OutboundRecord,
+  OutboundStatus,
+  OutboundPartStatus,
+} from "./OutboundTypes";
 
 export const outboundKeys = {
   records: ["outbound", "records"] as const,
 };
 
-export const mockRecords: OutboundRecord[] = [
-  {
-    outboundId: "OUT1-250101-001",
-    issuedDate: "2025-01-01",
-    expectedDeliveryDate: "2025-01-03",
-    receiptDate: "2025-01-01",
-    destination: "서울 대리점",
-    manager: "김도윤",
-    managerPosition: "물류담당",
-    managerContact: "doyoon.kim@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 1",
-    remarks: "긴급 출고 요청",
-    partItems: [
-      {
-        partCode: "PRT-BRK-001",
-        partName: "브레이크 패드 세트",
-        outboundQuantity: 40,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT2-250102-002",
-    issuedDate: "2025-01-02",
-    expectedDeliveryDate: "2025-01-04",
-    receiptDate: "2025-01-02",
-    destination: "부산 대리점",
-    manager: "이민호",
-    managerPosition: "창고관리자",
-    managerContact: "minho.lee@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 2",
-    remarks: "부산 지역 출고",
-    partItems: [
-      {
-        partCode: "PRT-TIR-004",
-        partName: "타이어 18인치",
-        outboundQuantity: 80,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT3-250103-003",
-    issuedDate: "2025-01-03",
-    expectedDeliveryDate: "2025-01-05",
-    receiptDate: "2025-01-03",
-    destination: "대전 대리점",
-    manager: "박수진",
-    managerPosition: "물류주임",
-    managerContact: "sujin.park@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 3",
-    remarks: "출고 완료",
-    partItems: [
-      { partCode: "PRT-BAT-008", partName: "배터리 12V", outboundQuantity: 25 },
-    ],
-  },
-  {
-    outboundId: "OUT4-250104-004",
-    issuedDate: "2025-01-04",
-    expectedDeliveryDate: "2025-01-06",
-    receiptDate: "2025-01-04",
-    destination: "인천 대리점",
-    manager: "최지훈",
-    managerPosition: "출고담당",
-    managerContact: "jihun.choi@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 4",
-    remarks: "인천 출고 진행",
-    partItems: [
-      {
-        partCode: "PRT-LGT-011",
-        partName: "전조등 램프",
-        outboundQuantity: 120,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT5-250105-005",
-    issuedDate: "2025-01-05",
-    expectedDeliveryDate: "2025-01-07",
-    receiptDate: "2025-01-05",
-    destination: "광주 대리점",
-    manager: "한서준",
-    managerPosition: "팀장",
-    managerContact: "seojun.han@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 5",
-    remarks: "예비 부품 출고",
-    partItems: [
-      {
-        partCode: "PRT-PLG-007",
-        partName: "점화 플러그",
-        outboundQuantity: 150,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT6-250106-006",
-    issuedDate: "2025-01-06",
-    expectedDeliveryDate: "2025-01-08",
-    receiptDate: "2025-01-06",
-    destination: "대구 대리점",
-    manager: "윤하늘",
-    managerPosition: "물류보조",
-    managerContact: "haneul.yoon@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 6",
-    remarks: "정비용 출고 완료",
-    partItems: [
-      { partCode: "PRT-FUL-009", partName: "연료 필터", outboundQuantity: 60 },
-    ],
-  },
-  {
-    outboundId: "OUT7-250107-007",
-    issuedDate: "2025-01-07",
-    expectedDeliveryDate: "2025-01-09",
-    receiptDate: "2025-01-07",
-    destination: "수원 대리점",
-    manager: "오태양",
-    managerPosition: "배송담당",
-    managerContact: "taeyang.oh@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 7",
-    remarks: "정기 출고",
-    partItems: [
-      {
-        partCode: "PRT-OLI-002",
-        partName: "엔진 오일 필터",
-        outboundQuantity: 90,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT8-250108-008",
-    issuedDate: "2025-01-08",
-    expectedDeliveryDate: "2025-01-10",
-    receiptDate: "2025-01-08",
-    destination: "창원 대리점",
-    manager: "장유진",
-    managerPosition: "물류주임",
-    managerContact: "yujin.jang@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 8",
-    remarks: "출고 대기 중",
-    partItems: [
-      {
-        partCode: "PRT-BEL-005",
-        partName: "엔진 벨트 세트",
-        outboundQuantity: 45,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT9-250109-009",
-    issuedDate: "2025-01-09",
-    expectedDeliveryDate: "2025-01-11",
-    receiptDate: "2025-01-09",
-    destination: "포항 대리점",
-    manager: "정하린",
-    managerPosition: "물류관리자",
-    managerContact: "harin.jung@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 9",
-    remarks: "신규 부품 공급",
-    partItems: [
-      { partCode: "PRT-EXH-013", partName: "배기 밸브", outboundQuantity: 30 },
-    ],
-  },
-  {
-    outboundId: "OUT10-250110-010",
-    issuedDate: "2025-01-10",
-    expectedDeliveryDate: "2025-01-12",
-    receiptDate: "2025-01-10",
-    destination: "울산 대리점",
-    manager: "남도현",
-    managerPosition: "물류팀장",
-    managerContact: "dohyun.nam@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 10",
-    remarks: "출고 완료",
-    partItems: [
-      {
-        partCode: "PRT-CBL-014",
-        partName: "전원 케이블",
-        outboundQuantity: 200,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT11-250111-011",
-    issuedDate: "2025-01-11",
-    expectedDeliveryDate: "2025-01-13",
-    receiptDate: "2025-01-11",
-    destination: "제주 대리점",
-    manager: "홍지우",
-    managerPosition: "물류보조",
-    managerContact: "jiwoo.hong@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 11",
-    remarks: "해상 운송",
-    partItems: [
-      { partCode: "PRT-PMP-018", partName: "워터 펌프", outboundQuantity: 75 },
-    ],
-  },
-  {
-    outboundId: "OUT12-250112-012",
-    issuedDate: "2025-01-12",
-    expectedDeliveryDate: "2025-01-14",
-    receiptDate: "2025-01-12",
-    destination: "세종 대리점",
-    manager: "정세린",
-    managerPosition: "출고담당",
-    managerContact: "serin.jung@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 12",
-    remarks: "정상 출고 완료",
-    partItems: [
-      { partCode: "PRT-ACU-021", partName: "제어 유닛", outboundQuantity: 55 },
-    ],
-  },
-  {
-    outboundId: "OUT13-250113-013",
-    issuedDate: "2025-01-13",
-    expectedDeliveryDate: "2025-01-15",
-    receiptDate: "2025-01-13",
-    destination: "안양 대리점",
-    manager: "백시우",
-    managerPosition: "팀원",
-    managerContact: "siwoo.baek@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 13",
-    remarks: "출고 준비 중",
-    partItems: [
-      {
-        partCode: "PRT-MIR-015",
-        partName: "백미러 세트",
-        outboundQuantity: 40,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT14-250114-014",
-    issuedDate: "2025-01-14",
-    expectedDeliveryDate: "2025-01-16",
-    receiptDate: "2025-01-14",
-    destination: "원주 대리점",
-    manager: "서라온",
-    managerPosition: "물류팀장",
-    managerContact: "raon.seo@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 14",
-    remarks: "출고 완료",
-    partItems: [
-      {
-        partCode: "PRT-GLS-010",
-        partName: "유리창 세트",
-        outboundQuantity: 15,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT15-250115-015",
-    issuedDate: "2025-01-15",
-    expectedDeliveryDate: "2025-01-17",
-    receiptDate: "2025-01-15",
-    destination: "평택 대리점",
-    manager: "이도겸",
-    managerPosition: "배송팀원",
-    managerContact: "dokyeom.lee@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 15",
-    remarks: "정기 출고",
-    partItems: [
-      {
-        partCode: "PRT-WIP-019",
-        partName: "와이퍼 블레이드",
-        outboundQuantity: 130,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT16-250116-016",
-    issuedDate: "2025-01-16",
-    expectedDeliveryDate: "2025-01-18",
-    receiptDate: "2025-01-16",
-    destination: "세종 대리점",
-    manager: "권도연",
-    managerPosition: "물류주임",
-    managerContact: "doyeon.kwon@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 16",
-    remarks: "정상 출고 완료",
-    partItems: [
-      { partCode: "PRT-AIR-017", partName: "에어필터", outboundQuantity: 55 },
-    ],
-  },
-  {
-    outboundId: "OUT17-250117-017",
-    issuedDate: "2025-01-17",
-    expectedDeliveryDate: "2025-01-19",
-    receiptDate: "2025-01-17",
-    destination: "고양 대리점",
-    manager: "박재민",
-    managerPosition: "팀원",
-    managerContact: "jaemin.park@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 17",
-    remarks: "정기 출고 중",
-    partItems: [
-      { partCode: "PRT-PMP-018", partName: "워터 펌프", outboundQuantity: 22 },
-    ],
-  },
-  {
-    outboundId: "OUT18-250118-018",
-    issuedDate: "2025-01-18",
-    expectedDeliveryDate: "2025-01-20",
-    receiptDate: "2025-01-18",
-    destination: "김해 대리점",
-    manager: "이도겸",
-    managerPosition: "물류보조",
-    managerContact: "dokyeom.lee@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 18",
-    remarks: "대기 출고",
-    partItems: [
-      { partCode: "PRT-SNS-019", partName: "산소 센서", outboundQuantity: 25 },
-    ],
-  },
-  {
-    outboundId: "OUT19-250119-019",
-    issuedDate: "2025-01-19",
-    expectedDeliveryDate: "2025-01-21",
-    receiptDate: "2025-01-19",
-    destination: "수원 대리점",
-    manager: "김세아",
-    managerPosition: "배송주임",
-    managerContact: "sea.kim@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 19",
-    remarks: "납품 완료",
-    partItems: [
-      { partCode: "PRT-ALT-020", partName: "알터네이터", outboundQuantity: 10 },
-    ],
-  },
-  {
-    outboundId: "OUT20-250120-020",
-    issuedDate: "2025-01-20",
-    expectedDeliveryDate: "2025-01-22",
-    receiptDate: "2025-01-20",
-    destination: "천안 대리점",
-    manager: "이서진",
-    managerPosition: "물류담당",
-    managerContact: "seojin.lee@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 20",
-    remarks: "천안 출고 중",
-    partItems: [
-      {
-        partCode: "PRT-CLT-021",
-        partName: "클러치 디스크",
-        outboundQuantity: 32,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT21-250121-021",
-    issuedDate: "2025-01-21",
-    expectedDeliveryDate: "2025-01-23",
-    receiptDate: "2025-01-21",
-    destination: "원주 대리점",
-    manager: "남유진",
-    managerPosition: "배송팀",
-    managerContact: "yujin.nam@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 21",
-    remarks: "출고 대기 중",
-    partItems: [
-      {
-        partCode: "PRT-MIR-022",
-        partName: "사이드 미러",
-        outboundQuantity: 12,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT22-250122-022",
-    issuedDate: "2025-01-22",
-    expectedDeliveryDate: "2025-01-24",
-    receiptDate: "2025-01-22",
-    destination: "광명 대리점",
-    manager: "정태윤",
-    managerPosition: "물류팀",
-    managerContact: "taeyoon.jung@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 22",
-    remarks: "광명 출고 완료",
-    partItems: [
-      {
-        partCode: "PRT-DRS-023",
-        partName: "도어 스위치",
-        outboundQuantity: 28,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT23-250123-023",
-    issuedDate: "2025-01-23",
-    expectedDeliveryDate: "2025-01-25",
-    receiptDate: "2025-01-23",
-    destination: "성남 대리점",
-    manager: "김하린",
-    managerPosition: "배송담당",
-    managerContact: "harin.kim@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 23",
-    remarks: "성남 출고 중",
-    partItems: [
-      {
-        partCode: "PRT-HOS-024",
-        partName: "냉각수 호스",
-        outboundQuantity: 50,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT24-250124-024",
-    issuedDate: "2025-01-24",
-    expectedDeliveryDate: "2025-01-26",
-    receiptDate: "2025-01-24",
-    destination: "안산 대리점",
-    manager: "오지훈",
-    managerPosition: "물류보조",
-    managerContact: "jihoon.oh@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 24",
-    remarks: "예비 부품 출고 예정",
-    partItems: [
-      {
-        partCode: "PRT-TRM-025",
-        partName: "도어 트림 패널",
-        outboundQuantity: 14,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT25-250125-025",
-    issuedDate: "2025-01-25",
-    expectedDeliveryDate: "2025-01-27",
-    receiptDate: "2025-01-25",
-    destination: "의정부 대리점",
-    manager: "임다온",
-    managerPosition: "물류담당",
-    managerContact: "daeon.lim@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 25",
-    remarks: "출고 정상 처리",
-    partItems: [
-      {
-        partCode: "PRT-AXL-026",
-        partName: "드라이브 샤프트",
-        outboundQuantity: 8,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT26-250126-026",
-    issuedDate: "2025-01-26",
-    expectedDeliveryDate: "2025-01-28",
-    receiptDate: "2025-01-26",
-    destination: "부천 대리점",
-    manager: "송은재",
-    managerPosition: "배송팀",
-    managerContact: "eunjae.song@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 26",
-    remarks: "부천 출고",
-    partItems: [
-      {
-        partCode: "PRT-CAL-027",
-        partName: "브레이크 캘리퍼",
-        outboundQuantity: 16,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT27-250127-027",
-    issuedDate: "2025-01-27",
-    expectedDeliveryDate: "2025-01-29",
-    receiptDate: "2025-01-27",
-    destination: "청주 대리점",
-    manager: "노지안",
-    managerPosition: "물류주임",
-    managerContact: "jian.noh@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 27",
-    remarks: "청주 대리점 보충",
-    partItems: [
-      { partCode: "PRT-RAD-028", partName: "라디에이터", outboundQuantity: 11 },
-    ],
-  },
-  {
-    outboundId: "OUT28-250128-028",
-    issuedDate: "2025-01-28",
-    expectedDeliveryDate: "2025-01-30",
-    receiptDate: "2025-01-28",
-    destination: "경산 대리점",
-    manager: "권도현",
-    managerPosition: "창고관리자",
-    managerContact: "dohyun.kwon@autoparts.co.kr",
-    status: "완료",
-    deliveryFactory: "창고 28",
-    remarks: "납품 완료",
-    partItems: [
-      {
-        partCode: "PRT-STM-029",
-        partName: "스티어링 모터",
-        outboundQuantity: 9,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT29-250129-029",
-    issuedDate: "2025-01-29",
-    expectedDeliveryDate: "2025-01-31",
-    receiptDate: "2025-01-29",
-    destination: "목포 대리점",
-    manager: "위다연",
-    managerPosition: "물류담당",
-    managerContact: "dayeon.wi@autoparts.co.kr",
-    status: "진행중",
-    deliveryFactory: "창고 29",
-    remarks: "목포 출고",
-    partItems: [
-      {
-        partCode: "PRT-ECU-030",
-        partName: "엔진 제어 유닛(ECU)",
-        outboundQuantity: 6,
-      },
-    ],
-  },
-  {
-    outboundId: "OUT30-250130-030",
-    issuedDate: "2025-01-30",
-    expectedDeliveryDate: "2025-02-01",
-    receiptDate: "2025-01-30",
-    destination: "제천 대리점",
-    manager: "백서준",
-    managerPosition: "배송담당",
-    managerContact: "seojun.baek@autoparts.co.kr",
-    status: "대기",
-    deliveryFactory: "창고 30",
-    remarks: "월말 출고",
-    partItems: [
-      { partCode: "PRT-TPM-031", partName: "TPMS 센서", outboundQuantity: 26 },
-    ],
-  },
-];
+export type OutboundListParams = {
+  status?: OutboundStatus | "ALL";
+  q?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  page?: number; // 0-based
+  pageSize?: number; // e.g. 10
+};
 
-// --- API 함수 ---
-export async function fetchOutboundRecords(): Promise<OutboundRecord[]> {
-  // return (await axios.get("/api/outbound/records")).data;
-  return mockRecords;
+export type ListResponse<T> = {
+  data: T;
+  meta?: { total: number; page: number; pageSize: number; totalPages: number };
+};
+
+// 한글 → 서버 코드
+const STATUS_TO_SERVER: Record<OutboundStatus, string> = {
+  대기: "PENDING",
+  지연: "DELAYED",
+  진행중: "IN_PROGRESS",
+  완료: "COMPLETED",
+};
+// 서버 코드 → 한글
+const STATUS_TO_KO: Record<string, OutboundStatus> = {
+  PENDING: "대기",
+  DELAYED: "지연",
+  IN_PROGRESS: "진행중",
+  COMPLETED: "완료",
+};
+
+export async function fetchOutboundRecords(
+  params?: OutboundListParams
+): Promise<ListResponse<OutboundRecord[]>> {
+  const qs = new URLSearchParams();
+
+  // ALL은 보내지 않음
+  if (params?.status && params.status !== "ALL") {
+    qs.set("status", STATUS_TO_SERVER[params.status]);
+  }
+  if (params?.q) qs.set("q", params.q);
+  if (params?.startDate) qs.set("startDate", params.startDate);
+  if (params?.endDate) qs.set("endDate", params.endDate);
+
+  // 0도 포함되도록 체크
+  if (params?.page !== undefined) qs.set("page", String(params.page));
+  if (params?.pageSize !== undefined)
+    qs.set("pageSize", String(params.pageSize));
+
+  const url = `http://34.120.215.23/warehouse/api/v1/shipping/notes?${qs.toString()}`;
+  const res = await axios.get(url);
+
+  if (res.status !== 200)
+    throw new Error(`출고 데이터 요청 실패 (${res.status})`);
+
+  const { items, total, page, size } = res.data?.data ?? {};
+
+  const mapped: OutboundRecord[] = (items ?? []).map((it: any) => ({
+    outboundId: String(it.noteId),
+    issuedDate: it.completedAt || "-", // 출고일시
+    destination: it.customerName ?? "-",
+    totalQuantity: it.totalQty ?? 0,
+    status: STATUS_TO_KO[it.status] ?? "대기",
+  }));
+
+  const _size = size ?? params?.pageSize ?? 20;
+  return {
+    data: mapped,
+    meta: {
+      total: total ?? 0,
+      page: page ?? params?.page ?? 0,
+      pageSize: _size,
+      totalPages: Math.max(1, Math.ceil((total ?? 0) / _size)),
+    },
+  };
+}
+
+// --- 출고 상세 조회 API ---
+export async function fetchOutboundDetail(
+  noteId: string
+): Promise<OutboundRecord> {
+  const url = `http://34.120.215.23/warehouse/api/v1/shipping/${noteId}`;
+  const res = await axios.get(url);
+
+  if (res.status !== 200) {
+    throw new Error(`출고 상세 요청 실패 (${res.status})`);
+  }
+
+  const data = res.data?.data;
+  const lineStatusMap: Record<string, OutboundPartStatus> = {
+    READY: "출고",
+    PENDING: "대기",
+    COMPLETED: "완료",
+  };
+
+  return {
+    outboundId: String(data.noteId),
+    issuedDate: data.shippedAt || "-",
+    expectedDeliveryDate: data.expectedShipDate || "-",
+    receiptDate: data.requestedAt || "-",
+    destination: data.customerName,
+    totalQuantity: data.totalQty,
+    manager: data.assigneeName || "-",
+    managerPosition: data.assigneeDept || "-",
+    managerContact: data.assigneePhone || "-",
+    status: STATUS_TO_KO[data.status],
+    deliveryFactory: String(data.warehouseId) || "-",
+    remarks: data.remark || "-",
+    partItems: (data.lines || []).map((line: any) => ({
+      partCode: String(line.product?.serial || "-"),
+      partName: line.product?.name || "-",
+      partQuantity: line.pickedQty ?? 0,
+      partStatus: lineStatusMap[line.status] || "대기",
+    })),
+  };
 }

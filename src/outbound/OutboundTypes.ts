@@ -1,9 +1,11 @@
-export type OutboundStatus = "대기" | "진행중" | "완료";
+export type OutboundStatus = "대기" | "지연" | "진행중" | "완료";
+export type OutboundPartStatus = "대기" | "출고" | "완료";
 
 export interface PartItem {
   partCode: string; // 부품코드
   partName: string; // 부품명
-  outboundQuantity: number; // 수량
+  partQuantity: number; // 수량
+  partStatus: OutboundPartStatus; // 상태
 }
 
 export interface OutboundRecord {
@@ -12,6 +14,7 @@ export interface OutboundRecord {
   expectedDeliveryDate: string; // 납품예정일
   receiptDate: string; // 접수일시
   destination: string; // 납품처
+  totalQuantity: number; // 총수량
   manager: string; // 담당자
   managerPosition: string; // 담당자직책
   managerContact: string; // 담당자연락처

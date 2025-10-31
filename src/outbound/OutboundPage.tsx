@@ -23,20 +23,27 @@ import Pagination from "../components/common/Pagination";
 type StatusFilter = OutboundStatus | "ALL";
 
 type AppliedFilters = {
+  status: StatusFilter;
   keyword: string;
   startDate: string | null; // YYYY-MM-DD
   endDate: string | null; // YYYY-MM-DD
 };
 
 export default function OutboundPage() {
-  const [status, setStatus] = useState<StatusFilter>("ALL");
-  const statusOptions: StatusFilter[] = ["ALL", "대기", "진행중", "완료"]; // 입력값(즉시 반영 X)
+  const statusOptions: StatusFilter[] = [
+    "ALL",
+    "대기",
+    "지연",
+    "진행중",
+    "완료",
+  ]; // 입력값(즉시 반영 X)
   const [keyword, setKeyword] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
   // 적용 필터(검색 버튼 눌렀을 때만 반영)
   const [applied, setApplied] = useState<AppliedFilters>({
+    status: "ALL",
     keyword: "",
     startDate: null,
     endDate: null,
@@ -46,53 +53,29 @@ export default function OutboundPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { data: records = [], isLoading: isFetching } = useQuery({
-    queryKey: outboundKeys.records,
-    queryFn: fetchOutboundRecords,
-    select: (rows) => {
-      const byCate =
-        status === "ALL" ? rows : rows.filter((r) => r.status === status);
-      const byKeyword = applied.keyword.trim()
-        ? byCate.filter((r) => {
-            const itemText = r.partItems
-              .map((item) => `${item.partCode} ${item.partName}`)
-              .join(" ")
-              .toLowerCase();
-
-            return itemText.includes(applied.keyword.toLowerCase());
-          })
-        : byCate;
-
-      const start = applied.startDate ? new Date(applied.startDate) : null;
-      const end = applied.endDate ? new Date(applied.endDate) : null;
-
-      const byDate =
-        start || end
-          ? byKeyword.filter((r) => {
-              const d = new Date(r.receiptDate);
-              if (Number.isNaN(d.getTime())) return false;
-              const okStart = start ? d >= start : true;
-              const okEnd = end ? d <= end : true;
-              return okStart && okEnd;
-            })
-          : byKeyword;
-
-      return byDate;
-    },
-    staleTime: 5 * 60 * 1000,
+  const { data, isLoading: isFetching } = useQuery({
+    queryKey: [...outboundKeys.records, { applied, page, pageSize }],
+    queryFn: () =>
+      fetchOutboundRecords({
+        status: applied.status,
+        q: applied.keyword,
+        startDate: applied.startDate,
+        endDate: applied.endDate,
+        page: page - 1,
+        pageSize,
+      }),
+    // placeholderData: keepPreviousData,
   });
 
-  // 현재 페이지 슬라이스
-  const total = records.length;
-  const totalPages = Math.ceil(total / pageSize);
-  const pagedRecords = records.slice((page - 1) * pageSize, page * pageSize);
-
+  const records = data?.data ?? [];
+  const meta = data?.meta ?? { total: 0, totalPages: 1 };
   const onSearch = () => {
-    setApplied({
+    setApplied((prev) => ({
+      ...prev,
       keyword: keyword.trim(),
       startDate: startDate || null,
       endDate: endDate || null,
-    });
+    }));
     setPage(1);
   };
 
@@ -100,7 +83,7 @@ export default function OutboundPage() {
     setKeyword("");
     setStartDate("");
     setEndDate("");
-    setApplied({ keyword: "", startDate: null, endDate: null });
+    setApplied({ status: "ALL", keyword: "", startDate: null, endDate: null });
     setPage(1);
   };
 
@@ -119,10 +102,11 @@ export default function OutboundPage() {
           <SectionHeader style={{ justifyContent: "flex-end" }}>
             <FilterGroup>
               <Select
-                value={status}
+                value={applied.status}
                 onChange={(e) => {
-                  setStatus(e.target.value as StatusFilter);
-                  setPage(1);
+                  const value = e.target.value as StatusFilter;
+                  setApplied((prev) => ({ ...prev, status: value })); // applied 상태 업데이트
+                  setPage(1); // 페이지 초기화
                 }}
               >
                 {statusOptions.map((opt) => (
@@ -157,7 +141,7 @@ export default function OutboundPage() {
             </FilterGroup>
           </SectionHeader>
 
-          <OutboundTable rows={pagedRecords} />
+          <OutboundTable rows={records} />
           <div
             style={{
               display: "flex",
@@ -175,13 +159,11 @@ export default function OutboundPage() {
 
           <Pagination
             page={page}
-            totalPages={Math.max(1, totalPages)}
+            totalPages={meta.totalPages}
+            totalItems={meta.total}
             onChange={setPage}
             isBusy={isFetching}
-            maxButtons={5}
-            totalItems={total}
             pageSize={pageSize}
-            pageSizeOptions={[10, 20, 50, 100]}
             onChangePageSize={(n) => {
               setPageSize(n);
               setPage(1);
@@ -189,8 +171,6 @@ export default function OutboundPage() {
             showSummary
             showPageSize
             align="center"
-            dense={false}
-            sticky={false}
           />
         </SectionCard>
       </PageContainer>
