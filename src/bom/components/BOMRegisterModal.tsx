@@ -14,32 +14,41 @@ import {
 } from "../../components/common/ModalPageLayout";
 import Button from "../../components/common/Button";
 import styled from "styled-components";
-import { Select } from "../../components/common/PageLayout";
-import type { BOMDTO, PartCate } from "../BOMTypes";
-import MaterialsTable from "./MaterialsTable";
+import MaterialsTable, { type MaterialRow } from "./MaterialsTable";
+import PartSearchModal from "./PartSearchModal";
+import MaterialSearchModal from "./MaterialSearchModal";
+import type { PartRecord } from "../../items/parts/PartTypes";
+import type { MaterialRecord } from "../../items/materials/MaterialTypes";
+
+export type BOMDTO = {
+  bomId?: string;
+  partCode?: string;
+  partName?: string;
+  category?: string;
+  createdDate?: string;
+  materials?: Array<{
+    materialId?: number;
+    materialCode: string;
+    materialName: string;
+    materialQty: number;
+  }>;
+};
 
 interface Props {
   isOpen: boolean;
   onClose: () => void;
   mode?: "create" | "edit";
   initial?: BOMDTO | null;
-  onSubmit?: (payload: BOMDTO) => void;
+  onSubmit?: (payload: AddMaterialsPayload) => void;
 }
 
-// UI 전용 행 타입
-type MaterialRow = {
-  id: string;
-  materialCode: string;
-  materialName: string;
-  materialQty: number | "";
+export type AddMaterialsPayload = {
+  partId: number;
+  materialInfos: Array<{
+    materialId: number;
+    quantity: number;
+  }>;
 };
-
-const cateOptions: PartCate[] = [
-  "카테고리 A",
-  "카테고리 B",
-  "카테고리 C",
-  "카테고리 D",
-];
 
 const BOMRegisterModal = ({
   isOpen,
@@ -48,103 +57,164 @@ const BOMRegisterModal = ({
   initial = null,
   onSubmit,
 }: Props) => {
-  const [bomNo, setBomNo] = useState(""); // = bomId
+  const [partId, setPartId] = useState<number | "">("");
+
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
-  const [partCate, setPartCate] = useState<PartCate>("카테고리 A");
+  const [partCate, setPartCate] = useState("");
+
+  const createEmptyMaterialRow = (): MaterialRow => ({
+    id: crypto.randomUUID(),
+    materialId: "" as number | "",
+    materialCode: "",
+    materialName: "",
+    materialQty: 1 as number | "",
+  });
+
   const [materials, setMaterials] = useState<MaterialRow[]>([
-    {
-      id: crypto.randomUUID(),
-      materialCode: "",
-      materialName: "",
-      materialQty: 1,
-    },
+    createEmptyMaterialRow(),
   ]);
+
+  const [isPartSearchOpen, setPartSearchOpen] = useState(false);
+
+  const [isMaterialSearchOpen, setMaterialSearchOpen] = useState(false);
+  const [materialSearchRowId, setMaterialSearchRowId] = useState<string | null>(
+    null
+  );
 
   const listRef = useRef<HTMLDivElement | null>(null);
 
-  /* 초기값 주입 */
   useEffect(() => {
     if (!isOpen) return;
+
     if (mode === "edit" && initial) {
-      setBomNo(initial.bomId ?? "");
+      setPartId(
+        Number.isInteger(Number(initial.bomId)) ? Number(initial.bomId) : ""
+      );
+
       setPartCode(initial.partCode ?? "");
       setPartName(initial.partName ?? "");
-      setPartCate(initial.category ?? "카테고리 A");
+      setPartCate(initial.category ?? "");
+
       setMaterials(
         (initial.materials?.length
           ? initial.materials
-          : [{ materialCode: "", materialName: "", materialQty: 1 }]
-        ).map((m) => ({ id: crypto.randomUUID(), ...m }))
+          : [
+              {
+                materialId: undefined,
+                materialCode: "",
+                materialName: "",
+                materialQty: 1,
+              },
+            ]
+        ).map((m) => ({
+          id: crypto.randomUUID(),
+          materialId: (m.materialId ?? "") as number | "",
+          materialCode: m.materialCode ?? "",
+          materialName: m.materialName ?? "",
+          materialQty: m.materialQty ?? 1,
+        }))
       );
     } else {
-      setBomNo("");
+      setPartId("");
       setPartCode("");
       setPartName("");
-      setPartCate("카테고리 A");
+      setPartCate("");
+      setMaterials([createEmptyMaterialRow()]);
+    }
+  }, [isOpen, mode, initial]);
+
+  const removeMaterial = (id: string) => {
+    setMaterials((arr) => {
+      // 행이 하나뿐이면 내용만 초기화
+      if (arr.length === 1) {
+        return [
+          {
+            ...arr[0],
+            materialId: "",
+            materialCode: "",
+            materialName: "",
+            materialQty: 1,
+          },
+        ];
+      }
+
+      // 여러 개면 해당 행 제거
+      return arr.filter((m) => m.id !== id);
+    });
+  };
+
+  const removeAllMaterials = () => {
+    if (materials.length === 0) return;
+
+    const confirmReset = window.confirm("모든 자재 정보를 초기화하시겠습니까?");
+    if (!confirmReset) return;
+
+    // 자재 행이 1개면 내용만 비우고 유지
+    if (materials.length === 1) {
       setMaterials([
         {
-          id: crypto.randomUUID(),
+          ...materials[0],
+          materialId: "",
           materialCode: "",
           materialName: "",
           materialQty: 1,
         },
       ]);
+      return;
     }
-  }, [isOpen, mode, initial]);
 
-  /* 자재 행 추가 시 자동 스크롤 */
-  useEffect(() => {
-    if (!listRef.current) return;
-    listRef.current.scrollTop = listRef.current.scrollHeight;
-  }, [materials.length]);
-
-  const addMaterial = () => {
-    setMaterials((arr) => [
-      ...arr,
+    // 여러 개면 전체 삭제 후 1개 비어있는 행만 남김
+    setMaterials([
       {
         id: crypto.randomUUID(),
+        materialId: "",
         materialCode: "",
         materialName: "",
         materialQty: 1,
       },
     ]);
   };
-  const removeMaterial = (id: string) => {
-    if (materials.length === 1) return;
-    setMaterials((arr) => arr.filter((m) => m.id !== id));
-  };
+
   const updateMaterial = <K extends keyof MaterialRow>(
     id: string,
     key: K,
     value: MaterialRow[K]
   ) => {
     setMaterials((arr) =>
-      arr.map((m) => (m.id === id ? { ...m, [key]: value } : m))
+      arr.map((m) => {
+        if (m.id !== id) return m;
+        const next = { ...m, [key]: value };
+        if (key === "materialCode" || key === "materialName") {
+          return { ...next, materialId: "" };
+        }
+        return next;
+      })
     );
   };
 
+  useEffect(() => {
+    if (!listRef.current) return;
+    listRef.current.scrollTop = listRef.current.scrollHeight;
+  }, [materials.length]);
+
   const handleSubmit = () => {
-    if (!bomNo.trim()) return alert("BOM 번호를 입력하세요.");
-    if (!partCode.trim()) return alert("부품 코드를 입력하세요.");
-    if (!partName.trim()) return alert("부품명을 입력하세요.");
-    if (!partCate?.trim()) return alert("카테고리를 선택하세요.");
-    if (materials.some((m) => !m.materialCode.trim() || !m.materialName.trim()))
-      return alert("자재 코드/명을 입력하세요.");
+    if (partId === "" || !Number.isInteger(Number(partId)))
+      return alert("부품을 검색하여 선택하세요.");
+
+    if (materials.some((m) => m.materialId === ""))
+      return alert("모든 자재의 ID를 검색/선택하세요.");
+
     if (
       materials.some((m) => m.materialQty === "" || Number(m.materialQty) <= 0)
     )
       return alert("자재 수량은 1 이상이어야 합니다.");
 
-    const payload: BOMDTO = {
-      bomId: bomNo.trim(),
-      partCode: partCode.trim(),
-      partName: partName.trim(),
-      category: partCate,
-      materials: materials.map((m) => ({
-        materialCode: m.materialCode.trim(),
-        materialName: m.materialName.trim(),
-        materialQty: Number(m.materialQty),
+    const payload: AddMaterialsPayload = {
+      partId: Number(partId),
+      materialInfos: materials.map((m) => ({
+        materialId: Number(m.materialId),
+        quantity: Number(m.materialQty),
       })),
     };
 
@@ -154,104 +224,222 @@ const BOMRegisterModal = ({
 
   if (!isOpen) return null;
 
+  const onSelectPart = (part: PartRecord) => {
+    const numericId = Number(part.partId);
+    if (!Number.isFinite(numericId)) {
+      alert("선택한 부품 ID가 유효하지 않습니다.");
+      return;
+    }
+
+    setPartId(numericId);
+    setPartCode(part.partCode);
+    setPartName(part.partName);
+    setPartCate(part.category?.name ?? "");
+    setMaterials([createEmptyMaterialRow()]);
+  };
+
+  const onSelectMaterial = (material: MaterialRecord) => {
+    const numericId = Number(material.id);
+    if (!Number.isFinite(numericId)) {
+      alert("선택한 자재 ID가 유효하지 않습니다.");
+      return;
+    }
+
+    const targetRowId = materialSearchRowId;
+    const dupIdx = materials.findIndex((r) => r.materialId === numericId);
+    if (targetRowId) {
+      const targetIdx = materials.findIndex((r) => r.id === targetRowId);
+      if (dupIdx >= 0 && dupIdx !== targetIdx) {
+        alert("이미 선택된 자재입니다. 동일 자재를 중복 추가할 수 없습니다.");
+        setMaterialSearchOpen(false);
+        setMaterialSearchRowId(null);
+        return;
+      }
+    } else {
+      if (dupIdx >= 0) {
+        alert("이미 선택된 자재입니다. 동일 자재를 중복 추가할 수 없습니다.");
+        setMaterialSearchOpen(false);
+        setMaterialSearchRowId(null);
+        return;
+      }
+    }
+
+    setMaterials((prev) => {
+      if (targetRowId) {
+        return prev.map((row) =>
+          row.id === targetRowId
+            ? {
+                ...row,
+                materialId: numericId,
+                materialCode: material.materialCode,
+                materialName: material.materialName,
+                materialQty: row.materialQty || 1,
+              }
+            : row
+        );
+      }
+
+      const emptyIdx = prev.findIndex((r) => r.materialId === "");
+      if (emptyIdx >= 0) {
+        const next = [...prev];
+        next[emptyIdx] = {
+          ...next[emptyIdx],
+          materialId: numericId,
+          materialCode: material.materialCode,
+          materialName: material.materialName,
+          materialQty: next[emptyIdx].materialQty || 1,
+        };
+        return next;
+      }
+
+      return [
+        ...prev,
+        {
+          id: crypto.randomUUID(),
+          materialId: numericId,
+          materialCode: material.materialCode,
+          materialName: material.materialName,
+          materialQty: 1,
+        },
+      ];
+    });
+
+    setMaterialSearchOpen(false);
+    setMaterialSearchRowId(null);
+  };
+
   return (
-    <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
-        <Header>
-          <HeaderLeft>
-            <Title>{mode === "edit" ? "BOM 수정" : "BOM 등록"}</Title>
-          </HeaderLeft>
-          <CloseButton onClick={onClose} aria-label="닫기">
-            &times;
-          </CloseButton>
-        </Header>
+    <>
+      <Overlay onClick={onClose}>
+        <ModalContainer onClick={(e) => e.stopPropagation()}>
+          <Header>
+            <HeaderLeft>
+              <Title>
+                {mode === "edit"
+                  ? "BOM 수정(자재 등록)"
+                  : "BOM 등록(자재 등록)"}
+              </Title>
+            </HeaderLeft>
+            <CloseButton onClick={onClose} aria-label="닫기">
+              &times;
+            </CloseButton>
+          </Header>
 
-        {/* 부품 정보 */}
-        <Section>
-          <SectionTitle>부품 정보</SectionTitle>
-          <DetailGrid>
-            <DetailItem>
-              <Label>BOM 번호</Label>
-              <Input
-                placeholder="예) BOM-250101-05"
-                value={bomNo}
-                onChange={(e) => setBomNo(e.target.value)}
-                disabled={mode === "edit"} // 수정 시 식별자 잠금 권장
+          <Section>
+            <SectionTitle>부품 정보</SectionTitle>
+            <DetailGrid>
+              <DetailItem>
+                <Label>부품 선택</Label>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <Button onClick={() => setPartSearchOpen(true)}>
+                    부품 검색
+                  </Button>
+                  <span style={{ color: "#6b7280", fontSize: 12 }}>
+                    {partId
+                      ? `선택됨: ${partCode} / ${partName} (ID: ${partId})`
+                      : "미선택"}
+                  </span>
+                </div>
+              </DetailItem>
+            </DetailGrid>
+
+            <DetailGrid style={{ marginTop: "1rem" }}>
+              <DetailItem>
+                <Label>부품 코드</Label>
+                <Input
+                  value={partCode}
+                  onChange={(e) => setPartCode(e.target.value)}
+                  readOnly
+                />
+              </DetailItem>
+
+              <DetailItem>
+                <Label>부품명</Label>
+                <Input
+                  value={partName}
+                  onChange={(e) => setPartName(e.target.value)}
+                  readOnly
+                />
+              </DetailItem>
+
+              <DetailItem>
+                <Label>부품 카테고리</Label>
+                <Input
+                  style={{ width: "50%" }}
+                  value={partCate}
+                  onChange={(e) => setPartCate(e.target.value)}
+                  readOnly
+                />
+              </DetailItem>
+            </DetailGrid>
+          </Section>
+
+          <Section>
+            <HeaderRow>
+              <SectionTitle>자재 목록</SectionTitle>
+              <div style={{ display: "flex", gap: 8 }}>
+                <Button
+                  onClick={() => {
+                    setMaterialSearchRowId(null);
+                    setMaterialSearchOpen(true);
+                  }}
+                >
+                  자재 검색
+                </Button>
+                <Button
+                  onClick={() => {
+                    removeAllMaterials();
+                  }}
+                >
+                  초기화
+                </Button>
+              </div>
+            </HeaderRow>
+
+            <div ref={listRef}>
+              <MaterialsTable
+                rows={materials}
+                onChange={updateMaterial}
+                onRemove={removeMaterial}
+                maxHeight={220}
+                compact
               />
-            </DetailItem>
+            </div>
+          </Section>
 
-            <DetailItem>
-              <Label>부품 코드</Label>
-              <Input
-                placeholder="예) PRT-FAN-501"
-                value={partCode}
-                onChange={(e) => setPartCode(e.target.value)}
-              />
-            </DetailItem>
+          <Section>
+            <Actions>
+              <Button color="gray" onClick={onClose}>
+                취소
+              </Button>
+              <Button onClick={handleSubmit}>
+                {mode === "edit" ? "수정 저장" : "등록"}
+              </Button>
+            </Actions>
+          </Section>
+        </ModalContainer>
+      </Overlay>
 
-            <DetailItem>
-              <Label>부품명</Label>
-              <Input
-                placeholder="예) 냉각 팬"
-                value={partName}
-                onChange={(e) => setPartName(e.target.value)}
-              />
-            </DetailItem>
+      <PartSearchModal
+        isOpen={isPartSearchOpen}
+        onClose={() => setPartSearchOpen(false)}
+        onSelect={onSelectPart}
+      />
 
-            <DetailItem>
-              <Label>부품 카테고리</Label>
-              <Select
-                style={{ width: "50%" }}
-                value={partCate}
-                onChange={(e) => setPartCate(e.target.value as PartCate)}
-              >
-                {cateOptions.map((c) => (
-                  <option key={c} value={c}>
-                    {c}
-                  </option>
-                ))}
-              </Select>
-            </DetailItem>
-          </DetailGrid>
-        </Section>
-
-        {/* 자재 목록 */}
-        <Section>
-          <HeaderRow>
-            <SectionTitle>자재 목록</SectionTitle>
-            <Button color="gray" onClick={addMaterial}>
-              자재 추가
-            </Button>
-          </HeaderRow>
-
-          <MaterialsTable
-            rows={materials}
-            onChange={updateMaterial}
-            onRemove={removeMaterial}
-            maxHeight={220} // 필요 시 조절
-            compact // 컴팩트 모드 on
-          />
-        </Section>
-
-        {/* 액션 */}
-        <Section>
-          <Actions>
-            <Button color="gray" onClick={onClose}>
-              취소
-            </Button>
-            <Button onClick={handleSubmit}>
-              {mode === "edit" ? "수정 저장" : "등록"}
-            </Button>
-          </Actions>
-        </Section>
-      </ModalContainer>
-    </Overlay>
+      <MaterialSearchModal
+        isOpen={isMaterialSearchOpen}
+        onClose={() => {
+          setMaterialSearchOpen(false);
+          setMaterialSearchRowId(null);
+        }}
+        onSelect={onSelectMaterial}
+      />
+    </>
   );
 };
 
 export default BOMRegisterModal;
 
-// 상단 자재 목록 행
 const HeaderRow = styled.div`
   display: flex;
   justify-content: space-between;
@@ -259,7 +447,6 @@ const HeaderRow = styled.div`
   margin-bottom: 10px;
 `;
 
-// 모달 상단 인풋
 const Input = styled.input`
   width: 50%;
   border: 1px solid #e5e7eb;
@@ -269,7 +456,6 @@ const Input = styled.input`
   background: #fff;
 `;
 
-// 하단 액션
 const Actions = styled.div`
   display: flex;
   justify-content: flex-end;

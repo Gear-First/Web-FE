@@ -1,71 +1,94 @@
-export type PartCate =
-  | "카테고리 A"
-  | "카테고리 B"
-  | "카테고리 C"
-  | "카테고리 D";
+import type { AddMaterialsPayload } from "./components/BOMRegisterModal";
 
 export interface Material {
+  materialId?: number;
   materialName: string;
   materialCode: string;
   materialQty: number;
+  materialPrice?: number;
 }
 
-/** 서버가 반환하는 레코드(조회/상세) */
 export interface BOMRecord {
   bomCodeId: string;
   bomCode: string;
-  category: PartCate;
+  category: string;
+  partId: string;
   partCode: string;
   partName: string;
-  materials: Material[];
   createdDate: string;
+  materials?: Material[];
 }
 
-/** 생성 요청용 DTO (클라이언트 → 서버) */
-export interface BOMCreateDTO {
-  partCode: string;
-  partName: string;
-  category: PartCate;
-  materials: Array<
-    Pick<Material, "materialCode" | "materialName" | "materialQty">
-  >;
+export interface BOMDetail extends BOMRecord {
+  materials: Material[];
 }
 
-/** 수정 요청용 DTO (부분 수정 허용) */
+export type BOMCreateDTO = {
+  partId: number;
+  materialInfos: { materialId: number; quantity: number }[];
+};
+
+export const toBOMCreatePayload = (dto: AddMaterialsPayload): BOMCreateDTO => ({
+  partId: Number(dto.partId),
+  materialInfos: dto.materialInfos.map((m) => ({
+    materialId: Number(m.materialId),
+    quantity: Number(m.quantity),
+  })),
+});
+
 export type BOMUpdateDTO = Partial<BOMCreateDTO>;
 
-/** 화면 폼 모델(등록/수정 공용) */
 export interface BOMFormModel extends BOMCreateDTO {
   bomId?: string;
   createdDate?: string;
 }
 
-/** 기존 DTO 별칭이 필요하면 유지 */
 export type BOMDTO = BOMFormModel;
-
-/* ------ 편의 매퍼 ------ */
-export const toBOMCreatePayload = (dto: BOMFormModel): BOMCreateDTO => ({
-  partCode: dto.partCode.trim(),
-  partName: dto.partName.trim(),
-  category: dto.category,
-  materials: dto.materials.map((m) => ({
-    materialCode: m.materialCode.trim(),
-    materialName: m.materialName.trim(),
-    materialQty: Number(m.materialQty),
-  })),
-});
 
 export const toBOMPatchPayload = (dto: BOMFormModel): BOMUpdateDTO => {
   const patch: BOMUpdateDTO = {};
-  if (dto.partCode) patch.partCode = dto.partCode.trim();
-  if (dto.partName) patch.partName = dto.partName.trim();
-  if (dto.category) patch.category = dto.category;
-  if (dto.materials) {
-    patch.materials = dto.materials.map((m) => ({
-      materialCode: m.materialCode.trim(),
-      materialName: m.materialName.trim(),
-      materialQty: Number(m.materialQty),
+  if (dto.partId !== undefined) patch.partId = Number(dto.partId);
+  if (dto.materialInfos?.length) {
+    patch.materialInfos = dto.materialInfos.map((m) => ({
+      materialId: Number(m.materialId),
+      quantity: Number(m.quantity),
     }));
   }
   return patch;
+};
+
+export interface ServerBOMItem {
+  bomCodeId: number;
+  bomCode: string;
+  category: string;
+  partId: string;
+  partCode: string;
+  partName: string;
+  createdAt: string;
+}
+export interface ServerBOMMaterialItem {
+  materialName: string;
+  materialCode: string;
+  materialPrice: number;
+  materialQuantity: number;
+}
+export const toBOMRecord = (s: ServerBOMItem): BOMRecord => ({
+  bomCodeId: String(s.bomCodeId),
+  bomCode: s.bomCode,
+  category: s.category,
+  partId: s.partId,
+  partCode: s.partCode,
+  partName: s.partName,
+  createdDate: s.createdAt,
+});
+export const toMaterial = (s: ServerBOMMaterialItem): Material => ({
+  materialName: s.materialName,
+  materialCode: s.materialCode,
+  materialQty: Number(s.materialQuantity),
+  materialPrice: Number(s.materialPrice),
+});
+
+export type DeleteBOMMaterialsDTO = {
+  partId: number | string;
+  materialIds: number[];
 };
