@@ -14,14 +14,14 @@ import {
   Value,
 } from "../../../components/common/ModalPageLayout";
 import Button from "../../../components/common/Button";
-import type { MaterialRecords } from "../MaterialTypes";
+import type { MaterialRecord } from "../MaterialTypes";
 
 interface Props {
-  record: MaterialRecords | null;
+  record: MaterialRecord | null;
   isOpen: boolean;
   onClose: () => void;
-  onEdit?: (record: MaterialRecords) => void;
-  onDelete?: (record: MaterialRecords) => void;
+  onEdit?: (record: MaterialRecord) => void;
+  onDelete?: (record: MaterialRecord) => void;
   disableOverlayClose?: boolean;
 }
 
@@ -48,7 +48,7 @@ const MaterialDetailModal = ({
   const handleDelete = () => {
     if (!onDelete) return;
     const ok = window.confirm(
-      `정말 삭제하시겠어요?\nPart 번호: ${record.materialId}`
+      `정말 삭제하시겠어요?\n자재명: ${record.materialName}`
     );
     if (ok) onDelete(record);
   };
@@ -69,7 +69,7 @@ const MaterialDetailModal = ({
           <DetailGrid>
             <DetailItem>
               <Label>자재 번호</Label>
-              <Value>{record.materialId}</Value>
+              <Value>{record.id}</Value>
             </DetailItem>
             <DetailItem>
               <Label>부품 코드</Label>

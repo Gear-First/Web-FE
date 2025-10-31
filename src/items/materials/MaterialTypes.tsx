@@ -1,6 +1,6 @@
 // 조회용 (서버 응답)
 export interface MaterialRecord {
-  materialId?: string;
+  id: number;
   materialName: string;
   materialCode: string;
   createdDate?: string;
@@ -8,6 +8,7 @@ export interface MaterialRecord {
 
 // 생성용 DTO (등록)
 export interface MaterialCreateDTO {
+  materialId: number;
   materialName: string;
   materialCode: string;
 }
@@ -17,7 +18,6 @@ export type MaterialUpdateDTO = Partial<MaterialCreateDTO>;
 
 // 화면 폼 모델 (등록/수정 공용)
 export interface MaterialFormModel extends MaterialCreateDTO {
-  materialId?: string;
   createdDate?: string;
 }
 
@@ -25,6 +25,7 @@ export interface MaterialFormModel extends MaterialCreateDTO {
 export const toMaterialCreatePayload = (
   dto: MaterialFormModel
 ): MaterialCreateDTO => ({
+  materialId: dto.materialId,
   materialName: dto.materialName.trim(),
   materialCode: dto.materialCode.trim(),
 });

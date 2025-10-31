@@ -117,7 +117,7 @@ export default function MaterialPage() {
     setPage(1);
   }, []);
 
-  const createMut = useMutation<MaterialRecord, Error, MaterialCreateDTO>({
+  const createMut = useMutation<MaterialCreateDTO, Error, MaterialCreateDTO>({
     mutationFn: createMaterial,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: materialKeys.records });
