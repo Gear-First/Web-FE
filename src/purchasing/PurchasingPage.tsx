@@ -7,13 +7,17 @@ import {
   SectionTitle,
 } from "../components/common/PageLayout";
 import { useQuery } from "@tanstack/react-query";
-import { purchasingKeys, fetchPurchasingRecords } from "./PurchasingApi";
 import type { PurchasingRecord } from "./PurchasingTypes";
 import PurchasingTable from "./components/PurchasingTable";
 import { useMemo, useState } from "react";
 import SourcingSection from "./components/SourcingSection";
 import Button from "../components/common/Button";
 import PurchasingRegisterModal from "./components/PurchasingModal";
+import {
+  purchasingKeys,
+  fetchPurchasingRecords,
+  addCompany,
+} from "./PurchasingApi";
 
 export default function PurchasingPage() {
   /** 데이터 fetch */
@@ -86,9 +90,36 @@ export default function PurchasingPage() {
           onClose={() => setIsModalOpen(false)}
           initialData={selectedRecord ?? undefined}
           mode={modalMode}
-          onSubmit={(data) => {
-            console.log("저장/등록 데이터:", data);
-            setIsModalOpen(false);
+          onSubmit={async (data) => {
+            try {
+              // 백엔드로 보낼 데이터 변환
+              const payload = {
+                materialId: 0,
+                materialCode: data.materialCode,
+                materialName: data.materialName,
+                price: data.purchasingPrice,
+                companyName: data.company,
+                quantity: data.requiredQuantityPerPeriod,
+                spentDay: data.requiredPeriodInDays,
+                surveyDate: data.surveyDate,
+                untilDate: data.expiryDate,
+              };
+
+              const res = await addCompany(payload);
+
+              if (res.success) {
+                alert("업체 등록이 완료되었습니다.");
+                setIsModalOpen(false);
+                // 등록 후 목록 새로고침 (react-query invalidate)
+                // import { useQueryClient } from "@tanstack/react-query";
+                // const queryClient = useQueryClient();
+                // queryClient.invalidateQueries(purchasingKeys.records);
+              } else {
+                alert("등록 실패: " + res.message);
+              }
+            } catch (err) {
+              alert("등록 중 오류가 발생했습니다.");
+            }
           }}
         />
 
