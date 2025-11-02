@@ -1,5 +1,7 @@
-import { useEffect } from "react";
-import type { BOMRecord } from "../BOMTypes";
+import { useEffect, useState, useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import type { BOMRecord, DeleteBOMMaterialsDTO, Material } from "../BOMTypes";
+import { bomKeys, fetchBOMMaterials } from "../BOMApi";
 import {
   CloseButton,
   DetailGrid,
@@ -15,50 +17,113 @@ import {
   Value,
 } from "../../components/common/ModalPageLayout";
 import Button from "../../components/common/Button";
-interface Props {
+import { Td, Th } from "../../components/common/PageLayout";
+import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
+
+type Props = {
   record: BOMRecord | null;
   isOpen: boolean;
   onClose: () => void;
   onEdit?: (record: BOMRecord) => void;
-  onDelete?: (record: BOMRecord) => void;
+  onDelete?: (dto: DeleteBOMMaterialsDTO) => void;
   disableOverlayClose?: boolean;
-}
+};
 
-const BOMDetailModal = ({
+export default function BOMDetailModal({
   record,
   isOpen,
   onClose,
   onEdit,
   onDelete,
   disableOverlayClose = false,
-}: Props) => {
-  // ESC로 닫기
+}: Props) {
+  const open = isOpen && !!record;
+
+  const partId = useMemo(() => (record ? record.partId : null), [record]);
+  const bomCodeId = useMemo(() => (record ? record.bomCodeId : null), [record]);
+
   useEffect(() => {
-    if (!isOpen) return;
-    const handleKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", handleKey);
-    return () => window.removeEventListener("keydown", handleKey);
-  }, [isOpen, onClose]);
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
 
-  if (!isOpen || !record) return null;
+  const {
+    data: materials,
+    isPending,
+    isFetching,
+  } = useQuery<Material[]>({
+    queryKey: bomKeys.materials(bomCodeId ?? "__none__"),
+    queryFn: () => fetchBOMMaterials(bomCodeId!),
+    enabled: open && !!bomCodeId,
+    placeholderData: (prev) => prev,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+  });
 
-  // 삭제 클릭 핸들러 (확인창)
-  const handleDelete = () => {
-    if (!onDelete) return;
-    const ok = window.confirm(
-      `정말 삭제하시겠어요?\nBOM 번호: ${record.bomId}`
+  const [selectedIds, setSelectedIds] = useState<number[]>([]);
+  useEffect(() => {
+    if (open) setSelectedIds([]); // 모달 열릴 때 초기화
+  }, [open, partId]);
+
+  const toggleOne = (id: number) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]
     );
-    if (ok) onDelete(record);
   };
 
-  // 자재 안전 렌더링
-  const mats = Array.isArray(record.materials) ? record.materials : [];
+  const mats = useMemo(() => {
+    return Array.isArray(materials) ? materials : [];
+  }, [materials]);
+
+  const allIds = useMemo(
+    () =>
+      mats
+        .map((m) => m.materialId)
+        .filter(
+          (v): v is number => typeof v === "number" && Number.isFinite(v)
+        ),
+    [mats]
+  );
+
+  const allChecked =
+    allIds.length > 0 && allIds.every((id) => selectedIds.includes(id));
+  const toggleAll = () => setSelectedIds(allChecked ? [] : allIds);
+
+  const fmt = (n: number | undefined) =>
+    typeof n === "number" && isFinite(n) ? n.toLocaleString() : "-";
+
+  const handleDelete = () => {
+    if (!open || !record || !onDelete) return;
+    if (!partId) {
+      alert("부품 ID가 없어 삭제할 수 없습니다.");
+      return;
+    }
+    if (selectedIds.length === 0) {
+      alert("삭제할 자재를 선택하세요.");
+      return;
+    }
+    const ok = window.confirm(
+      `정말 삭제하시겠어요?\n부품 ID: ${partId}\n자재 개수: ${selectedIds.length}`
+    );
+    if (!ok) return;
+
+    onDelete({
+      partId,
+      materialIds: selectedIds,
+    });
+  };
+
+  if (!open) return null;
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()} role="dialog">
+      <ModalContainer
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-labelledby="bom-detail-title"
+      >
         <Header>
           <HeaderLeft>
             <Title id="bom-detail-title">BOM 상세 정보</Title>
@@ -72,80 +137,135 @@ const BOMDetailModal = ({
           <DetailGrid>
             <DetailItem>
               <Label>BOM 번호</Label>
-              <Value>{record.bomId}</Value>
+              <Value>{record!.bomCodeId}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>BOM 코드</Label>
+              <Value>{record!.bomCode}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>카테고리</Label>
+              <Value>{record!.category || "-"}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>부품 번호</Label>
+              <Value>{record!.partId}</Value>
             </DetailItem>
             <DetailItem>
               <Label>부품 코드</Label>
-              <Value>{record.partCode}</Value>
+              <Value>{record!.partCode}</Value>
             </DetailItem>
             <DetailItem>
               <Label>부품명</Label>
-              <Value>{record.partName}</Value>
+              <Value>{record!.partName}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>작성일자</Label>
+              <Value>{record!.createdDate}</Value>
             </DetailItem>
           </DetailGrid>
         </Section>
 
-        {/* 자재 정보 */}
         <Section>
           <SectionTitle>자재 정보</SectionTitle>
+          <TableScroll $maxHeight={260}>
+            <StickyTable $stickyTop={0} $headerBg="#fafbfc" $zebra>
+              <thead>
+                <tr>
+                  <Th style={{ width: 48 }}>
+                    <input
+                      type="checkbox"
+                      aria-label="전체 선택"
+                      onChange={toggleAll}
+                      checked={allChecked}
+                      disabled={allIds.length === 0}
+                    />
+                  </Th>
+                  <Th>자재번호</Th>
+                  <Th>자재코드</Th>
+                  <Th>자재명</Th>
+                  <Th>수량</Th>
+                  <Th>단가</Th>
+                  <Th>합계</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {isPending && !mats.length ? (
+                  <tr>
+                    <Td
+                      colSpan={6}
+                      style={{ textAlign: "center", color: "#6b7280" }}
+                    >
+                      자재 불러오는 중…
+                    </Td>
+                  </tr>
+                ) : mats.length > 0 ? (
+                  mats.map((m) => {
+                    const total =
+                      typeof m.materialPrice === "number"
+                        ? m.materialPrice * m.materialQty
+                        : undefined;
+                    const mid =
+                      typeof m.materialId === "number"
+                        ? m.materialId
+                        : undefined;
 
-          {mats.length === 0 ? (
-            <p style={{ color: "#6b7280", margin: "8px 0 0" }}>
-              등록된 자재가 없습니다.
-            </p>
-          ) : (
-            mats.map((mat, idx) => (
-              <div key={`${mat.materialCode}-${idx}`}>
-                <DetailGrid>
-                  <DetailItem>
-                    <Label>자재코드</Label>
-                    <Value>{mat.materialCode}</Value>
-                  </DetailItem>
-                  <DetailItem>
-                    <Label>자재명</Label>
-                    <Value>{mat.materialName}</Value>
-                  </DetailItem>
-                  <DetailItem>
-                    <Label>자재수량</Label>
-                    <Value>{mat.materialQty}</Value>
-                  </DetailItem>
-                </DetailGrid>
-              </div>
-            ))
+                    return (
+                      <tr key={m.materialCode}>
+                        <Td>
+                          <input
+                            type="checkbox"
+                            aria-label={`${m.materialName} 선택`}
+                            disabled={!mid}
+                            checked={!!mid && selectedIds.includes(mid)}
+                            onChange={() => mid && toggleOne(mid)}
+                          />
+                        </Td>
+                        <Td>{m.materialId}</Td>
+                        <Td>{m.materialCode}</Td>
+                        <Td>{m.materialName}</Td>
+                        <Td>{m.materialQty.toLocaleString()}</Td>
+                        <Td>{fmt(m.materialPrice)}</Td>
+                        <Td>{fmt(total)}</Td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <Td
+                      colSpan={6}
+                      style={{ textAlign: "center", color: "#6b7280" }}
+                    >
+                      등록된 자재가 없습니다.
+                    </Td>
+                  </tr>
+                )}
+              </tbody>
+            </StickyTable>
+          </TableScroll>
+          {isFetching && mats.length > 0 && (
+            <div
+              style={{
+                textAlign: "right",
+                fontSize: 12,
+                color: "#6b7280",
+                marginTop: 6,
+              }}
+            >
+              새로고치는 중…
+            </div>
           )}
         </Section>
 
-        {/* 작성자 정보 (필요 시 record에서 받아오도록 타입 확장 가능) */}
-        <Section>
-          <SectionTitle>작성자 정보</SectionTitle>
-          <DetailGrid>
-            <DetailItem>
-              <Label>작성자</Label>
-              <Value>박우진</Value>
-            </DetailItem>
-            <DetailItem>
-              <Label>직책</Label>
-              <Value>팀장</Value>
-            </DetailItem>
-            <DetailItem>
-              <Label>연락처</Label>
-              <Value> test@test.com</Value>
-            </DetailItem>
-            <DetailItem>
-              <Label>작성일시</Label>
-              <Value>{record.createdDate}</Value>
-            </DetailItem>
-          </DetailGrid>
-        </Section>
-
-        {/* 액션 */}
         <Section
           style={{ display: "flex", justifyContent: "center", gap: "0.75rem" }}
         >
-          <Button onClick={() => onEdit?.(record)} title="수정">
+          <Button
+            onClick={() => onEdit?.({ ...record!, materials: mats })}
+            title="수정"
+          >
             수정
           </Button>
-
           <Button color="danger" onClick={handleDelete} title="삭제">
             삭제
           </Button>
@@ -153,6 +273,4 @@ const BOMDetailModal = ({
       </ModalContainer>
     </Overlay>
   );
-};
-
-export default BOMDetailModal;
+}

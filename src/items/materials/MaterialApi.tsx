@@ -17,7 +17,7 @@ export const materialKeys = {
 
 // 서버 단일 아이템
 type MaterialListItem = {
-  id?: number; // 서버가 주면 사용 (예시 응답에 존재)
+  id: number;
   materialName: string;
   materialCode: string;
   createdDate?: string;
@@ -35,6 +35,7 @@ export type MaterialListParams = {
 // 서버 → 앱 모델 변환
 function toMaterialRecord(item: MaterialListItem): MaterialRecord {
   return {
+    id: item.id,
     materialCode: item.materialCode,
     materialName: item.materialName,
     createdDate: item.createdDate ?? "",
@@ -114,12 +115,21 @@ export async function updateMaterial(
   return res.json();
 }
 
-export async function deleteMaterial(
-  id: string
-): Promise<{ ok: boolean; removedId: string }> {
+export async function deleteMaterial(item: {
+  materialId: number;
+  materialName?: string;
+  materialCode?: string;
+}): Promise<{
+  ok: boolean;
+  removedId: string;
+}> {
   const res = await fetch(
-    `/${INVENTORY_ENDPOINTS.MATERIALS_LIST}/deleteMaterial/${id}`,
-    { method: "DELETE" }
+    `${INVENTORY_ENDPOINTS.MATERIALS_LIST}/deleteMaterial`,
+    {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify([item]),
+    }
   );
   if (!res.ok) throw new Error(`Material 삭제 실패 (${res.status})`);
   return res.json();

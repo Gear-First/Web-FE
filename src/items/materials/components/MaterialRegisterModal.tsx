@@ -50,7 +50,7 @@ const MaterialRegisterModal = ({
     if (!materialName.trim()) return alert("자재명을 입력하세요.");
 
     const payload: MaterialFormModel = {
-      materialId: initial?.materialId,
+      materialId: 0,
       materialCode: materialCode.trim(),
       materialName: materialName.trim(),
       createdDate: initial?.createdDate,

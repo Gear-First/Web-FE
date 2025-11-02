@@ -8,29 +8,24 @@ import {
   SectionHeader,
   SectionTitle,
 } from "../../components/common/PageLayout";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryKey,
-} from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import PartTable from "./components/PartTable";
 import PartRegisterModal from "./components/PartRegisterModal";
 
-import { partKeys, fetchPartRecords, createPart } from "./PartApi";
+import { partKeys, createPart } from "./PartApi";
 import {
   toPartCreateDTO,
   type PartCreateDTO,
   type PartFormModel,
   type PartRecord,
 } from "./PartTypes";
-import type { ListResponse } from "../../api";
 
 import SearchBox from "../../components/common/SearchBox";
 import searchIcon from "../../assets/search.svg";
 import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
+import { usePartSearch } from "./hooks/usePartSearch";
 
 type AppliedFilters = {
   keyword: string;
@@ -63,34 +58,20 @@ export default function PartPage() {
 
   const queryClient = useQueryClient();
 
-  // 쿼리 키
-  const queryKey: QueryKey = useMemo(
-    () => [
-      ...partKeys.records,
-      applied.keyword,
-      applied.startDate,
-      applied.endDate,
+  const params = useMemo(
+    () => ({
+      q: applied.keyword || undefined,
+      startDate: applied.startDate || undefined,
+      endDate: applied.endDate || undefined,
       page,
       pageSize,
-    ],
+    }),
     [applied.keyword, applied.startDate, applied.endDate, page, pageSize]
   );
 
-  // 리스트 파라미터 (서버 변환은 PartApi에서 처리)
-  const params = {
-    q: applied.keyword || undefined,
-    startDate: applied.startDate || undefined, // 서버 미지원 시 PartApi에서 제외
-    endDate: applied.endDate || undefined, // 서버 미지원 시 PartApi에서 제외
-    page,
-    pageSize,
-  };
-
-  const { data, fetchStatus } = useQuery<ListResponse<PartRecord[]>, Error>({
-    queryKey,
-    queryFn: () => fetchPartRecords(params),
-    staleTime: 5 * 60 * 1000,
+  const { data, fetchStatus } = usePartSearch({
+    params,
     placeholderData: (prev) => prev,
-    gcTime: 30 * 60 * 1000,
   });
 
   const isFetching = fetchStatus === "fetching";

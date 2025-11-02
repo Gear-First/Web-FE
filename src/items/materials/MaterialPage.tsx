@@ -12,26 +12,16 @@ import {
   toMaterialCreatePayload,
   type MaterialCreateDTO,
   type MaterialFormModel,
-  type MaterialRecord,
 } from "./MaterialTypes";
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  type QueryKey,
-} from "@tanstack/react-query";
-import {
-  createMaterial,
-  fetchMaterialRecords,
-  materialKeys,
-} from "./MaterialApi";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createMaterial, materialKeys } from "./MaterialApi";
 import SearchBox from "../../components/common/SearchBox";
 import searchIcon from "../../assets/search.svg";
 import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
 import MaterialTable from "./components/MaterialTable";
 import MaterialRegisterModal from "./components/MaterialRegisterModal";
-import type { ListResponse } from "../../api";
+import { useMaterialSearch } from "./hooks/useMaterialSearch";
 
 type AppliedFilters = {
   keyword: string;
@@ -60,35 +50,21 @@ export default function MaterialPage() {
 
   const queryClient = useQueryClient();
 
-  const queryKey: QueryKey = useMemo(
-    () => [
-      ...materialKeys.records,
-      applied.keyword,
-      applied.startDate,
-      applied.endDate,
+  const params = useMemo(
+    () => ({
+      keyword: applied.keyword || undefined,
+      startDate: applied.startDate || undefined,
+      endDate: applied.endDate || undefined,
       page,
       pageSize,
-    ],
+    }),
     [applied.keyword, applied.startDate, applied.endDate, page, pageSize]
   );
 
-  const params = {
-    keyword: applied.keyword || undefined,
-    startDate: applied.startDate || undefined,
-    endDate: applied.endDate || undefined,
-    page,
-    pageSize,
-  };
-
-  const { data, fetchStatus } = useQuery<ListResponse<MaterialRecord[]>, Error>(
-    {
-      queryKey,
-      queryFn: () => fetchMaterialRecords(params),
-      staleTime: 5 * 60 * 1000,
-      placeholderData: (prev) => prev,
-      gcTime: 30 * 60 * 1000,
-    }
-  );
+  const { data, fetchStatus } = useMaterialSearch({
+    params,
+    placeholderData: (prev) => prev,
+  });
 
   const isFetching = fetchStatus === "fetching";
   const records = data?.data ?? [];
@@ -117,7 +93,7 @@ export default function MaterialPage() {
     setPage(1);
   }, []);
 
-  const createMut = useMutation<MaterialRecord, Error, MaterialCreateDTO>({
+  const createMut = useMutation<MaterialCreateDTO, Error, MaterialCreateDTO>({
     mutationFn: createMaterial,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: materialKeys.records });
