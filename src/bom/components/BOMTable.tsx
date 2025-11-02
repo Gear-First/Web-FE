@@ -52,14 +52,22 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
 
   const deleteMut = useMutation<{ ok: boolean }, Error, DeleteBOMMaterialsDTO>({
     mutationFn: deleteBOMMaterials,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bomKeys.records });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: bomKeys.records,
+        exact: false,
+      });
+      // 선택된 레코드가 있다면 그 BOM의 자재도 무효화 (모달을 안 닫는 UX에서도 반영됨)
+      if (selectedRecord?.bomCodeId != null) {
+        await queryClient.invalidateQueries({
+          queryKey: bomKeys.materials(String(selectedRecord.bomCodeId)),
+        });
+      }
     },
     onError: (e) => alert(e.message ?? "자재 삭제 중 오류가 발생했습니다."),
   });
 
   const handleDelete = async (dto: DeleteBOMMaterialsDTO) => {
-    // 안전망
     if (!Number.isFinite(Number(dto.partId))) {
       alert("부품이 선택되지 않았습니다.");
       return;

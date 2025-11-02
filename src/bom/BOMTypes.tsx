@@ -1,7 +1,7 @@
 import type { AddMaterialsPayload } from "./components/BOMRegisterModal";
 
 export interface Material {
-  materialId?: number;
+  materialId: number;
   materialName: string;
   materialCode: string;
   materialQty: number;
@@ -67,6 +67,7 @@ export interface ServerBOMItem {
   createdAt: string;
 }
 export interface ServerBOMMaterialItem {
+  materialId: number;
   materialName: string;
   materialCode: string;
   materialPrice: number;
@@ -82,6 +83,7 @@ export const toBOMRecord = (s: ServerBOMItem): BOMRecord => ({
   createdDate: s.createdAt,
 });
 export const toMaterial = (s: ServerBOMMaterialItem): Material => ({
+  materialId: s.materialId,
   materialName: s.materialName,
   materialCode: s.materialCode,
   materialQty: Number(s.materialQuantity),

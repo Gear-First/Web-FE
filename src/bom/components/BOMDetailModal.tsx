@@ -56,7 +56,7 @@ export default function BOMDetailModal({
   } = useQuery<Material[]>({
     queryKey: bomKeys.materials(bomCodeId ?? "__none__"),
     queryFn: () => fetchBOMMaterials(bomCodeId!),
-    enabled: open && !!partId,
+    enabled: open && !!bomCodeId,
     placeholderData: (prev) => prev,
     staleTime: 5 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
@@ -181,6 +181,7 @@ export default function BOMDetailModal({
                       disabled={allIds.length === 0}
                     />
                   </Th>
+                  <Th>자재번호</Th>
                   <Th>자재코드</Th>
                   <Th>자재명</Th>
                   <Th>수량</Th>
@@ -220,6 +221,7 @@ export default function BOMDetailModal({
                             onChange={() => mid && toggleOne(mid)}
                           />
                         </Td>
+                        <Td>{m.materialId}</Td>
                         <Td>{m.materialCode}</Td>
                         <Td>{m.materialName}</Td>
                         <Td>{m.materialQty.toLocaleString()}</Td>
