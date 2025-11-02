@@ -11,10 +11,9 @@ import {
 } from "../components/common/PageLayout";
 import {
   toBOMCreatePayload,
+  type BOMCreateDTO,
   type BOMDTO, // 폼 모델(등록/수정 공용)
-  type BOMRecord, // 서버 응답 타입
-  type PartCate,
-  type BOMCreateDTO, // 생성 요청 DTO
+  type BOMRecord, // 서버 응답 타입 (category: string)
 } from "./BOMTypes";
 import BOMTable from "./components/BOMTable";
 import {
@@ -23,34 +22,29 @@ import {
   useMutation,
   type QueryKey,
 } from "@tanstack/react-query";
-import {
-  bomKeys,
-  fetchBOMRecords,
-  createBOM,
-  type ListResponse,
-} from "./BOMApi";
+import { addBOMMaterials, bomKeys, fetchBOMRecords } from "./BOMApi";
 import Button from "../components/common/Button";
-import BOMRegisterModal from "./components/BOMRegisterModal";
+import BOMRegisterModal, {
+  type AddMaterialsPayload,
+} from "./components/BOMRegisterModal";
 import resetIcon from "../assets/reset.svg";
 import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
 import Pagination from "../components/common/Pagination";
+import type { ListResponse } from "../api";
 
-type CateFilter = PartCate | "ALL";
+// ✅ 카테고리는 자유 문자열 + "ALL"
+type CateFilter = string | "ALL";
+
 type AppliedFilters = {
   keyword: string;
   startDate: string | null;
   endDate: string | null;
 };
 
-const CATE_OPTIONS: CateFilter[] = [
-  "ALL",
-  "카테고리 A",
-  "카테고리 B",
-  "카테고리 C",
-  "카테고리 D",
-];
+// 예시 옵션 (자유 문자열이므로 나중에 서버 목록으로 대체 가능)
+const CATE_OPTIONS: CateFilter[] = ["ALL", "브레이크", "엔진"];
 
 export default function BOMPage() {
   // 필터 상태
@@ -66,18 +60,17 @@ export default function BOMPage() {
     endDate: null,
   });
 
-  // 페이지네이션
+  // 페이지네이션 (화면 1-based)
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // 등록/수정 모달
+  // 등록 모달
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
   const [initialForEdit, setInitialForEdit] = useState<BOMDTO | null>(null);
 
   const queryClient = useQueryClient();
 
-  // queryKey는 순수 원시값으로 구성
   const queryKey: QueryKey = useMemo(
     () => [
       ...bomKeys.records,
@@ -92,7 +85,7 @@ export default function BOMPage() {
   );
 
   const params = {
-    category: cate,
+    category: cate === "ALL" ? undefined : cate,
     q: applied.keyword || undefined,
     startDate: applied.startDate || undefined,
     endDate: applied.endDate || undefined,
@@ -104,12 +97,17 @@ export default function BOMPage() {
     queryKey,
     queryFn: () => fetchBOMRecords(params),
     staleTime: 5 * 60 * 1000,
-    placeholderData: (prev) => prev,
     gcTime: 30 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
   const isFetching = fetchStatus === "fetching";
-  const records = data?.data ?? [];
+
+  const records = useMemo(() => {
+    const arr = data?.data;
+    return Array.isArray(arr) ? arr : [];
+  }, [data]);
+
   const total = data?.meta?.total ?? 0;
   const totalPages = data?.meta?.totalPages ?? 1;
 
@@ -142,12 +140,15 @@ export default function BOMPage() {
     setPage(1);
   }, []);
 
-  // 생성/수정 뮤테이션 — 타입 시그니처 정리
-  const createMut = useMutation<BOMRecord, Error, BOMCreateDTO>({
-    mutationFn: createBOM,
+  // 생성
+  const createMut = useMutation<{ ok: boolean }, Error, BOMCreateDTO>({
+    mutationFn: addBOMMaterials,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bomKeys.records });
       setIsRegOpen(false);
+    },
+    onError: (err) => {
+      alert(err.message ?? "BOM 등록 중 오류가 발생했습니다.");
     },
   });
 
@@ -208,10 +209,10 @@ export default function BOMPage() {
                   placeholder="부품코드 / 부품명 검색"
                 />
 
-                <Button variant="icon" onClick={onSearch}>
+                <Button variant="icon" onClick={onSearch} aria-label="검색">
                   <img src={searchIcon} width={18} height={18} alt="검색" />
                 </Button>
-                <Button variant="icon" onClick={onReset}>
+                <Button variant="icon" onClick={onReset} aria-label="초기화">
                   <img src={resetIcon} width={18} height={18} alt="초기화" />
                 </Button>
               </FilterGroup>
@@ -262,15 +263,15 @@ export default function BOMPage() {
         </PageContainer>
       </Layout>
 
-      {/* 등록/수정 모달 */}
       <BOMRegisterModal
         isOpen={isRegOpen}
         onClose={() => setIsRegOpen(false)}
         mode={regMode}
         initial={initialForEdit}
-        onSubmit={async (payload: BOMDTO) => {
+        onSubmit={async (payload: AddMaterialsPayload) => {
           if (regMode === "create") {
-            await createMut.mutateAsync(toBOMCreatePayload(payload));
+            const dto = toBOMCreatePayload(payload);
+            await createMut.mutateAsync(dto);
           }
         }}
       />
