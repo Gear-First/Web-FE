@@ -48,9 +48,14 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
 
   const handleDelete = async () => {
     if (!selectedRecord) return;
-    // materialId가 없을 수 있으므로 materialCode로 대체 (임시)
-    const idOrCode = selectedRecord.materialId ?? selectedRecord.materialCode;
-    await deleteMaterial(idOrCode);
+
+    const data = {
+      materialId: selectedRecord.id,
+      materialName: selectedRecord.materialName,
+      materialCode: selectedRecord.materialCode,
+    };
+
+    await deleteMaterial(data);
     await queryClient.invalidateQueries({ queryKey: materialKeys.records });
     closeDetail();
   };
@@ -89,6 +94,7 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
           closeDetail();
           setRegMode("edit");
           setInitialForEdit({
+            materialId: rec.id,
             materialCode: rec.materialCode,
             materialName: rec.materialName,
           });

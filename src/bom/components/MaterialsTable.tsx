@@ -1,9 +1,11 @@
 import { styled } from "styled-components";
 import { Th, Td } from "../../components/common/PageLayout";
 import { TableScroll, StickyTable } from "../../components/common/ScrollTable";
+import type { ReactNode } from "react";
 
-type MaterialRow = {
+export type MaterialRow = {
   id: string;
+  materialId: number | "";
   materialCode: string;
   materialName: string;
   materialQty: number | "";
@@ -21,161 +23,117 @@ type Props = {
   compact?: boolean;
   verticalLines?: boolean;
   sticky?: boolean;
+
+  renderSearchButton?: (row: MaterialRow) => ReactNode;
 };
 
 export default function MaterialsTable({
   rows,
   onChange,
   onRemove,
-  maxHeight = 200,
-  compact = true,
+  maxHeight = 220,
   verticalLines = true,
+  renderSearchButton,
 }: Props) {
   return (
-    <ScrollWithRightRail $maxHeight={maxHeight}>
-      <GridTable
-        $compact={compact}
+    <TableScroll $maxHeight={maxHeight}>
+      <StickyTable
+        $stickyTop={0}
+        $headerBg="#fafbfc"
+        $zebra
         $verticalLines={verticalLines}
-        $colWidths={["33%", "44%", "23%"]}
       >
         <thead>
           <tr>
-            <MT_Th>자재 코드</MT_Th>
-            <MT_Th>자재명</MT_Th>
-            <MT_Th>자재 수량</MT_Th>
+            <Th style={{ width: 140 }}>자재코드</Th>
+            <Th>자재명</Th>
+            <Th style={{ width: 120 }}>수량</Th>
+            {renderSearchButton && <Th style={{ width: 120 }}>검색</Th>}
+            <Th style={{ width: 90 }}>삭제</Th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((m) => (
-            <tr key={m.id}>
-              <Td>
-                <CellInput
-                  placeholder="예) MAT-BLD-130"
-                  value={m.materialCode}
-                  onChange={(e) =>
-                    onChange(m.id, "materialCode", e.target.value)
-                  }
-                />
+          {rows.length === 0 ? (
+            <tr>
+              <Td
+                colSpan={renderSearchButton ? 5 : 4}
+                style={{ textAlign: "center", color: "#6b7280" }}
+              >
+                자재 행이 없습니다.
               </Td>
-              <Td>
-                <CellInput
-                  placeholder="예) 팬 블레이드"
-                  value={m.materialName}
-                  onChange={(e) =>
-                    onChange(m.id, "materialName", e.target.value)
-                  }
-                />
-              </Td>
-
-              <ActionCell>
-                <CellNumber
-                  min={1}
-                  placeholder="1"
-                  value={m.materialQty}
-                  onChange={(e) =>
-                    onChange(
-                      m.id,
-                      "materialQty",
-                      e.target.value === "" ? "" : Number(e.target.value)
-                    )
-                  }
-                />
-                <RowDeleteBtn
-                  type="button"
-                  onClick={() => onRemove(m.id)}
-                  aria-label="행 삭제"
-                  title="삭제"
-                >
-                  ×
-                </RowDeleteBtn>
-              </ActionCell>
             </tr>
-          ))}
+          ) : (
+            rows.map((row) => (
+              <tr key={row.id}>
+                <Td>
+                  <Input
+                    value={row.materialCode}
+                    onChange={(e) =>
+                      onChange(row.id, "materialCode", e.target.value)
+                    }
+                    readOnly
+                  />
+                </Td>
+                <Td>
+                  <Input
+                    value={row.materialName}
+                    onChange={(e) =>
+                      onChange(row.id, "materialName", e.target.value)
+                    }
+                    readOnly
+                  />
+                </Td>
+                <Td>
+                  <Input
+                    type="number"
+                    min={1}
+                    value={row.materialQty}
+                    onChange={(e) =>
+                      onChange(
+                        row.id,
+                        "materialQty",
+                        e.target.value === "" ? "" : Number(e.target.value)
+                      )
+                    }
+                  />
+                </Td>
+
+                {renderSearchButton && <Td>{renderSearchButton(row)}</Td>}
+
+                <Td>
+                  <DeleteBtn type="button" onClick={() => onRemove(row.id)}>
+                    삭제
+                  </DeleteBtn>
+                </Td>
+              </tr>
+            ))
+          )}
         </tbody>
-      </GridTable>
-    </ScrollWithRightRail>
+      </StickyTable>
+    </TableScroll>
   );
 }
 
-const ScrollWithRightRail = styled(TableScroll)``;
-
-const GridTable = styled(StickyTable)`
-  thead th {
-    /* StickyTable에도 있지만 여기서 우선순위 높여서 보강 */
-    position: sticky;
-    top: 0;
-    z-index: 5; /* ⬅ 헤더가 가장 위 */
-    background: #fafbfc;
-    border-top: 1px solid #e5e7eb;
-    border-bottom: 1px solid #e5e7eb; /* ⬅ 하단 라인 고정 */
-    // box-shadow: inset 0 -1px 0 #e5e7eb; /* ⬅ 경계선 보강(스크롤 시 깜빡임 방지) */
-  }
-`;
-
-const MT_Th = styled(Th)`
-  border-top: px solid #f0f0f0;
-`;
-const ActionCell = styled(Td)`
-  position: relative;
-  padding-right: 40px; /* input과 버튼 간격 */
-  border-right: none; /* 끝선 제거(선택) */
-  border-top: none;
-`;
-
-const CellInput = styled.input.attrs({ type: "text" })`
-  width: 90%;
-  border: none;
-  background: transparent;
-  padding: 6px 4px;
+/* ---------- styled ---------- */
+const Input = styled.input`
+  width: 50%;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 8px 10px;
   font-size: 0.9rem;
-  text-align: left;
-  outline: none;
-  color: #111827;
-
-  &:focus {
-    outline: none;
-    border: none;
-    background: transparent;
-  }
-  &::placeholder {
-    color: #9ca3af;
-  }
+  background: #fff;
 `;
 
-const CellNumber = styled(CellInput).attrs({
-  type: "number",
-  inputMode: "numeric",
-})`
-  width: 70%;
-  text-align: right;
-
-  &::-webkit-outer-spin-button,
-  &::-webkit-inner-spin-button {
-    -webkit-appearance: none;
-    margin: 0;
-  }
-  -moz-appearance: textfield;
-`;
-
-const RowDeleteBtn = styled.button`
-  position: absolute;
-  top: 50%;
-  right: 6px; /* ⬅ 표 '안쪽 레일'로 이동 (더 이상 -30px 금지) */
-  transform: translateY(-50%);
-  width: 20px;
-  height: 20px;
-  border: none;
-  background: transparent; /* 기본 투명 */
-  border-radius: 6px;
+const DeleteBtn = styled.button`
+  border: 1px solid #ef4444;
+  color: #ef4444;
+  background: #fff;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 0.85rem;
   cursor: pointer;
-  color: #6b7280;
-  display: grid;
-  place-items: center;
-  transition: background 0.15s, color 0.15s;
-  z-index: 1; /* ⬅ 헤더(z-index:5)보다 낮게 */
 
   &:hover {
-    background: #d9d9d9; /* 호버 시만 회색 */
-    color: #111827;
+    background: #fee2e2;
   }
 `;
