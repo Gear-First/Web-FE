@@ -20,11 +20,11 @@ import searchIcon from "../assets/search.svg";
 import resetIcon from "../assets/reset.svg";
 import Pagination from "../components/common/Pagination";
 
-type StatusFilter = InboundStatus | "ALL";
+type StatusFilter = InboundStatus;
 type AppliedFilters = {
   keyword: string;
-  startDate: string | null;
-  endDate: string | null;
+  dateFrom: string | null;
+  dateTo: string | null;
 };
 
 type ListResponse<T> = {
@@ -33,27 +33,31 @@ type ListResponse<T> = {
 };
 
 export default function InboundPage() {
-  const [status, setStatus] = useState<StatusFilter>("ALL");
-  const statusOptions: StatusFilter[] = ["ALL", "합격", "보류", "불합격"];
+  const [status, setStatus] = useState<StatusFilter>("all");
+  const statusOptions: StatusFilter[] = ["all", "not-done", "done"];
 
+  const statusLabelMap: Record<StatusFilter, string> = {
+    all: "전체",
+    "not-done": "입고예정",
+    done: "입고완료",
+  };
   const [keyword, setKeyword] = useState("");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
   const [applied, setApplied] = useState<AppliedFilters>({
     keyword: "",
-    startDate: null,
-    endDate: null,
+    dateFrom: null,
+    dateTo: null,
   });
 
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  // 서버(=MSW) 필터로 위임: queryKey에 파라미터를 전부 포함
   const params = {
     status,
     q: applied.keyword || undefined,
-    startDate: applied.startDate || undefined,
-    endDate: applied.endDate || undefined,
+    dateFrom: applied.dateFrom || undefined,
+    dateTo: applied.dateTo || undefined,
     page,
     pageSize,
   };
@@ -62,7 +66,6 @@ export default function InboundPage() {
     queryKey: [...inboundKeys.records, params],
     queryFn: () => fetchInboundRecords(params),
     staleTime: 5 * 60 * 1000,
-    // v5: keepPreviousData 대체 -> 이전 데이터를 placeholder로 유지 (로딩중에도 UI 유지)
     placeholderData: (prev) => prev,
   });
 
@@ -75,8 +78,8 @@ export default function InboundPage() {
   const onSearch = () => {
     setApplied({
       keyword: keyword.trim(),
-      startDate: startDate || null,
-      endDate: endDate || null,
+      dateFrom: startDate || null,
+      dateTo: endDate || null,
     });
     setPage(1);
   };
@@ -85,9 +88,9 @@ export default function InboundPage() {
     setKeyword("");
     setStartDate("");
     setEndDate("");
-    setStatus("ALL");
+    setStatus("all");
     setPage(1);
-    setApplied({ keyword: "", startDate: null, endDate: null });
+    setApplied({ keyword: "", dateFrom: null, dateTo: null });
   };
 
   const onChangeStatus = (next: StatusFilter) => {
@@ -116,7 +119,7 @@ export default function InboundPage() {
               >
                 {statusOptions.map((opt) => (
                   <option key={opt} value={opt}>
-                    {opt === "ALL" ? "전체" : opt}
+                    {statusLabelMap[opt]}
                   </option>
                 ))}
               </Select>

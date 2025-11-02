@@ -17,8 +17,13 @@ import {
   Value,
 } from "../../components/common/ModalPageLayout";
 import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
-import type { InboundStatus, InboundRecord } from "../InboundTypes";
+import type { InboundRecord, InboundLineStatus } from "../InboundTypes";
 import { fetchInboundDetail, inboundKeys } from "../InboundApi";
+import {
+  getInboundStatusLabel,
+  getInboundStatusVariant,
+} from "../InboundTypes";
+import { fmtDate } from "../../utils/string";
 
 interface Props {
   record: InboundRecord | null;
@@ -27,13 +32,13 @@ interface Props {
   disableOverlayClose?: boolean;
 }
 
-const statusVariant: Record<
-  InboundStatus,
+const lineVariant: Record<
+  InboundLineStatus,
   "accepted" | "pending" | "rejected"
 > = {
-  합격: "accepted",
-  보류: "pending",
-  불합격: "rejected",
+  accepted: "accepted",
+  pending: "pending",
+  rejected: "rejected",
 };
 
 const InboundDetailModal = ({
@@ -50,22 +55,26 @@ const InboundDetailModal = ({
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
-  const inboundId = record?.inboundId ?? 0;
+  const noteId = record?.noteId;
+  const enabled = Boolean(isOpen && noteId);
+
   const {
     data: detail,
     isLoading,
     error,
   } = useQuery({
-    queryKey: inboundKeys.detail(inboundId),
-    queryFn: () => fetchInboundDetail(inboundId),
-    enabled: !!record && isOpen,
+    queryKey: inboundKeys.detail(noteId ?? "nil"),
+    queryFn: () => fetchInboundDetail(noteId!),
+    enabled,
     staleTime: 5 * 60 * 1000,
   });
 
   if (!isOpen || !record) return null;
 
   const fmt = (v?: string | null) => (v && v.trim() ? v : "-");
-  const uiStatus: InboundStatus = detail?.status ?? "보류";
+  const fmtNum = (n?: number | null) =>
+    typeof n === "number" ? n.toLocaleString() : "-";
+
   const lines = Array.isArray(detail?.lines) ? detail!.lines : [];
 
   return (
@@ -77,20 +86,21 @@ const InboundDetailModal = ({
       >
         <Header>
           <HeaderLeft>
-            <Title id="inbound-detail-title">입고 상세 정보</Title>
+            <Title>입고 상세 정보</Title>
             <StatusBadge
-              style={{ fontSize: "0.8rem" }}
-              $variant={statusVariant[uiStatus]}
-              title={detail?.statusRaw}
+              $variant={getInboundStatusVariant(record.statusRaw)}
+              title={record.statusRaw || undefined}
             >
-              {uiStatus}
-              {isLoading ? " (로딩중…)" : ""}
+              {getInboundStatusLabel(record.statusRaw)}
+            </StatusBadge>
+            {">"}
+            <StatusBadge $variant={getInboundStatusVariant(detail?.status)}>
+              {detail?.status}
             </StatusBadge>
           </HeaderLeft>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
 
-        {/* 에러 표시 */}
         {error && (
           <Section>
             <div style={{ color: "#ef4444", fontSize: 14 }}>
@@ -105,7 +115,7 @@ const InboundDetailModal = ({
           <DetailGrid>
             <DetailItem>
               <Label>요청서 ID</Label>
-              <Value>{record.inboundId}</Value>
+              <Value>{record.noteId}</Value>
             </DetailItem>
             <DetailItem>
               <Label>입고 번호</Label>
@@ -113,43 +123,39 @@ const InboundDetailModal = ({
             </DetailItem>
             <DetailItem>
               <Label>공급업체</Label>
-              <Value>{detail?.vendor ?? record.vendor}</Value>
+              <Value>{detail?.supplierName ?? record.supplierName}</Value>
             </DetailItem>
             <DetailItem>
               <Label>품목 종류 수</Label>
               <Value>
-                {(
-                  detail?.itemKindsNumber ?? record.itemKindsNumber
-                )?.toLocaleString?.() ?? "-"}
+                {fmtNum(detail?.itemKindsNumber ?? record.itemKindsNumber)}
               </Value>
             </DetailItem>
             <DetailItem>
               <Label>총 수량</Label>
-              <Value>
-                {(
-                  detail?.inboundQty ?? record.inboundQty
-                )?.toLocaleString?.() ?? "-"}
-              </Value>
+              <Value>{fmtNum(detail?.totalQty ?? record.totalQty)}</Value>
             </DetailItem>
             <DetailItem>
               <Label>보관 창고</Label>
-              <Value>{detail?.warehouseId ?? "-"}</Value>
+              <Value>{fmt(detail?.warehouseCode)}</Value>
             </DetailItem>
             <DetailItem>
               <Label>요청 일시</Label>
-              <Value>{fmt(detail?.requestedAt)}</Value>
+              <Value>{fmtDate(detail?.requestedAt)}</Value>
             </DetailItem>
             <DetailItem>
               <Label>입고 예정일</Label>
-              <Value>{fmt(detail?.expectedReceiveDate)}</Value>
+              <Value>{fmtDate(detail?.expectedReceiveDate)}</Value>
             </DetailItem>
             <DetailItem>
               <Label>입고 일시</Label>
-              <Value>{fmt(detail?.receivedAt)}</Value>
+              <Value>{fmtDate(detail?.receivedAt)}</Value>
             </DetailItem>
             <DetailItem>
               <Label>완료 일시</Label>
-              <Value>{fmt(detail?.completedAt ?? record.completedAt)}</Value>
+              <Value>
+                {fmtDate(detail?.completedAt ?? record.completedAt)}
+              </Value>
             </DetailItem>
           </DetailGrid>
         </Section>
@@ -166,7 +172,6 @@ const InboundDetailModal = ({
                   <Th>LOT</Th>
                   <Th>주문수량</Th>
                   <Th>검사수량</Th>
-                  <Th>이슈수량</Th>
                   <Th>상태</Th>
                 </tr>
               </thead>
@@ -174,7 +179,7 @@ const InboundDetailModal = ({
                 {isLoading ? (
                   <tr>
                     <Td
-                      colSpan={7}
+                      colSpan={6}
                       style={{ textAlign: "center", color: "#6b7280" }}
                     >
                       라인 불러오는 중…
@@ -186,16 +191,19 @@ const InboundDetailModal = ({
                       <Td>{l.product.name}</Td>
                       <Td>{l.product.serial}</Td>
                       <Td>{l.product.lot}</Td>
-                      <Td>{l.orderedQty.toLocaleString()}</Td>
-                      <Td>{l.inspectedQty.toLocaleString()}</Td>
-                      <Td>{l.issueQty.toLocaleString()}</Td>
+                      <Td>{fmtNum(l.orderedQty)}</Td>
+                      <Td>{fmtNum(l.inspectedQty)}</Td>
                       <Td>
                         <StatusBadge
                           style={{ fontSize: "0.7rem" }}
-                          $variant={statusVariant[l.status]}
-                          title={l.statusRaw}
+                          $variant={lineVariant[l.status]}
+                          title={l.status}
                         >
-                          {l.status}
+                          {l.status === "accepted"
+                            ? "합격"
+                            : l.status === "rejected"
+                            ? "불합격"
+                            : "보류"}
                         </StatusBadge>
                       </Td>
                     </tr>
@@ -203,7 +211,7 @@ const InboundDetailModal = ({
                 ) : (
                   <tr>
                     <Td
-                      colSpan={7}
+                      colSpan={6}
                       style={{ textAlign: "center", color: "#6b7280" }}
                     >
                       라인이 없습니다.
@@ -238,7 +246,7 @@ const InboundDetailModal = ({
         <Section>
           <SectionTitle>비고</SectionTitle>
           <RemarkSection>
-            <Value>{fmt(detail?.note)}</Value>
+            <Value>{fmt(detail?.remark)}</Value>
           </RemarkSection>
         </Section>
       </ModalContainer>
