@@ -1,46 +1,42 @@
-// ─────────────────────────────────────────────────────────────
-// 기존: 리스트용 타입 (그대로 유지)
-// ─────────────────────────────────────────────────────────────
-export type InboundStatus = "합격" | "보류" | "불합격";
+// 목록(요약) 상태 그룹
+export type InboundStatus = "done" | "not-done" | "all";
 
-export interface InboundRecord {
-  /** 입고요청서 ID (서버 noteId) */
-  inboundId: string;
-  /** 공급업체명 (supplierName) */
-  vendor: string;
-  /** 품목 종류 수 (itemKindsNumber) */
-  itemKindsNumber: number;
-  /** 총 수량 (totalQty) */
-  inboundQty: number;
-  /** 상태 (COMPLETED_OK 등 → 합격/보류/불합격으로 매핑) */
-  status: InboundStatus;
-  /** 완료 일시 (completedAt) */
-  completedAt: string;
-  /** UI에서 사용할 추가 필드들 (서버에는 없음, 일단 안전값) */
-  warehouse: string;
-  note: string;
-}
+// 상세 헤더(품질) UI 상태
+export type InboundUIStatus = "합격" | "불합격" | "보류";
 
-// ─────────────────────────────────────────────────────────────
-// 신규: 상세용 타입들
-// ─────────────────────────────────────────────────────────────
-
-/** 서버에서 오는 상세 헤더 상태 (원본 값 보존용) */
+// 서버가 상세 헤더로 내려주는 원문 상태
 export type InboundDetailStatusRaw =
   | "IN_PROGRESS"
   | "COMPLETED_OK"
   | "COMPLETED_ISSUE"
-  | "COMPLETED_REJECTED"
-  | (string & {}); // 미상/확장 대비
+  | "PENDING"
+  | (string & {});
 
-/** 서버에서 오는 상세 라인 상태 (원본 값 보존용) */
+// 상세 라인 상태(서버 원문)
 export type InboundLineStatusRaw =
   | "ACCEPTED"
   | "REJECTED"
-  | "ON_HOLD"
+  | "PENDING"
   | (string & {});
 
-/** 상세의 제품 정보 */
+// 상세 라인 상태(UI 배지용)
+export type InboundLineStatus = "accepted" | "rejected" | "pending";
+
+/** 목록 행에서 쓰는 요약 레코드 */
+export interface InboundRecord {
+  noteId: number;
+  receivingNo: string;
+  supplierName: string;
+  itemKindsNumber: number;
+  totalQty: number;
+  status: InboundStatus;
+  statusRaw?: string;
+  completedAt: string | null;
+  requestedAt: string | null;
+  warehouseCode: string;
+}
+
+/** 상세 라인 제품 정보 */
 export interface InboundDetailProduct {
   id: number;
   lot: string;
@@ -49,50 +45,130 @@ export interface InboundDetailProduct {
   imgUrl?: string | null;
 }
 
-/** 상세의 개별 라인 아이템 (UI용) */
+/** 상세 라인(accepted/rejected/pending) */
 export interface InboundDetailLine {
   lineId: string;
   product: InboundDetailProduct;
-
   orderedQty: number;
   inspectedQty: number;
-  issueQty: number;
-
-  /** UI 3단계 상태 */
-  status: InboundStatus;
-  /** 서버 원본 상태 값 (보존) */
-  statusRaw: InboundLineStatusRaw;
+  status: InboundLineStatus; // UI 배지 상태
 }
 
-/** 상세 레코드 (헤더 + 라인들) */
+/** 상세 레코드(헤더 + 라인들) */
 export interface InboundDetailRecord {
-  /** 입고요청서 ID (서버 noteId) */
-  inboundId: string;
-  /** 입고번호 (receivingNo) */
   receivingNo: string;
-
-  vendor: string;
+  supplierName: string;
   itemKindsNumber: number;
-  inboundQty: number;
+  totalQty: number;
 
-  /** UI 3단계 상태 */
-  status: InboundStatus;
-  /** 서버 원본 상태 값 (보존) */
-  statusRaw: InboundDetailStatusRaw;
+  status: InboundDetailStatusRaw;
 
-  /** 날짜/시간들 */
   completedAt?: string | null;
   requestedAt: string;
   expectedReceiveDate?: string | null;
   receivedAt?: string | null;
+  warehouseCode?: string | null;
 
-  /** 기타 */
-  warehouseId?: number | null;
   inspectorName?: string | null;
   inspectorDept?: string | null;
   inspectorPhone?: string | null;
-  note: string; // remark
+  remark?: string;
 
-  /** 라인들 */
   lines: InboundDetailLine[];
+}
+
+/* ========== 공용 유틸 (상태 정규화/라벨) ========== */
+
+/** 서버 원문 상태 정규화: 공백/언더스코어 → 하이픈, 소문자 */
+export function normalizeNoteStatus(raw?: string) {
+  return (raw ?? "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_]+/g, "-")
+    .replace(/-+/g, "-");
+}
+
+export function mapNoteStatusToGroup(raw?: string): InboundStatus {
+  const u = normalizeNoteStatus(raw);
+  if (u === "completed-ok" || u === "completed-issue") return "done";
+  if (u === "pending" || u === "in-progress") return "not-done";
+  return "not-done";
+}
+
+/** 목록 배지 라벨 */
+export function labelForGroupStatus(s: InboundStatus) {
+  if (s === "done") return "입고완료";
+  if (s === "not-done") return "입고예정";
+  return "전체";
+}
+
+/** 상세 라인 원문 → accepted/rejected/pending */
+export function mapDetailLineStatus(
+  raw?: InboundLineStatusRaw
+): InboundLineStatus {
+  const u = (raw ?? "").trim().toUpperCase();
+  if (u === "ACCEPTED") return "accepted";
+  if (u === "REJECTED") return "rejected";
+  return "pending";
+}
+
+/** 라인 배지 한글 라벨(원하면 사용) */
+export function labelForLineStatus(s: InboundLineStatus) {
+  return s === "accepted" ? "합격" : s === "rejected" ? "불합격" : "보류";
+}
+export function mapDetailHeaderStatus(
+  raw?: InboundDetailStatusRaw
+): InboundUIStatus {
+  const u = (raw ?? "").trim().toUpperCase();
+
+  // 서버 원문: IN_PROGRESS | COMPLETED_OK | COMPLETED_ISSUE | PENDING
+  if (u === "COMPLETED_OK") return "합격";
+  if (u === "COMPLETED_ISSUE") return "보류"; // 이슈가 있으니 합격 대신 보류 처리
+  if (u === "PENDING" || u === "IN_PROGRESS") return "보류";
+
+  // 혹시 확장 상태(예: *_REJECTED)가 생길 경우 대비
+  if (u.includes("REJECT") || u.includes("FAIL") || u.includes("NG"))
+    return "불합격";
+
+  return "보류";
+}
+
+/** 서버 원문 상태 → 한글 라벨 */
+export const inboundStatusLabelMap: Record<string, string> = {
+  PENDING: "입고요청",
+  IN_PROGRESS: "입고진행중",
+  COMPLETED_OK: "입고완료",
+  COMPLETED_ISSUE: "재입고대기(불량)",
+
+  // 혹시 모르는 확장값 대비
+  DEFAULT: "기타",
+};
+
+/** 서버 원문 상태 → 배지 색상 variant */
+export const inboundStatusVariantMap: Record<
+  string,
+  "pending" | "accepted" | "rejected"
+> = {
+  PENDING: "pending", // 회색 or 기본색
+  IN_PROGRESS: "pending", // 파랑 계열로 표현 가능
+  COMPLETED_OK: "accepted", // 초록색
+  COMPLETED_ISSUE: "accepted", // 주황/빨강 계열
+  DEFAULT: "pending",
+};
+
+/** 라벨 헬퍼 함수 */
+export function getInboundStatusLabel(raw?: string): string {
+  const s = (raw ?? "").toUpperCase();
+
+  if (s === "PENDING" || s === "IN_PROGRESS") return "입고예정";
+  if (s === "COMPLETED_OK" || s === "COMPLETED_ISSUE") return "입고완료";
+  return "기타";
+}
+
+/** 배지색 헬퍼 함수 */
+export function getInboundStatusVariant(
+  status?: string
+): "pending" | "accepted" | "rejected" {
+  const key = (status ?? "").trim().toUpperCase();
+  return inboundStatusVariantMap[key] || inboundStatusVariantMap.DEFAULT;
 }
