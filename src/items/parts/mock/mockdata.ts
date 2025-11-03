@@ -1,4 +1,4 @@
 import { generatePartMock } from "./generatePartMock";
-import type { PartRecords } from "../PartTypes";
+import type { PartRecord } from "../PartTypes";
 
-export const PartMockdata: PartRecords[] = generatePartMock(200, 20251027);
+export const PartMockdata: PartRecord[] = generatePartMock(200, 20251027);

@@ -1,5 +1,5 @@
 import styled, { css } from "styled-components";
-import { useMemo, useRef } from "react";
+import { useMemo } from "react";
 
 type BusyLike = boolean | "fetching" | "idle" | "paused";
 
@@ -67,16 +67,6 @@ export default function Pagination({
     const t = Math.min(page * pageSize, totalItems);
     return { from: f, to: t };
   }, [page, pageSize, totalItems]);
-
-  const jumpRef = useRef<HTMLInputElement>(null);
-  const onJump = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!jumpRef.current) return;
-    const v = Number(jumpRef.current.value);
-    if (!Number.isFinite(v)) return;
-    goto(v);
-    jumpRef.current.blur();
-  };
 
   if (totalPages <= 1) {
     // 총건수나 페이지 크기 선택은 보여주고 싶다면 이 아래 return을 지우고 Wrap는 유지 가능
@@ -388,41 +378,5 @@ const Busy = styled.div<{ $show: boolean }>`
     to {
       transform: rotate(360deg);
     }
-  }
-`;
-
-const JumpForm = styled.form`
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-`;
-const JumpLabel = styled.label`
-  font-size: 12px;
-  color: #6b7280;
-`;
-const JumpInput = styled.input`
-  width: 64px;
-  height: 32px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  padding: 0 8px;
-  font-size: 13px;
-  &:focus-visible {
-    outline: 2px solid #4f46e5;
-    outline-offset: 2px;
-  }
-`;
-const GoButton = styled(BaseBtn)`
-  height: 32px;
-  padding: 0 10px;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  background: #fff;
-  &:hover {
-    border-color: #111827;
-  }
-  &:disabled {
-    opacity: 0.5;
-    cursor: default;
   }
 `;

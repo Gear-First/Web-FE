@@ -7,7 +7,7 @@ import PartPage from "../part/PartPage";
 import PropertyPage from "../property/PropertyPage";
 import ItemPage from "../items/ItemPage";
 import PurchasingPage from "../purchasing/PurchasingPage";
-import HumanPage from "../human/humanPage";
+import HumanPage from "../human/HumanPage";
 
 const AppRoutes = () => {
   return (

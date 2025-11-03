@@ -70,7 +70,6 @@ export default function RequestPage() {
   // 서버에서 전체 요청 목록 조회
   const {
     data: allRecords = [],
-    isLoading,
     fetchStatus,
   } = useQuery({
     queryKey: requestKeys.records,
