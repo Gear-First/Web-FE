@@ -7,11 +7,15 @@ import PartPage from "../part/PartPage";
 import PropertyPage from "../property/PropertyPage";
 import ItemPage from "../items/ItemPage";
 import PurchasingPage from "../purchasing/PurchasingPage";
+import LoginPage from "../login/LoginPage";
+import ForgotPasswordPage from "../login/ForgotPasswordPage";
 
 const AppRoutes = () => {
   return (
     <Routes>
       <Route path="/" element={<Navigate to="/outbound" replace />} />
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/mrp" element={<BOMPage />} />
       <Route path="/request" element={<RequestPage />} />
       <Route path="/items" element={<ItemPage />} />

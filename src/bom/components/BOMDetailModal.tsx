@@ -233,7 +233,7 @@ export default function BOMDetailModal({
                 ) : (
                   <tr>
                     <Td
-                      colSpan={6}
+                      colSpan={7}
                       style={{ textAlign: "center", color: "#6b7280" }}
                     >
                       등록된 자재가 없습니다.
