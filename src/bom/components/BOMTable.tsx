@@ -97,7 +97,7 @@ export default function BOMTable({ rows }: { rows: BOMRecord[] }) {
         <tbody>
           {safeRows.length === 0 ? (
             <tr>
-              <Td colSpan={6} style={{ textAlign: "center", color: "#6b7280" }}>
+              <Td colSpan={7} style={{ textAlign: "center", color: "#6b7280" }}>
                 등록된 BOM이 없습니다.
               </Td>
             </tr>

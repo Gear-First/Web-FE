@@ -182,6 +182,98 @@ export async function fetchInboundRecords(
   };
 }
 
+export async function fetchInboundDoneRecords(
+  params?: InboundListParams
+): Promise<ListResponse<InboundRecord[]>> {
+  const qs = new URLSearchParams();
+
+  if (params?.status) qs.set("status", params.status);
+  if (params?.date) qs.set("date", params.date);
+  if (params?.dateFrom) qs.set("dateFrom", params.dateFrom);
+  if (params?.dateTo) qs.set("dateTo", params.dateTo);
+  if (params?.warehouseCode) qs.set("warehouseCode", params.warehouseCode);
+
+  qs.set("page", String(Math.max(0, (params?.page ?? 1) - 1)));
+  qs.set("size", String(params?.pageSize ?? 20));
+
+  if (params?.sort) {
+    const sorts = Array.isArray(params.sort) ? params.sort : [params.sort];
+    sorts.forEach((s) => qs.append("sort", s));
+  }
+
+  const base = `${WAREHOUSE_ENDPOINTS.INBOUND_LIST}/done`;
+  const url = qs.toString() ? `${base}?${qs.toString()}` : base;
+
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error(`입고 데이터 요청 실패 (${res.status})`);
+
+  const json: ApiResponse<ServerInboundList> = await res.json();
+  if (!json.success) throw new Error(json.message || "입고 목록 조회 실패");
+
+  const page = json.data ?? { items: [], page: 0, size: 0, total: 0 };
+  const rows = Array.isArray(page.items) ? page.items.map(toInboundRecord) : [];
+  console.debug("[GET] inbound list:", url);
+
+  const totalPages =
+    page.size > 0 ? Math.max(1, Math.ceil(page.total / page.size)) : 1;
+
+  return {
+    data: rows,
+    meta: {
+      total: page.total,
+      page: (page.page ?? 0) + 1,
+      pageSize: page.size,
+      totalPages,
+    },
+  };
+}
+
+export async function fetchInboundNotDoneRecords(
+  params?: InboundListParams
+): Promise<ListResponse<InboundRecord[]>> {
+  const qs = new URLSearchParams();
+
+  if (params?.status) qs.set("status", params.status);
+  if (params?.date) qs.set("date", params.date);
+  if (params?.dateFrom) qs.set("dateFrom", params.dateFrom);
+  if (params?.dateTo) qs.set("dateTo", params.dateTo);
+  if (params?.warehouseCode) qs.set("warehouseCode", params.warehouseCode);
+
+  qs.set("page", String(Math.max(0, (params?.page ?? 1) - 1)));
+  qs.set("size", String(params?.pageSize ?? 20));
+
+  if (params?.sort) {
+    const sorts = Array.isArray(params.sort) ? params.sort : [params.sort];
+    sorts.forEach((s) => qs.append("sort", s));
+  }
+
+  const base = `${WAREHOUSE_ENDPOINTS.INBOUND_LIST}/not-done`;
+  const url = qs.toString() ? `${base}?${qs.toString()}` : base;
+
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+  if (!res.ok) throw new Error(`입고 데이터 요청 실패 (${res.status})`);
+
+  const json: ApiResponse<ServerInboundList> = await res.json();
+  if (!json.success) throw new Error(json.message || "입고 목록 조회 실패");
+
+  const page = json.data ?? { items: [], page: 0, size: 0, total: 0 };
+  const rows = Array.isArray(page.items) ? page.items.map(toInboundRecord) : [];
+  console.debug("[GET] inbound list:", url);
+
+  const totalPages =
+    page.size > 0 ? Math.max(1, Math.ceil(page.total / page.size)) : 1;
+
+  return {
+    data: rows,
+    meta: {
+      total: page.total,
+      page: (page.page ?? 0) + 1,
+      pageSize: page.size,
+      totalPages,
+    },
+  };
+}
+
 export async function fetchInboundDetail(
   noteId: string | number
 ): Promise<InboundDetailRecord> {

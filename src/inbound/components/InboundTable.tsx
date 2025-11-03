@@ -1,14 +1,10 @@
 import { useState } from "react";
 import { StatusBadge, Table, Td, Th } from "../../components/common/PageLayout";
-import {
-  getInboundStatusLabel,
-  getInboundStatusVariant,
-  type InboundRecord,
-} from "../InboundTypes";
+import { getInboundStatusVariant, type InboundRecord } from "../InboundTypes";
 import InboundDetailModal from "./InboundDetailModal";
 import { fmtDate } from "../../utils/string";
 
-export default function InboundTable({ rows }: { rows: InboundRecord[] }) {
+export default function InboundTable({ rows }: { rows?: InboundRecord[] }) {
   const [selectedRecord, setSelectedRecord] = useState<InboundRecord | null>(
     null
   );
@@ -18,6 +14,8 @@ export default function InboundTable({ rows }: { rows: InboundRecord[] }) {
     typeof n === "number" ? n.toLocaleString() : "-";
 
   const fmt = (v?: string | null) => (v && v.trim() ? v : "-");
+
+  const safeRows = Array.isArray(rows) ? rows : [];
 
   return (
     <>
@@ -35,32 +33,40 @@ export default function InboundTable({ rows }: { rows: InboundRecord[] }) {
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
-            <tr
-              key={r.noteId}
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                setSelectedRecord(r);
-                setIsModalOpen(true);
-              }}
-            >
-              <Td>{r.receivingNo}</Td>
-              <Td>{r.supplierName}</Td>
-              <Td>{fmtNum(r.itemKindsNumber)}</Td>
-              <Td>{fmtNum(r.totalQty)}</Td>
-              <Td>{fmtDate(r.requestedAt)}</Td>
-              <Td>{fmtDate(r.completedAt)}</Td>
-              <Td>{fmt(r.warehouseCode)}</Td>
-              <Td>
-                <StatusBadge
-                  $variant={getInboundStatusVariant(r.statusRaw)}
-                  title={r.statusRaw || undefined}
-                >
-                  {getInboundStatusLabel(r.statusRaw)}
-                </StatusBadge>
+          {safeRows.length === 0 ? (
+            <tr>
+              <Td colSpan={8} style={{ textAlign: "center", color: "#999" }}>
+                데이터가 없습니다.
               </Td>
             </tr>
-          ))}
+          ) : (
+            safeRows.map((r) => (
+              <tr
+                key={r.noteId ?? crypto.randomUUID()}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setSelectedRecord(r);
+                  setIsModalOpen(true);
+                }}
+              >
+                <Td>{fmt(r.receivingNo)}</Td>
+                <Td>{fmt(r.supplierName)}</Td>
+                <Td>{fmtNum(r.itemKindsNumber)}</Td>
+                <Td>{fmtNum(r.totalQty)}</Td>
+                <Td>{fmtDate(r.requestedAt)}</Td>
+                <Td>{fmtDate(r.completedAt)}</Td>
+                <Td>{fmt(r.warehouseCode)}</Td>
+                <Td>
+                  <StatusBadge
+                    $variant={getInboundStatusVariant(r.statusRaw)}
+                    title={r.statusRaw || undefined}
+                  >
+                    {r.statusRaw}
+                  </StatusBadge>
+                </Td>
+              </tr>
+            ))
+          )}
         </tbody>
       </Table>
 
