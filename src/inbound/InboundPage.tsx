@@ -7,11 +7,14 @@ import {
   SectionCard,
   SectionHeader,
   SectionTitle,
-  Select,
 } from "../components/common/PageLayout";
-import type { InboundRecord, InboundStatus } from "./InboundTypes";
+import type { InboundRecord } from "./InboundTypes";
 import { useQuery } from "@tanstack/react-query";
-import { fetchInboundRecords, inboundKeys } from "./InboundApi";
+import {
+  fetchInboundNotDoneRecords,
+  fetchInboundDoneRecords,
+  inboundKeys,
+} from "./InboundApi";
 import InboundTable from "./components/InboundTable";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
@@ -20,7 +23,6 @@ import searchIcon from "../assets/search.svg";
 import resetIcon from "../assets/reset.svg";
 import Pagination from "../components/common/Pagination";
 
-type StatusFilter = InboundStatus;
 type AppliedFilters = {
   keyword: string;
   dateFrom: string | null;
@@ -33,14 +35,7 @@ type ListResponse<T> = {
 };
 
 export default function InboundPage() {
-  const [status, setStatus] = useState<StatusFilter>("all");
-  const statusOptions: StatusFilter[] = ["all", "not-done", "done"];
-
-  const statusLabelMap: Record<StatusFilter, string> = {
-    all: "전체",
-    "not-done": "입고예정",
-    done: "입고완료",
-  };
+  // 공통 필터
   const [keyword, setKeyword] = useState("");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -50,30 +45,54 @@ export default function InboundPage() {
     dateTo: null,
   });
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  // 섹션별 페이지네이션
+  const [pageNotDone, setPageNotDone] = useState(1);
+  const [pageDone, setPageDone] = useState(1);
+  const [pageSizeNotDone, setPageSizeNotDone] = useState(10);
+  const [pageSizeDone, setPageSizeDone] = useState(10);
 
-  const params = {
-    status,
+  const buildParams = (page: number, pageSize: number) => ({
     q: applied.keyword || undefined,
     dateFrom: applied.dateFrom || undefined,
     dateTo: applied.dateTo || undefined,
     page,
     pageSize,
-  };
+  });
 
-  const { data, fetchStatus } = useQuery<ListResponse<InboundRecord[]>, Error>({
-    queryKey: [...inboundKeys.records, params],
-    queryFn: () => fetchInboundRecords(params),
+  // 입고 예정(Not Done)
+  const paramsNotDone = buildParams(pageNotDone, pageSizeNotDone);
+  const { data: dataNotDone, fetchStatus: fetchStatusNotDone } = useQuery<
+    ListResponse<InboundRecord[]>,
+    Error
+  >({
+    queryKey: [...inboundKeys.records, "not-done", paramsNotDone],
+    queryFn: () => fetchInboundNotDoneRecords(paramsNotDone),
     staleTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
 
-  const isFetching = fetchStatus === "fetching";
+  // 입고 완료(Done)
+  const paramsDone = buildParams(pageDone, pageSizeDone);
+  const { data: dataDone, fetchStatus: fetchStatusDone } = useQuery<
+    ListResponse<InboundRecord[]>,
+    Error
+  >({
+    queryKey: [...inboundKeys.records, "done", paramsDone],
+    queryFn: () => fetchInboundDoneRecords(paramsDone),
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
 
-  const records = data?.data ?? [];
-  const total = data?.meta?.total ?? 0;
-  const totalPages = data?.meta?.totalPages ?? 1;
+  const isFetchingNotDone = fetchStatusNotDone === "fetching";
+  const isFetchingDone = fetchStatusDone === "fetching";
+
+  const recordsNotDone = dataNotDone?.data ?? [];
+  const totalNotDone = dataNotDone?.meta?.total ?? 0;
+  const totalPagesNotDone = dataNotDone?.meta?.totalPages ?? 1;
+
+  const recordsDone = dataDone?.data ?? [];
+  const totalDone = dataDone?.meta?.total ?? 0;
+  const totalPagesDone = dataDone?.meta?.totalPages ?? 1;
 
   const onSearch = () => {
     setApplied({
@@ -81,56 +100,41 @@ export default function InboundPage() {
       dateFrom: startDate || null,
       dateTo: endDate || null,
     });
-    setPage(1);
+    setPageNotDone(1);
+    setPageDone(1);
   };
 
   const onReset = () => {
     setKeyword("");
     setStartDate("");
     setEndDate("");
-    setStatus("all");
-    setPage(1);
     setApplied({ keyword: "", dateFrom: null, dateTo: null });
-  };
-
-  const onChangeStatus = (next: StatusFilter) => {
-    setStatus(next);
-    setPage(1);
+    setPageNotDone(1);
+    setPageDone(1);
   };
 
   return (
     <Layout>
       <PageContainer>
+        {/* 입고 예정 섹션 */}
         <SectionCard>
           <SectionHeader>
             <div>
-              <SectionTitle>입고 관리</SectionTitle>
+              <SectionTitle>입고 예정</SectionTitle>
               <SectionCaption>
-                입고된 자재의 검수 상태와 보관 위치를 확인합니다.
+                입고예정 자재의 검수 상태와 보관 위치를 확인합니다.
               </SectionCaption>
             </div>
           </SectionHeader>
 
           <SectionHeader style={{ justifyContent: "flex-end" }}>
             <FilterGroup>
-              <Select
-                value={status}
-                onChange={(e) => onChangeStatus(e.target.value as StatusFilter)}
-              >
-                {statusOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {statusLabelMap[opt]}
-                  </option>
-                ))}
-              </Select>
-
               <DateRange
                 startDate={startDate}
                 endDate={endDate}
                 onStartDateChange={setStartDate}
                 onEndDateChange={setEndDate}
               />
-
               <SearchBox
                 keyword={keyword}
                 onKeywordChange={setKeyword}
@@ -147,7 +151,8 @@ export default function InboundPage() {
             </FilterGroup>
           </SectionHeader>
 
-          <InboundTable rows={records} />
+          <InboundTable rows={recordsNotDone} />
+
           <div
             style={{
               display: "flex",
@@ -157,23 +162,97 @@ export default function InboundPage() {
             }}
           >
             <div style={{ height: 18 }}>
-              {isFetching && (
+              {isFetchingNotDone && (
                 <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
               )}
             </div>
           </div>
+
           <Pagination
-            page={page}
-            totalPages={Math.max(1, totalPages)}
-            onChange={(next) => setPage(next)}
-            isBusy={isFetching}
+            page={pageNotDone}
+            totalPages={Math.max(1, totalPagesNotDone)}
+            onChange={(next) => setPageNotDone(next)}
+            isBusy={isFetchingNotDone}
             maxButtons={5}
-            totalItems={total}
-            pageSize={pageSize}
+            totalItems={totalNotDone}
+            pageSize={pageSizeNotDone}
             pageSizeOptions={[10, 20, 50, 100]}
             onChangePageSize={(n) => {
-              setPageSize(n);
-              setPage(1);
+              setPageSizeNotDone(n);
+              setPageNotDone(1);
+            }}
+            showSummary
+            showPageSize
+            align="center"
+            dense={false}
+            sticky={false}
+          />
+        </SectionCard>
+
+        {/* 입고 완료 섹션 */}
+        <SectionCard>
+          <SectionHeader>
+            <div>
+              <SectionTitle>입고 완료</SectionTitle>
+              <SectionCaption>
+                입고된 자재의 검수 상태와 보관 위치를 확인합니다.
+              </SectionCaption>
+            </div>
+          </SectionHeader>
+
+          <SectionHeader style={{ justifyContent: "flex-end" }}>
+            <FilterGroup>
+              <DateRange
+                startDate={startDate}
+                endDate={endDate}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+              />
+              <SearchBox
+                keyword={keyword}
+                onKeywordChange={setKeyword}
+                onSearch={onSearch}
+                onReset={onReset}
+                placeholder="입고번호 / 입고대상 / 공급업체 검색"
+              />
+              <Button variant="icon" onClick={onSearch}>
+                <img src={searchIcon} width={18} height={18} alt="검색" />
+              </Button>
+              <Button variant="icon" onClick={onReset}>
+                <img src={resetIcon} width={18} height={18} alt="초기화" />
+              </Button>
+            </FilterGroup>
+          </SectionHeader>
+
+          <InboundTable rows={recordsDone} />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              margin: "8px 0 12px",
+            }}
+          >
+            <div style={{ height: 18 }}>
+              {isFetchingDone && (
+                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
+              )}
+            </div>
+          </div>
+
+          <Pagination
+            page={pageDone}
+            totalPages={Math.max(1, totalPagesDone)}
+            onChange={(next) => setPageDone(next)}
+            isBusy={isFetchingDone}
+            maxButtons={5}
+            totalItems={totalDone}
+            pageSize={pageSizeDone}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={(n) => {
+              setPageSizeDone(n);
+              setPageDone(1);
             }}
             showSummary
             showPageSize

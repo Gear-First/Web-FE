@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { PartRecords } from "../PartTypes";
+import type { PartRecord } from "../PartTypes";
 import {
   CloseButton,
   DetailGrid,
@@ -19,10 +19,10 @@ import { fetchPartDetail, partKeys } from "../PartApi";
 import { useQuery } from "@tanstack/react-query";
 
 interface Props {
-  record: PartRecords | null;
+  record: PartRecord | null;
   isOpen: boolean;
   onClose: () => void;
-  onEdit?: (record: PartRecords) => void;
+  onEdit?: (record: PartRecord) => void;
   onDelete?: () => void;
   disableOverlayClose?: boolean;
 }

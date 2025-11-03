@@ -157,13 +157,6 @@ export const inboundStatusVariantMap: Record<
 };
 
 /** 라벨 헬퍼 함수 */
-export function getInboundStatusLabel(raw?: string): string {
-  const s = (raw ?? "").toUpperCase();
-
-  if (s === "PENDING" || s === "IN_PROGRESS") return "입고예정";
-  if (s === "COMPLETED_OK" || s === "COMPLETED_ISSUE") return "입고완료";
-  return "기타";
-}
 
 /** 배지색 헬퍼 함수 */
 export function getInboundStatusVariant(

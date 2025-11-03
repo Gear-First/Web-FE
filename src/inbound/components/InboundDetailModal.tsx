@@ -19,10 +19,7 @@ import {
 import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
 import type { InboundRecord, InboundLineStatus } from "../InboundTypes";
 import { fetchInboundDetail, inboundKeys } from "../InboundApi";
-import {
-  getInboundStatusLabel,
-  getInboundStatusVariant,
-} from "../InboundTypes";
+import { getInboundStatusVariant } from "../InboundTypes";
 import { fmtDate } from "../../utils/string";
 
 interface Props {
@@ -91,11 +88,7 @@ const InboundDetailModal = ({
               $variant={getInboundStatusVariant(record.statusRaw)}
               title={record.statusRaw || undefined}
             >
-              {getInboundStatusLabel(record.statusRaw)}
-            </StatusBadge>
-            {">"}
-            <StatusBadge $variant={getInboundStatusVariant(detail?.status)}>
-              {detail?.status}
+              {record.statusRaw}
             </StatusBadge>
           </HeaderLeft>
           <CloseButton onClick={onClose}>&times;</CloseButton>
