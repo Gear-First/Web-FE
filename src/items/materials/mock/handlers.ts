@@ -3,7 +3,7 @@ import { http, HttpResponse } from "msw";
 import { paginate } from "../../../mocks/shared/utils";
 import { MaterialMockdata } from "./mockdata"; // 새 Material 목데이터(배열)
 import type {
-  MaterialRecords,
+  MaterialRecord,
   MaterialCreateDTO,
   MaterialUpdateDTO,
 } from "../MaterialTypes";
@@ -16,7 +16,7 @@ type ListResponse<T> = {
 
 export const materialHandlers = [
   // 목록 (+검색/날짜/페이지네이션)
-  http.get<never, never, ListResponse<MaterialRecords[]>>(
+  http.get<never, never, ListResponse<MaterialRecord[]>>(
     "/api/materials/records",
     ({ request }) => {
       const url = new URL(request.url);
@@ -31,7 +31,7 @@ export const materialHandlers = [
       if (q && q.trim()) {
         const lower = q.toLowerCase();
         data = data.filter((r) =>
-          `${r.materialId} ${r.materialName} ${r.materialCode}`
+          `${r.id} ${r.materialName} ${r.materialCode}`
             .toLowerCase()
             .includes(lower)
         );
@@ -41,8 +41,10 @@ export const materialHandlers = [
         const s = startDate ? new Date(startDate) : null;
         const e = endDate ? new Date(endDate) : null;
         data = data.filter((r) => {
-          const d = new Date(r.createdDate);
-          return (s ? d >= s : true) && (e ? d <= e : true);
+          const dateValue = r.createdDate ? new Date(r.createdDate) : null;
+          const afterStart = s ? !!dateValue && dateValue >= s : true;
+          const beforeEnd = e ? !!dateValue && dateValue <= e : true;
+          return afterStart && beforeEnd;
         });
       }
 
@@ -52,10 +54,12 @@ export const materialHandlers = [
   ),
 
   // 상세
-  http.get<{ id: string }, never, MaterialRecords | { message: string }>(
+  http.get<{ id: string }, never, MaterialRecord | { message: string }>(
     "/api/materials/records/:id",
     ({ params }) => {
-      const rec = MaterialMockdata.find((r) => r.materialId === params.id);
+      const rec = MaterialMockdata.find(
+        (r) => String(r.id) === String(params.id)
+      );
       return rec
         ? HttpResponse.json(rec)
         : HttpResponse.json({ message: "Not found" }, { status: 404 });
@@ -63,13 +67,15 @@ export const materialHandlers = [
   ),
 
   // 생성
-  http.post<never, MaterialCreateDTO, MaterialRecords>(
+  http.post<never, MaterialCreateDTO, MaterialRecord>(
     "/api/materials/records",
     async ({ request }) => {
-      const body = await request.json();
-
-      const created: MaterialRecords = {
-        materialId: `MAT-${Date.now()}`,
+      const body = (await request.json()) as MaterialCreateDTO;
+      const created: MaterialRecord = {
+        id:
+          Number.isFinite(body.materialId) && body.materialId > 0
+            ? body.materialId
+            : Date.now(),
         materialCode: body.materialCode.trim(),
         materialName: body.materialName.trim(),
         createdDate: new Date().toISOString().slice(0, 10),
@@ -84,20 +90,26 @@ export const materialHandlers = [
   http.patch<
     { id: string },
     MaterialUpdateDTO,
-    MaterialRecords | { message: string }
+    MaterialRecord | { message: string }
   >("/api/materials/records/:id", async ({ params, request }) => {
-    const idx = MaterialMockdata.findIndex((r) => r.materialId === params.id);
+    const idx = MaterialMockdata.findIndex(
+      (r) => String(r.id) === String(params.id)
+    );
     if (idx < 0) {
       return HttpResponse.json({ message: "Not found" }, { status: 404 });
     }
 
     const patch = (await request.json()) as MaterialUpdateDTO;
     const runtimePatch = patch as Record<string, unknown>;
+    delete runtimePatch.id;
     delete runtimePatch.materialId;
 
     const safePatch = runtimePatch as MaterialUpdateDTO;
 
-    MaterialMockdata[idx] = { ...MaterialMockdata[idx], ...safePatch };
+    MaterialMockdata[idx] = {
+      ...MaterialMockdata[idx],
+      ...safePatch,
+    };
     return HttpResponse.json(MaterialMockdata[idx]);
   }),
 
@@ -107,11 +119,13 @@ export const materialHandlers = [
     never,
     { ok: boolean; removedId: string } | { message: string }
   >("/api/materials/records/:id", ({ params }) => {
-    const idx = MaterialMockdata.findIndex((r) => r.materialId === params.id);
+    const idx = MaterialMockdata.findIndex(
+      (r) => String(r.id) === String(params.id)
+    );
     if (idx < 0) {
       return HttpResponse.json({ message: "Not found" }, { status: 404 });
     }
     const removed = MaterialMockdata.splice(idx, 1)[0];
-    return HttpResponse.json({ ok: true, removedId: removed.materialId });
+    return HttpResponse.json({ ok: true, removedId: String(removed.id) });
   }),
 ];

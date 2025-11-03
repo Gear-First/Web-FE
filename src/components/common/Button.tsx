@@ -33,11 +33,85 @@ export default function Button({
   );
 }
 
+type ButtonColor = "primary" | "gray" | "danger" | "black";
+type ButtonSize = "sm" | "md" | "lg";
+type ButtonVariant = "default" | "icon";
+
+const iconVariant = css`
+  background: transparent;
+  padding: 6px;
+  border-radius: 6px;
+  &:hover {
+    background: rgba(0, 0, 0, 0.05);
+  }
+  &:active {
+    background: rgba(0, 0, 0, 0.1);
+  }
+`;
+
+const sizeStyles: Record<ButtonSize, ReturnType<typeof css>> = {
+  sm: css`
+    padding: 6px 12px;
+    font-size: 0.85rem;
+  `,
+  md: css`
+    padding: 8px 16px;
+    font-size: 0.9rem;
+  `,
+  lg: css`
+    padding: 12px 20px;
+    font-size: 1rem;
+  `,
+};
+
+const colorStyles: Record<ButtonColor, ReturnType<typeof css>> = {
+  primary: css`
+    background: #2563eb;
+    color: white;
+    &:hover {
+      background: #1d4ed8;
+    }
+    &:active {
+      background: #1e40af;
+    }
+  `,
+  gray: css`
+    background: #f3f4f6;
+    color: #111827;
+    &:hover {
+      background: #e5e7eb;
+    }
+    &:active {
+      background: #d1d5db;
+    }
+  `,
+  danger: css`
+    background: #ef4444;
+    color: white;
+    &:hover {
+      background: #dc2626;
+    }
+    &:active {
+      background: #b91c1c;
+    }
+  `,
+  black: css`
+    background: #111827;
+    color: white;
+    &:hover {
+      background: #1f2937;
+    }
+    &:active {
+      background: #0f172a;
+    }
+  `,
+};
+
 const StyledButton = styled.button<{
-  $color: "primary" | "gray" | "danger" | "black";
-  $size: "sm" | "md" | "lg";
+  $color: ButtonColor;
+  $size: ButtonSize;
   $full?: boolean;
-  $variant: "default" | "icon";
+  $variant: ButtonVariant;
 }>`
   border: none;
   border-radius: 8px;
@@ -49,64 +123,12 @@ const StyledButton = styled.button<{
   align-items: center;
   justify-content: center;
 
-  ${({ $variant }) =>
-    $variant === "icon"
-      ? css`
-          background: transparent;
-          padding: 6px;
-          border-radius: 6px;
-          &:hover {
-            background: rgba(0, 0, 0, 0.05);
-          }
-          &:active {
-            background: rgba(0, 0, 0, 0.1);
-          }
-        `
-      : css`
-          /* ---- size ---- */
-          ${({ $size }) =>
-            $size === "sm"
-              ? `padding: 6px 12px; font-size: 0.85rem;`
-              : $size === "lg"
-              ? `padding: 12px 20px; font-size: 1rem;`
-              : `padding: 8px 16px; font-size: 0.9rem;`}
-        `}
+  ${({ $variant, $size }) =>
+    $variant === "icon" ? iconVariant : sizeStyles[$size]}
 
   /* ---- color (기본 variant용) ---- */
   ${({ $variant, $color }) =>
-    $variant === "default" &&
-    (() => {
-      switch ($color) {
-        case "gray":
-          return `
-            background: #f3f4f6;
-            color: #111827;
-            &:hover { background: #e5e7eb; }
-            &:active { background: #d1d5db; }
-          `;
-        case "danger":
-          return `
-            background: #ef4444;
-            color: white;
-            &:hover { background: #dc2626; }
-            &:active { background: #b91c1c; }
-          `;
-        case "black":
-          return `
-            background: #111827;
-            color: white;
-            &:hover { background: #1f2937; }
-            &:active { background: #0f172a; }
-          `;
-        default:
-          return `
-            background: #2563eb;
-            color: white;
-            &:hover { background: #1d4ed8; }
-            &:active { background: #1e40af; }
-          `;
-      }
-    })()}
+    $variant === "default" ? colorStyles[$color] : css``}
 
   &:disabled {
     opacity: 0.6;

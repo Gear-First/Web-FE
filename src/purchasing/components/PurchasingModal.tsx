@@ -127,7 +127,6 @@ export default function PurchasingModal({
     const requiredFields = [
       "materialCode",
       "materialName",
-      "purchasingQuantity",
       "purchasingPrice",
       "company",
       "surveyDate",

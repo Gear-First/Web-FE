@@ -1,4 +1,4 @@
-import type { BOMRecord, PartCate } from "../BOMTypes";
+import type { BOMRecord, Material } from "../BOMTypes";
 import { createRNG, dateAdd, pad } from "../../mocks/shared/utils";
 
 /**
@@ -7,7 +7,7 @@ import { createRNG, dateAdd, pad } from "../../mocks/shared/utils";
 export function generateBOMMock(count = 100, seed = 20251027): BOMRecord[] {
   const rnd = createRNG(seed);
 
-  const categories: PartCate[] = [
+  const categories = [
     "카테고리 A",
     "카테고리 B",
     "카테고리 C",
@@ -40,35 +40,35 @@ export function generateBOMMock(count = 100, seed = 20251027): BOMRecord[] {
   ];
 
   const materialPool = [
-    { name: "동 케이블", code: "MAT-CBL-001" },
-    { name: "전원 케이블", code: "MAT-CBL-002" },
-    { name: "신호선 케이블", code: "MAT-CBL-004" },
-    { name: "절연튜브", code: "MAT-TUB-004" },
-    { name: "절연테이프", code: "MAT-TAP-102" },
-    { name: "스테인리스 판재", code: "MAT-STL-210" },
-    { name: "알루미늄 판재", code: "MAT-ALU-202" },
-    { name: "알루미늄 봉", code: "MAT-ALU-201" },
-    { name: "리벳", code: "MAT-RIV-303" },
-    { name: "볼트 M4", code: "MAT-BLT-301" },
-    { name: "볼트 M5", code: "MAT-BLT-303" },
-    { name: "너트 M4", code: "MAT-NUT-302" },
-    { name: "커넥터", code: "MAT-CON-220" },
-    { name: "센서 커넥터", code: "MAT-CON-223" },
-    { name: "하우징", code: "MAT-HOU-500" },
-    { name: "ABS 수지", code: "MAT-ABS-401" },
-    { name: "PCB 기판", code: "MAT-PCB-101" },
-    { name: "기판 PCB", code: "MAT-PCB-100" },
-    { name: "저항 10kΩ", code: "MAT-RES-510" },
-    { name: "저항 220Ω", code: "MAT-RES-511" },
-    { name: "커패시터 100uF", code: "MAT-CAP-520" },
-    { name: "LED 칩", code: "MAT-LED-001" },
-    { name: "IC 칩 MCU", code: "MAT-IC-601" },
-    { name: "FPCB", code: "MAT-FPC-111" },
-    { name: "써멀패드", code: "MAT-THM-101" },
-    { name: "트랜스포머", code: "MAT-TRF-900" },
-    { name: "모터", code: "MAT-MOT-230" },
-    { name: "팬 블레이드", code: "MAT-BLD-130" },
-    { name: "스위치", code: "MAT-SWT-710" },
+    { id: 101, name: "동 케이블", code: "MAT-CBL-001" },
+    { id: 102, name: "전원 케이블", code: "MAT-CBL-002" },
+    { id: 103, name: "신호선 케이블", code: "MAT-CBL-004" },
+    { id: 104, name: "절연튜브", code: "MAT-TUB-004" },
+    { id: 105, name: "절연테이프", code: "MAT-TAP-102" },
+    { id: 106, name: "스테인리스 판재", code: "MAT-STL-210" },
+    { id: 107, name: "알루미늄 판재", code: "MAT-ALU-202" },
+    { id: 108, name: "알루미늄 봉", code: "MAT-ALU-201" },
+    { id: 109, name: "리벳", code: "MAT-RIV-303" },
+    { id: 110, name: "볼트 M4", code: "MAT-BLT-301" },
+    { id: 111, name: "볼트 M5", code: "MAT-BLT-303" },
+    { id: 112, name: "너트 M4", code: "MAT-NUT-302" },
+    { id: 113, name: "커넥터", code: "MAT-CON-220" },
+    { id: 114, name: "센서 커넥터", code: "MAT-CON-223" },
+    { id: 115, name: "하우징", code: "MAT-HOU-500" },
+    { id: 116, name: "ABS 수지", code: "MAT-ABS-401" },
+    { id: 117, name: "PCB 기판", code: "MAT-PCB-101" },
+    { id: 118, name: "기판 PCB", code: "MAT-PCB-100" },
+    { id: 119, name: "저항 10kΩ", code: "MAT-RES-510" },
+    { id: 120, name: "저항 220Ω", code: "MAT-RES-511" },
+    { id: 121, name: "커패시터 100uF", code: "MAT-CAP-520" },
+    { id: 122, name: "LED 칩", code: "MAT-LED-001" },
+    { id: 123, name: "IC 칩 MCU", code: "MAT-IC-601" },
+    { id: 124, name: "FPCB", code: "MAT-FPC-111" },
+    { id: 125, name: "써멀패드", code: "MAT-THM-101" },
+    { id: 126, name: "트랜스포머", code: "MAT-TRF-900" },
+    { id: 127, name: "모터", code: "MAT-MOT-230" },
+    { id: 128, name: "팬 블레이드", code: "MAT-BLD-130" },
+    { id: 129, name: "스위치", code: "MAT-SWT-710" },
   ];
 
   const base = new Date("2025-01-05"); // 생성일 기준 시작
@@ -86,14 +86,20 @@ export function generateBOMMock(count = 100, seed = 20251027): BOMRecord[] {
     // 생성일: 2025-01-05 ~ +20일 범위
     const createdDate = dateAdd(base, int(0, 20));
 
-    // BOM-ID: BOM-YYMMDD-###
+    // BOM 코드 ID/코드
     const yymmdd = createdDate.slice(2).replaceAll("-", "");
-    const bomId = `BOM-${yymmdd}-${pad(i + 1, 2)}`;
+    const bomCodeId = `BOM-${yymmdd}-${pad(i + 1, 3)}`;
+    const bomCode = `${family.code}-${pad(int(10, 999), 3)}-${pad(
+      int(1, 99),
+      2
+    )}`;
+
+    const partId = `PART-${yymmdd}-${pad(i + 1, 3)}`;
 
     // 자재 2~6개
     const mCount = int(2, 6);
     const usedIdx = new Set<number>();
-    const materials = Array.from({ length: mCount }).map(() => {
+    const materials: Material[] = Array.from({ length: mCount }).map(() => {
       // 중복 줄이기
       let idx = int(0, materialPool.length - 1);
       let guard = 0;
@@ -102,6 +108,7 @@ export function generateBOMMock(count = 100, seed = 20251027): BOMRecord[] {
       usedIdx.add(idx);
       const m = materialPool[idx];
       return {
+        materialId: m.id,
         materialName: m.name,
         materialCode: m.code,
         materialQty: int(1, 10),
@@ -109,10 +116,12 @@ export function generateBOMMock(count = 100, seed = 20251027): BOMRecord[] {
     });
 
     const rec: BOMRecord = {
-      bomId,
-      partName,
-      partCode,
+      bomCodeId,
+      bomCode,
       category,
+      partId,
+      partCode,
+      partName,
       materials,
       createdDate,
     };
