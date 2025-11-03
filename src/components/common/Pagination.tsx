@@ -7,6 +7,7 @@ type Props = {
   page: number;
   totalPages: number;
   onChange: (next: number) => void;
+  arrowsOnly?: boolean;
 
   isBusy?: BusyLike;
   maxButtons?: number;
@@ -41,6 +42,7 @@ export default function Pagination({
   align = "center",
   dense = false,
   sticky = false,
+  arrowsOnly = false,
 }: Props) {
   const busy = isBusy === true || isBusy === "fetching";
   const clamp = (n: number) => Math.min(totalPages, Math.max(1, n));
@@ -108,35 +110,38 @@ export default function Pagination({
         >
           ‹
         </IconButton>
-
-        {start > 1 && (
+        {!arrowsOnly && (
           <>
-            <PageButton onClick={() => goto(1)} disabled={busy}>
-              1
-            </PageButton>
-            {start > 2 && <Ellipsis aria-hidden>…</Ellipsis>}
-          </>
-        )}
+            {start > 1 && (
+              <>
+                <PageButton onClick={() => goto(1)} disabled={busy}>
+                  1
+                </PageButton>
+                {start > 2 && <Ellipsis aria-hidden>…</Ellipsis>}
+              </>
+            )}
 
-        {pages.map((p) => (
-          <PageButton
-            key={p}
-            $active={p === page}
-            aria-current={p === page ? "page" : undefined}
-            onClick={() => goto(p)}
-            disabled={busy || p === page}
-            title={`${p} 페이지`}
-          >
-            {p}
-          </PageButton>
-        ))}
+            {pages.map((p) => (
+              <PageButton
+                key={p}
+                $active={p === page}
+                aria-current={p === page ? "page" : undefined}
+                onClick={() => goto(p)}
+                disabled={busy || p === page}
+                title={`${p} 페이지`}
+              >
+                {p}
+              </PageButton>
+            ))}
 
-        {end < totalPages && (
-          <>
-            {end < totalPages - 1 && <Ellipsis aria-hidden>…</Ellipsis>}
-            <PageButton onClick={() => goto(totalPages)} disabled={busy}>
-              {totalPages}
-            </PageButton>
+            {end < totalPages && (
+              <>
+                {end < totalPages - 1 && <Ellipsis aria-hidden>…</Ellipsis>}
+                <PageButton onClick={() => goto(totalPages)} disabled={busy}>
+                  {totalPages}
+                </PageButton>
+              </>
+            )}
           </>
         )}
 

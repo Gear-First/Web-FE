@@ -1,6 +1,8 @@
+import { useState, useMemo } from "react";
 import { Table, Th, Td } from "../../components/common/PageLayout";
 import type { BasketLine } from "../PurchasingTypes";
 import Button from "../../components/common/Button";
+import Pagination from "../../components/common/Pagination";
 
 export default function BasketTable({
   lines,
@@ -9,11 +11,25 @@ export default function BasketTable({
   onCreatePO,
 }: {
   lines: BasketLine[];
-  onChangeQty: (itemCode: string, qty: number) => void;
-  onRemove: (itemCode: string) => void;
+  onChangeQty: (itemCode: string, vendorId: string, qty: number) => void;
+  onRemove: (itemCode: string, vendorId: string) => void;
   onCreatePO: () => void;
 }) {
   const total = lines.reduce((s, l) => s + l.orderQty * l.unitPrice, 0);
+
+  /** 페이지네이션 상태 */
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(5); // 최소 5개씩 표시
+
+  /** 현재 페이지 데이터 계산 */
+  const pagedRows = useMemo(() => {
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize;
+    return lines.slice(start, end);
+  }, [lines, page, pageSize]);
+
+  /** 전체 페이지 수 계산 */
+  const totalPages = Math.ceil(lines.length / pageSize) || 1;
 
   return (
     <div>
@@ -30,14 +46,14 @@ export default function BasketTable({
           </tr>
         </thead>
         <tbody>
-          {lines.length === 0 && (
+          {pagedRows.length === 0 && (
             <tr>
               <Td colSpan={7} style={{ textAlign: "center", color: "#9ca3af" }}>
                 선택된 항목이 없습니다.
               </Td>
             </tr>
           )}
-          {lines.map((b) => (
+          {pagedRows.map((b) => (
             <tr key={`${b.materialCode}-${b.vendorId}`}>
               <Td>{b.materialName}</Td>
               <Td>{b.vendorName}</Td>
@@ -46,7 +62,11 @@ export default function BasketTable({
                   type="number"
                   value={b.orderQty}
                   onChange={(e) =>
-                    onChangeQty(b.materialCode, Number(e.target.value) || 0)
+                    onChangeQty(
+                      b.materialCode,
+                      b.vendorId,
+                      Number(e.target.value) || 0
+                    )
                   }
                   style={{
                     width: 96,
@@ -64,7 +84,7 @@ export default function BasketTable({
                 <Button
                   size="sm"
                   color="gray"
-                  onClick={() => onRemove(b.materialCode)}
+                  onClick={() => onRemove(b.materialCode, b.vendorId)}
                 >
                   삭제
                 </Button>
@@ -73,6 +93,27 @@ export default function BasketTable({
           ))}
         </tbody>
       </Table>
+      {lines.length > 0 && (
+        <div style={{ marginTop: 12, marginBottom: 8 }}>
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onChange={(next) => setPage(next)}
+            isBusy={false}
+            totalItems={lines.length}
+            pageSize={pageSize}
+            onChangePageSize={(n) => {
+              setPageSize(n);
+              setPage(1);
+            }}
+            showSummary={false}
+            showPageSize={false}
+            align="center"
+            dense
+            arrowsOnly
+          />
+        </div>
+      )}
 
       {/* 총 금액 표시 */}
       <div

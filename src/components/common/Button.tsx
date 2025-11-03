@@ -10,7 +10,7 @@ interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 export default function Button({
-  color = "primary",
+  color = "black",
   size = "md",
   fullWidth,
   loading,

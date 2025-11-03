@@ -1,176 +1,178 @@
+import axios from "axios";
 import type { PurchasingRecord } from "./PurchasingTypes";
 
 export const purchasingKeys = {
   records: ["purchasing", "records"] as const,
 };
 
-export const mockRecords: PurchasingRecord[] = [
-  {
-    purchasingId: "PR-250910-01",
-    materialCode: "MAT01",
-    materialName: "자재1",
-    purchasingQuantity: 20,
-    purchasingDate: "",
-    company: "LG",
-    purchasingPrice: 10000,
-    surveyDate: "2025-09-01",
-    status: "등록",
-    expiryDate: "2025-12-31",
-    requiredQuantityPerPeriod: 100,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-02",
-    materialCode: "MAT01",
-    materialName: "자재1",
-    purchasingQuantity: 50,
-    purchasingDate: "",
-    company: "SAMSUNG",
-    purchasingPrice: 8500,
-    surveyDate: "2025-09-02",
-    status: "등록",
-    expiryDate: "2025-11-30",
-    requiredQuantityPerPeriod: 200,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-03",
-    materialCode: "MAT01",
-    materialName: "자재1",
-    purchasingQuantity: 120,
-    purchasingDate: "2025-09-05",
-    company: "HYUNDAI",
-    purchasingPrice: 9500,
-    surveyDate: "2025-09-03",
-    status: "선정",
-    expiryDate: "2025-12-15",
-    requiredQuantityPerPeriod: 150,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-04",
-    materialCode: "MAT04",
-    materialName: "자재4",
-    purchasingQuantity: 75,
-    purchasingDate: "",
-    company: "KIA",
-    purchasingPrice: 7800,
-    surveyDate: "2025-09-04",
-    status: "등록",
-    expiryDate: "2025-12-01",
-    requiredQuantityPerPeriod: 80,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-05",
-    materialCode: "MAT05",
-    materialName: "자재5",
-    purchasingQuantity: 200,
-    purchasingDate: "2025-09-08",
-    company: "LG",
-    purchasingPrice: 10200,
-    surveyDate: "2025-09-05",
-    status: "선정",
-    expiryDate: "2026-01-10",
-    requiredQuantityPerPeriod: 180,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-06",
-    materialCode: "MAT06",
-    materialName: "자재6",
-    purchasingQuantity: 30,
-    purchasingDate: "",
-    company: "SAMSUNG",
-    purchasingPrice: 9000,
-    surveyDate: "2025-09-03",
-    status: "등록",
-    expiryDate: "2025-11-25",
-    requiredQuantityPerPeriod: 50,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-07",
-    materialCode: "MAT07",
-    materialName: "자재7",
-    purchasingQuantity: 95,
-    purchasingDate: "",
-    company: "HYUNDAI",
-    purchasingPrice: 8700,
-    surveyDate: "2025-09-06",
-    status: "등록",
-    expiryDate: "2025-12-05",
-    requiredQuantityPerPeriod: 100,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-08",
-    materialCode: "MAT08",
-    materialName: "자재8",
-    purchasingQuantity: 60,
-    purchasingDate: "2025-09-11",
-    company: "KIA",
-    purchasingPrice: 8100,
-    surveyDate: "2025-09-07",
-    status: "선정",
-    expiryDate: "2025-12-20",
-    requiredQuantityPerPeriod: 70,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-09",
-    materialCode: "MAT09",
-    materialName: "자재9",
-    purchasingQuantity: 40,
-    purchasingDate: "",
-    company: "LG",
-    purchasingPrice: 9900,
-    surveyDate: "2025-09-08",
-    status: "등록",
-    expiryDate: "2025-12-30",
-    requiredQuantityPerPeriod: 60,
-    requiredPeriodInDays: 1,
-  },
-  {
-    purchasingId: "PR-250910-10",
-    materialCode: "MAT10",
-    materialName: "자재10",
-    purchasingQuantity: 150,
-    purchasingDate: "",
-    company: "SAMSUNG",
-    purchasingPrice: 8800,
-    surveyDate: "2025-09-09",
-    status: "등록",
-    expiryDate: "2023-01-05",
-    requiredQuantityPerPeriod: 160,
-    requiredPeriodInDays: 1,
-  },
-];
+// 업체 등록 API
+export async function addCompany(data: {
+  materialId?: number;
+  materialCode: string;
+  materialName: string;
+  price: number | string;
+  companyName: string;
+  quantity: number | string;
+  spentDay: number | string;
+  surveyDate: string;
+  untilDate: string;
+}) {
+  const payload = {
+    materialId: data.materialId,
+    materialCode: data.materialCode,
+    materialName: data.materialName,
+    price: data.price,
+    companyName: data.companyName,
+    quantity: data.quantity,
+    spentDay: data.spentDay,
+    surveyDate: data.surveyDate,
+    untilDate: data.untilDate,
+  };
 
-// --- API 함수 ---
-export async function fetchPurchasingRecords(): Promise<PurchasingRecord[]> {
-  return mockRecords;
+  console.log("addCompany 요청 payload:", payload);
+
+  const res = await fetch("http://34.120.215.23/inventory/api/v1/addCompany", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+
+  const json = await res.json();
+  console.log("응답:", json);
+  return json;
 }
 
-// --- MaterialRequirement / VendorQuote 생성 ---
-export const getMaterialRequirements = () => {
-  return mockRecords.map((r) => ({
-    materialCode: r.materialCode,
-    materialName: r.materialName,
-    required: r.purchasingQuantity,
-    needDate: r.surveyDate,
-  }));
-};
+// 자재 리스트
+export async function fetchMaterialList(query: string, page = 0, size = 10) {
+  try {
+    const res = await fetch(
+      `http://34.120.215.23/inventory/api/v1/getMaterialList?page=${page}&size=${size}&sort=createdAt`
+    );
+    const json = await res.json();
+    return json.data?.content ?? [];
+  } catch (err) {
+    console.error("자재 목록 조회 실패:", err);
+    return [];
+  }
+}
 
-export const getVendorQuotes = () => {
-  return mockRecords.map((r) => ({
-    materialCode: r.materialCode,
-    materialName: r.materialName,
-    vendorId: `${r.company}-V1`,
-    vendorName: r.company,
-    unitPrice: r.purchasingPrice,
-    requiredQuantityPerPeriod: r.requiredQuantityPerPeriod,
-    requiredPeriodInDays: r.requiredPeriodInDays,
-    expiryDate: r.expiryDate,
-  }));
-};
+// 업체 리스트
+export async function fetchCompanyList(params?: {
+  keyword?: string;
+  isSelected?: boolean;
+  page?: number;
+  size?: number;
+}): Promise<{
+  data: PurchasingRecord[];
+  meta: { total: number; page: number; size: number; totalPages: number };
+}> {
+  const query = new URLSearchParams();
+
+  if (params?.keyword) {
+    query.append("keyword", params.keyword);
+  }
+
+  query.append("page", String(params?.page ?? 0));
+  query.append("size", String(params?.size ?? 10));
+  query.append("sort", "createdAt");
+
+  if (params?.isSelected !== undefined) {
+    query.append("isSelected", params.isSelected ? "true" : "false");
+  }
+
+  const url = `http://34.120.215.23/inventory/api/v1/getCompanyList?${query.toString()}`;
+  console.log("fetchCompanyList 요청 URL:", url);
+
+  const res = await fetch(url, { method: "GET" });
+
+  const json = await res.json();
+  if (!json.success) throw new Error(json.message || "조회 실패");
+
+  const data = json.data ?? {};
+  const content = data.content ?? [];
+
+  return {
+    data: content.map((c: any) => ({
+      purchasingId: c.registNum,
+      materialName: c.materialName,
+      materialCode: c.materialCode,
+      company: c.companyName,
+      purchasingPrice: c.price,
+      requiredQuantityPerPeriod: c.quantity,
+      requiredPeriodInDays: c.spentDay,
+      surveyDate: c.surveyDate,
+      expiryDate: c.untilDate,
+      status: "등록",
+      orderCnt: c.orderCnt,
+      createdAt: c.createdAt,
+    })),
+    meta: {
+      total: data.totalElements ?? 0,
+      page: data.page ?? 0,
+      size: data.size ?? 10,
+      totalPages: data.totalPages ?? 1,
+    },
+  };
+}
+
+// 업체 후보 리스트 조회 (공급업체 선정용)
+export async function fetchCompanyCandidates(params: {
+  endDate: string;
+  material: string;
+}) {
+  const { endDate, material } = params;
+
+  const url = `http://34.120.215.23/inventory/api/v1/getCompanyList?endDate=${endDate}&material=${encodeURIComponent(
+    material
+  )}&page=0&size=10&sort=createdAt`;
+
+  try {
+    const res = await fetch(url, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+
+    const json = await res.json();
+
+    if (!json.success) throw new Error(json.message || "조회 실패");
+
+    return json.data?.content ?? [];
+  } catch (err) {
+    console.error("업체 후보 조회 실패:", err);
+    return [];
+  }
+}
+
+// PO 생성 API
+export async function createPurchaseOrders(
+  payload: {
+    id: number; // companyId
+    orderCnt: number;
+    totalPrice: number;
+  }[]
+) {
+  try {
+    console.log("createPurchaseOrders 요청 payload:", payload);
+
+    const res = await fetch(
+      "http://34.120.215.23/inventory/api/v1/selectCompany",
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      }
+    );
+
+    const json = await res.json();
+    console.log("응답:", json);
+
+    if (!res.ok || json.success === false) {
+      throw new Error(json.message || "PO 생성 실패");
+    }
+
+    return json;
+  } catch (err) {
+    console.error("PO 생성 중 오류:", err);
+    throw err;
+  }
+}
