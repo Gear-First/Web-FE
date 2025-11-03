@@ -2,6 +2,7 @@ import { styled } from "styled-components";
 import { Th, Td } from "../../components/common/PageLayout";
 import { TableScroll, StickyTable } from "../../components/common/ScrollTable";
 import type { ReactNode } from "react";
+import { Input } from "../../components/common/ModalPageLayout";
 
 export type MaterialRow = {
   id: string;
@@ -115,14 +116,6 @@ export default function MaterialsTable({
 }
 
 /* ---------- styled ---------- */
-const Input = styled.input`
-  width: 50%;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 8px 10px;
-  font-size: 0.9rem;
-  background: #fff;
-`;
 
 const DeleteBtn = styled.button`
   border: 1px solid #ef4444;
