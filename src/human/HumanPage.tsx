@@ -100,7 +100,7 @@ export default function HumanPage() {
         <SectionCard>
           <SectionHeader>
             <div>
-              <SectionTitle>인적관리</SectionTitle>
+              <SectionTitle>인사관리</SectionTitle>
               <SectionCaption>
                 구성원 계정의 등록·검색·필터링을 관리합니다.
               </SectionCaption>
@@ -200,9 +200,10 @@ export default function HumanPage() {
       </PageContainer>
 
       <UserRegisterModal
+        mode="create"
         isOpen={openReg}
         onClose={() => setOpenReg(false)}
-        onSubmit={async (dto) => {
+        onCreate={async (dto) => {
           await createMut.mutateAsync(dto);
         }}
       />
