@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMemo, useState } from "react";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Layout from "../components/common/Layout";
 import {
   PageContainer,
@@ -16,32 +16,17 @@ import Pagination from "../components/common/Pagination";
 
 import UserTable from "./components/UserTable";
 import UserRegisterModal from "./components/UserRegisterModal";
-import {
-  createUser,
-  fetchUsers,
-  userKeys,
-  type UserListParams,
-} from "./HumanApi";
-import type { ListResponse } from "../api";
-import {
-  BRANCH_OPTIONS,
-  REGION_OPTIONS,
-  ROLE_OPTIONS,
-  type BranchOption,
-  type CreateUserDTO,
-  type Region,
-  type RegionOption,
-  type RoleOption,
-  type UserRecord,
-} from "./HumanTypes";
+import { createUser, userKeys } from "./HumanApi";
+import { type CreateUserDTO, type Region, type WorkType } from "./HumanTypes";
 import searchIcon from "../assets/search.svg";
 import resetIcon from "../assets/reset.svg";
+import { useRegions, useUsers, useWorkTypes } from "./components/queries";
 
 export default function HumanPage() {
   // 공통 필터
   const [keyword, setKeyword] = useState("");
-  const [role, setRole] = useState<RoleOption>("ALL");
-  const [branch, setBranch] = useState<BranchOption>("ALL");
+  const [rank, setRank] = useState<"EMPLOYEE" | "LEADER" | "ALL">("ALL");
+  const [workType, setWorkType] = useState<WorkType | "ALL">("ALL");
   const [region, setRegion] = useState<Region | "ALL">("ALL");
   const [applied, setApplied] = useState<{ keyword: string }>({ keyword: "" });
 
@@ -52,21 +37,36 @@ export default function HumanPage() {
   // 모달
   const [openReg, setOpenReg] = useState(false);
 
-  const params: UserListParams = {
+  const { data, fetchStatus } = useUsers({
     q: applied.keyword || undefined,
-    role,
-    branch,
-    region: region || undefined,
+    rank,
+    workTypeId: workType === "ALL" ? undefined : workType.workTypeId,
+    regionId: region === "ALL" ? undefined : region.regionId,
     page,
     pageSize,
-  };
-
-  const { data, fetchStatus } = useQuery<ListResponse<UserRecord[]>, Error>({
-    queryKey: [...userKeys.list, params],
-    queryFn: () => fetchUsers(params),
-    staleTime: 5 * 60 * 1000,
-    placeholderData: (prev) => prev,
   });
+
+  const {
+    data: regionRes,
+    isLoading: isRegionLoading,
+    error: regionError,
+  } = useRegions(true);
+
+  const {
+    data: workTypeRes,
+    isLoading: isWorkTypeLoading,
+    error: workTypeError,
+  } = useWorkTypes(true);
+
+  const regionOptions = useMemo(() => {
+    const base = regionRes?.data ?? [];
+    return [{ regionId: 0, regionName: "ALL" }, ...base];
+  }, [regionRes]);
+
+  const workTypeOptions = useMemo(() => {
+    const base = workTypeRes?.data ?? [];
+    return [{ workTypeId: 0, workTypeName: "ALL" }, ...base];
+  }, [workTypeRes]);
 
   const queryClient = useQueryClient();
   const createMut = useMutation({
@@ -83,8 +83,8 @@ export default function HumanPage() {
 
   const onReset = () => {
     setKeyword("");
-    setRole("ALL");
-    setBranch("ALL");
+    setRank("ALL");
+    setWorkType("ALL");
     setRegion("ALL");
     setPage(1);
   };
@@ -108,41 +108,67 @@ export default function HumanPage() {
           </SectionHeader>
 
           <SectionHeader>
-            <Button onClick={() => setOpenReg(true)}>+ 회원가입</Button>
+            <Button onClick={() => setOpenReg(true)}>회원가입 +</Button>
             <FilterGroup>
               <Select
-                value={role}
-                onChange={(e) => setRole(e.target.value as RoleOption)}
+                value={rank}
+                onChange={(e) =>
+                  setRank(e.target.value as "EMPLOYEE" | "LEADER" | "ALL")
+                }
               >
-                {ROLE_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt === "ALL"
-                      ? "전체 직급"
-                      : opt === "EMPLOYEE"
-                      ? "사원"
-                      : "팀장"}
+                <option value="ALL">전체 직급</option>
+                <option value="EMPLOYEE">사원</option>
+                <option value="LEADER">팀장</option>
+              </Select>
+
+              <Select
+                value={workType === "ALL" ? "ALL" : String(workType.workTypeId)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "ALL") {
+                    setWorkType("ALL");
+                  } else {
+                    const selected = workTypeOptions.find(
+                      (w) => String(w.workTypeId) === v
+                    );
+                    setWorkType(selected ?? "ALL");
+                  }
+                }}
+                disabled={isWorkTypeLoading}
+              >
+                {workTypeOptions.map((w) => (
+                  <option
+                    key={w.workTypeId}
+                    value={
+                      w.workTypeName === "ALL" ? "ALL" : String(w.workTypeId)
+                    }
+                  >
+                    {w.workTypeName === "ALL" ? "전체 지점" : w.workTypeName}
                   </option>
                 ))}
               </Select>
 
               <Select
-                value={branch}
-                onChange={(e) => setBranch(e.target.value as BranchOption)}
+                value={region === "ALL" ? "ALL" : String(region.regionId)}
+                onChange={(e) => {
+                  const v = e.target.value;
+                  if (v === "ALL") {
+                    setRegion("ALL");
+                  } else {
+                    const selected = regionOptions.find(
+                      (r) => String(r.regionId) === v
+                    );
+                    setRegion(selected ?? "ALL");
+                  }
+                }}
+                disabled={isRegionLoading}
               >
-                {BRANCH_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt === "ALL" ? "전체 지점" : opt}
-                  </option>
-                ))}
-              </Select>
-
-              <Select
-                value={region}
-                onChange={(e) => setRegion(e.target.value as RegionOption)}
-              >
-                {REGION_OPTIONS.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt === "ALL" ? "전체 지역" : opt}
+                {regionOptions.map((r) => (
+                  <option
+                    key={r.regionId}
+                    value={r.regionName === "ALL" ? "ALL" : String(r.regionId)}
+                  >
+                    {r.regionName === "ALL" ? "전체 지역" : r.regionName}
                   </option>
                 ))}
               </Select>
@@ -198,7 +224,6 @@ export default function HumanPage() {
           />
         </SectionCard>
       </PageContainer>
-
       <UserRegisterModal
         mode="create"
         isOpen={openReg}

@@ -1,15 +1,18 @@
 import styled from "styled-components";
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
-import { fmtDate } from "../../utils/string";
 import type { UserRecord } from "../HumanTypes";
 import { useState } from "react";
 import UserDetailModal from "./UserDetailModal";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updateUser, userKeys } from "../HumanApi";
 
-const Empty = styled.div`
-  padding: 20px;
-  text-align: center;
-  color: #6b7280;
-  font-size: 0.95rem;
+const EmptyRow = styled.tr`
+  td {
+    padding: 20px;
+    text-align: center;
+    color: #6b7280;
+    font-size: 0.95rem;
+  }
 `;
 
 export default function UserTable({ rows }: { rows?: UserRecord[] }) {
@@ -17,9 +20,14 @@ export default function UserTable({ rows }: { rows?: UserRecord[] }) {
   const [selected, setSelected] = useState<UserRecord | null>(null);
   const [open, setOpen] = useState(false);
 
-  if (data.length === 0) {
-    return <Empty>등록된 사용자가 없습니다.</Empty>;
-  }
+  const qc = useQueryClient();
+
+  const updateMut = useMutation({
+    mutationFn: (dto: Parameters<typeof updateUser>[0]) => updateUser(dto),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: userKeys.list });
+    },
+  });
 
   return (
     <>
@@ -32,34 +40,38 @@ export default function UserTable({ rows }: { rows?: UserRecord[] }) {
             <Th>직급</Th>
             <Th>지역</Th>
             <Th>지점</Th>
-            <Th>가입일</Th>
           </tr>
         </thead>
         <tbody>
-          {data.map((u) => (
-            <tr
-              key={u.id}
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                setSelected(u);
-                setOpen(true);
-              }}
-            >
-              <Td>{u.name}</Td>
-              <Td>{u.email}</Td>
-              <Td>{u.phone}</Td>
-              <Td>
-                <StatusBadge
-                  $variant={u.role === "LEADER" ? "success" : "info"}
-                >
-                  {u.role === "LEADER" ? "팀장" : "사원"}
-                </StatusBadge>
-              </Td>
-              <Td>{u.region}</Td>
-              <Td>{u.branch}</Td>
-              <Td>{fmtDate(u.createdAt)}</Td>
-            </tr>
-          ))}
+          {data.length === 0 ? (
+            <EmptyRow>
+              <td colSpan={6}>등록된 사용자가 없습니다.</td>
+            </EmptyRow>
+          ) : (
+            data.map((u) => (
+              <tr
+                key={u.id}
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  setSelected(u);
+                  setOpen(true);
+                }}
+              >
+                <Td>{u.name}</Td>
+                <Td>{u.email}</Td>
+                <Td>{u.phoneNum}</Td>
+                <Td>
+                  <StatusBadge
+                    $variant={u.rank === "LEADER" ? "success" : "info"}
+                  >
+                    {u.rank === "LEADER" ? "팀장" : "사원"}
+                  </StatusBadge>
+                </Td>
+                <Td>{u.region}</Td>
+                <Td>{u.workType}</Td>
+              </tr>
+            ))
+          )}
         </tbody>
       </Table>
 
@@ -70,9 +82,11 @@ export default function UserTable({ rows }: { rows?: UserRecord[] }) {
           setOpen(false);
           setSelected(null);
         }}
-        // 선택: 수정/삭제 핸들러 주입 가능
-        // onEdit={(user) => { ... }}
-        // onDelete={(user) => { ... }}
+        onEdit={async (dto) => {
+          await updateMut.mutateAsync(dto);
+          setOpen(false);
+          setSelected(null);
+        }}
       />
     </>
   );
