@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import BellIcon from "../../assets/BellIcon.png";
 import Logo from "../../assets/logo_gearfirst.svg";
+import UserMenu from "./UserMenu";
 
 const TopBarContainer = styled.header`
   background: white;
@@ -75,7 +76,7 @@ const TopBar: React.FC = () => {
         ))}
       </MenuGroup>
       <RightActions>
-        <div>박우진님</div>
+        <UserMenu />
         <IconButton>
           <img src={BellIcon} alt="알림" width={20} height={20} />
         </IconButton>
