@@ -1,480 +1,109 @@
-import type { RequestRecord } from "./RequestTypes";
+import axios from "axios";
+import type {
+  PendingOrderResponse,
+  ProcessedOrderResponse,
+} from "./RequestTypes";
 
+// React Query 키
 export const requestKeys = {
-  records: ["request", "records"] as const,
+  pendingOrders: ["request", "pending-orders"] as const,
+  processedOrders: ["request", "processed-orders"] as const,
 };
 
-export const requestRecords: RequestRecord[] = [
-  {
-    requestId: "REQ-251001-01",
-    requestDate: "2025-10-01 09:30",
-    agency: "서울자동차부품상사",
-    agencyLocation: "서울특별시 강남구",
-    manager: "김민수",
-    managerPosition: "영업팀장",
-    managerContact: "010-1234-5678",
-    submissionDate: "2025-10-01 10:00",
-    status: "승인",
-    remarks: "긴급 발주",
-    partItems: [
-      { partCode: "ENG-101", partName: "엔진블록", requestQuantity: 2 },
-      { partCode: "FLT-305", partName: "오일필터", requestQuantity: 10 },
-    ],
+// axios 인스턴스 생성
+const api = axios.create({
+  baseURL: "http://34.120.215.23/order/api/v1", // 백엔드 API 주소
+  headers: {
+    "Content-Type": "application/json",
   },
-  {
-    requestId: "REQ-251001-02",
-    requestDate: "2025-10-01 14:20",
-    agency: "부산카서비스",
-    agencyLocation: "부산광역시 해운대구",
-    manager: "이수진",
-    managerPosition: "대리",
-    managerContact: "010-8765-4321",
-    submissionDate: "2025-10-01 15:00",
-    status: "미승인",
-    remarks: "",
-    partItems: [
-      { partCode: "BRK-210", partName: "브레이크패드", requestQuantity: 8 },
-      { partCode: "BOL-101", partName: "조립볼트세트", requestQuantity: 20 },
-      { partCode: "ENG-101", partName: "엔진블록", requestQuantity: 5 },
-    ],
-  },
-  {
-    requestId: "REQ-251002-03",
-    requestDate: "2025-10-02 09:00",
-    agency: "대구모터스",
-    agencyLocation: "대구광역시 북구",
-    manager: "정다은",
-    managerPosition: "매니저",
-    managerContact: "010-2222-3333",
-    submissionDate: "2025-10-02 09:40",
-    status: "승인",
-    remarks: "정기 발주",
-    partItems: [
-      { partCode: "SPK-501", partName: "냉각수호스", requestQuantity: 30 },
-      { partCode: "BLT-401", partName: "벨트세트", requestQuantity: 5 },
-    ],
-  },
-  {
-    requestId: "REQ-251002-04",
-    requestDate: "2025-10-02 13:10",
-    agency: "인천오토월드",
-    agencyLocation: "인천광역시 미추홀구",
-    manager: "박정훈",
-    managerPosition: "부장",
-    managerContact: "010-4444-5555",
-    submissionDate: "2025-10-02 13:30",
-    status: "반려",
-    remarks: "재고 부족",
-    partItems: [
-      { partCode: "ENG-220", partName: "연료펌프", requestQuantity: 3 },
-      { partCode: "FLD-111", partName: "냉각수호스", requestQuantity: 12 },
-    ],
-  },
-  {
-    requestId: "REQ-251003-05",
-    requestDate: "2025-10-03 11:40",
-    agency: "광주모터샵",
-    agencyLocation: "광주광역시 서구",
-    manager: "최유진",
-    managerPosition: "점장",
-    managerContact: "010-9999-1111",
-    submissionDate: "2025-10-03 12:10",
-    status: "승인",
-    remarks: "테스트용 부품 포함",
-    partItems: [
-      { partCode: "PST-112", partName: "피스톤세트", requestQuantity: 4 },
-      { partCode: "CRK-301", partName: "크랭크샤프트", requestQuantity: 1 },
-    ],
-  },
-  {
-    requestId: "REQ-251004-06",
-    requestDate: "2025-10-04 10:00",
-    agency: "울산오토하우스",
-    agencyLocation: "울산광역시 남구",
-    manager: "한지훈",
-    managerPosition: "기술팀장",
-    managerContact: "010-5555-7777",
-    submissionDate: "2025-10-04 10:20",
-    status: "미승인",
-    remarks: "",
-    partItems: [
-      { partCode: "WTR-602", partName: "워터펌프", requestQuantity: 2 },
-      { partCode: "RAD-701", partName: "라디에이터", requestQuantity: 1 },
-    ],
-  },
-  {
-    requestId: "REQ-251004-07",
-    requestDate: "2025-10-04 15:45",
-    agency: "수원카테크",
-    agencyLocation: "경기도 수원시",
-    manager: "오지민",
-    managerPosition: "과장",
-    managerContact: "010-8888-9999",
-    submissionDate: "2025-10-04 16:00",
-    status: "승인",
-    remarks: "정기 점검 부품",
-    partItems: [
-      { partCode: "AIR-202", partName: "에어필터", requestQuantity: 15 },
-      { partCode: "OIL-203", partName: "오일필터", requestQuantity: 15 },
-      { partCode: "CAB-204", partName: "캐빈필터", requestQuantity: 10 },
-    ],
-  },
-  {
-    requestId: "REQ-251005-08",
-    requestDate: "2025-10-05 09:20",
-    agency: "창원모터스",
-    agencyLocation: "경상남도 창원시",
-    manager: "이하늘",
-    managerPosition: "주임",
-    managerContact: "010-1212-3434",
-    submissionDate: "2025-10-05 09:50",
-    status: "승인",
-    remarks: "-",
-    partItems: [
-      { partCode: "SPK-501", partName: "스파크플러그", requestQuantity: 20 },
-    ],
-  },
-  {
-    requestId: "REQ-251006-09",
-    requestDate: "2025-10-06 13:25",
-    agency: "평택자동차정비",
-    agencyLocation: "경기도 평택시",
-    manager: "문세린",
-    managerPosition: "정비반장",
-    managerContact: "010-7777-3333",
-    submissionDate: "2025-10-06 13:45",
-    status: "반려",
-    remarks: "수량 과다",
-    partItems: [
-      { partCode: "BRK-215", partName: "브레이크디스크", requestQuantity: 50 },
-    ],
-  },
-  {
-    requestId: "REQ-251006-10",
-    requestDate: "2025-10-06 17:00",
-    agency: "전주카시스템",
-    agencyLocation: "전라북도 전주시",
-    manager: "유성민",
-    managerPosition: "기사",
-    managerContact: "010-5555-2222",
-    submissionDate: "2025-10-06 17:20",
-    status: "미승인",
-    remarks: "",
-    partItems: [
-      { partCode: "ENG-101", partName: "엔진블록", requestQuantity: 1 },
-      { partCode: "PST-112", partName: "피스톤세트", requestQuantity: 4 },
-    ],
-  },
-  // 11~30
-  {
-    requestId: "REQ-251007-11",
-    requestDate: "2025-10-07 09:40",
-    agency: "강릉오토서비스",
-    agencyLocation: "강원도 강릉시",
-    manager: "정도윤",
-    managerPosition: "매니저",
-    managerContact: "010-9090-1111",
-    submissionDate: "2025-10-07 10:00",
-    status: "승인",
-    remarks: "일반 발주",
-    partItems: [
-      { partCode: "BEL-320", partName: "타이밍벨트", requestQuantity: 5 },
-    ],
-  },
-  {
-    requestId: "REQ-251008-12",
-    requestDate: "2025-10-08 10:00",
-    agency: "포항모터테크",
-    agencyLocation: "경상북도 포항시",
-    manager: "윤가영",
-    managerPosition: "대리",
-    managerContact: "010-5656-2222",
-    submissionDate: "2025-10-08 10:20",
-    status: "반려",
-    remarks: "품절",
-    partItems: [
-      { partCode: "AIR-202", partName: "에어필터", requestQuantity: 10 },
-      { partCode: "OIL-203", partName: "오일필터", requestQuantity: 10 },
-    ],
-  },
-  {
-    requestId: "REQ-251009-13",
-    requestDate: "2025-10-09 14:10",
-    agency: "의정부카월드",
-    agencyLocation: "경기도 의정부시",
-    manager: "남도현",
-    managerPosition: "부장",
-    managerContact: "010-9898-5555",
-    submissionDate: "2025-10-09 14:40",
-    status: "승인",
-    remarks: "정기교체",
-    partItems: [
-      { partCode: "BRK-210", partName: "브레이크패드", requestQuantity: 12 },
-    ],
-  },
-  {
-    requestId: "REQ-251010-14",
-    requestDate: "2025-10-10 09:10",
-    agency: "천안카시스템",
-    agencyLocation: "충청남도 천안시",
-    manager: "홍지은",
-    managerPosition: "기사",
-    managerContact: "010-4545-8787",
-    submissionDate: "2025-10-10 09:50",
-    status: "미승인",
-    remarks: "검토 중",
-    partItems: [
-      { partCode: "BAT-100", partName: "배터리", requestQuantity: 3 },
-    ],
-  },
-  {
-    requestId: "REQ-251011-15",
-    requestDate: "2025-10-11 11:15",
-    agency: "고양모터라인",
-    agencyLocation: "경기도 고양시",
-    manager: "이태훈",
-    managerPosition: "팀장",
-    managerContact: "010-1212-7878",
-    submissionDate: "2025-10-11 11:40",
-    status: "승인",
-    remarks: "",
-    partItems: [
-      { partCode: "FLT-305", partName: "연료필터", requestQuantity: 8 },
-    ],
-  },
-  {
-    requestId: "REQ-251012-16",
-    requestDate: "2025-10-12 13:30",
-    agency: "세종오토",
-    agencyLocation: "세종특별자치시",
-    manager: "조하늘",
-    managerPosition: "매니저",
-    managerContact: "010-3232-1111",
-    submissionDate: "2025-10-12 13:50",
-    status: "승인",
-    remarks: "",
-    partItems: [
-      { partCode: "SPK-501", partName: "스파크플러그", requestQuantity: 40 },
-    ],
-  },
-  {
-    requestId: "REQ-251013-17",
-    requestDate: "2025-10-13 09:50",
-    agency: "안산카랜드",
-    agencyLocation: "경기도 안산시",
-    manager: "백예린",
-    managerPosition: "주임",
-    managerContact: "010-2424-4444",
-    submissionDate: "2025-10-13 10:00",
-    status: "반려",
-    remarks: "발주중복",
-    partItems: [
-      { partCode: "BRK-210", partName: "브레이크패드", requestQuantity: 10 },
-    ],
-  },
-  {
-    requestId: "REQ-251014-18",
-    requestDate: "2025-10-14 09:40",
-    agency: "원주오토클럽",
-    agencyLocation: "강원도 원주시",
-    manager: "김다정",
-    managerPosition: "기사",
-    managerContact: "010-3333-5555",
-    submissionDate: "2025-10-14 09:50",
-    status: "승인",
-    remarks: "",
-    partItems: [
-      { partCode: "OIL-203", partName: "오일필터", requestQuantity: 10 },
-      { partCode: "CAB-204", partName: "캐빈필터", requestQuantity: 5 },
-    ],
-  },
-  {
-    requestId: "REQ-251015-19",
-    requestDate: "2025-10-15 14:00",
-    agency: "속초모터스",
-    agencyLocation: "강원도 속초시",
-    manager: "박민재",
-    managerPosition: "대리",
-    managerContact: "010-2020-4444",
-    submissionDate: "2025-10-15 14:20",
-    status: "미승인",
-    remarks: "",
-    partItems: [
-      { partCode: "RAD-701", partName: "라디에이터", requestQuantity: 1 },
-    ],
-  },
-  {
-    requestId: "REQ-251016-20",
-    requestDate: "2025-10-16 11:40",
-    agency: "김포카서비스",
-    agencyLocation: "경기도 김포시",
-    manager: "손하늘",
-    managerPosition: "매니저",
-    managerContact: "010-5656-9898",
-    submissionDate: "2025-10-16 12:00",
-    status: "승인",
-    remarks: "정기 발주",
-    partItems: [
-      { partCode: "BEL-320", partName: "타이밍벨트", requestQuantity: 6 },
-    ],
-  },
-  {
-    requestId: "REQ-251017-21",
-    requestDate: "2025-10-17 09:10",
-    agency: "용인오토월드",
-    agencyLocation: "경기도 용인시",
-    manager: "이주연",
-    managerPosition: "대리",
-    managerContact: "010-8080-2222",
-    submissionDate: "2025-10-17 09:30",
-    status: "승인",
-    remarks: "단가 협의 완료",
-    partItems: [
-      { partCode: "BRK-210", partName: "브레이크패드", requestQuantity: 6 },
-    ],
-  },
-  {
-    requestId: "REQ-251018-22",
-    requestDate: "2025-10-18 09:20",
-    agency: "춘천모터테크",
-    agencyLocation: "강원도 춘천시",
-    manager: "김소윤",
-    managerPosition: "기사",
-    managerContact: "010-6666-7777",
-    submissionDate: "2025-10-18 09:45",
-    status: "승인",
-    remarks: "테스트 요청",
-    partItems: [
-      { partCode: "ENG-101", partName: "엔진블록", requestQuantity: 2 },
-      { partCode: "FLT-305", partName: "오일필터", requestQuantity: 10 },
-    ],
-  },
-  {
-    requestId: "REQ-251019-23",
-    requestDate: "2025-10-19 14:30",
-    agency: "전남오토",
-    agencyLocation: "전라남도 목포시",
-    manager: "임동현",
-    managerPosition: "부장",
-    managerContact: "010-1212-8989",
-    submissionDate: "2025-10-19 14:50",
-    status: "반려",
-    remarks: "품절 사유",
-    partItems: [
-      { partCode: "BEL-320", partName: "타이밍벨트", requestQuantity: 4 },
-    ],
-  },
-  {
-    requestId: "REQ-251020-24",
-    requestDate: "2025-10-20 10:10",
-    agency: "마산카테크",
-    agencyLocation: "경상남도 마산시",
-    manager: "정진우",
-    managerPosition: "대리",
-    managerContact: "010-3434-1212",
-    submissionDate: "2025-10-20 10:30",
-    status: "미승인",
-    remarks: "",
-    partItems: [
-      { partCode: "BAT-100", partName: "배터리", requestQuantity: 2 },
-    ],
-  },
-  {
-    requestId: "REQ-251021-25",
-    requestDate: "2025-10-21 09:50",
-    agency: "광명오토월드",
-    agencyLocation: "경기도 광명시",
-    manager: "이은지",
-    managerPosition: "매니저",
-    managerContact: "010-3131-5151",
-    submissionDate: "2025-10-21 10:00",
-    status: "승인",
-    remarks: "신규 대리점 첫 발주",
-    partItems: [
-      { partCode: "AIR-202", partName: "에어필터", requestQuantity: 8 },
-      { partCode: "CAB-204", partName: "캐빈필터", requestQuantity: 8 },
-    ],
-  },
-  {
-    requestId: "REQ-251022-26",
-    requestDate: "2025-10-22 15:30",
-    agency: "제주모터라인",
-    agencyLocation: "제주특별자치도 제주시",
-    manager: "고유림",
-    managerPosition: "점장",
-    managerContact: "010-7979-9999",
-    submissionDate: "2025-10-22 15:45",
-    status: "승인",
-    remarks: "물류 테스트",
-    partItems: [
-      { partCode: "WTR-602", partName: "워터펌프", requestQuantity: 3 },
-    ],
-  },
-  {
-    requestId: "REQ-251023-27",
-    requestDate: "2025-10-23 11:50",
-    agency: "진주오토하우스",
-    agencyLocation: "경상남도 진주시",
-    manager: "송지후",
-    managerPosition: "부장",
-    managerContact: "010-8585-3333",
-    submissionDate: "2025-10-23 12:10",
-    status: "반려",
-    remarks: "주문오류",
-    partItems: [
-      { partCode: "OIL-203", partName: "오일필터", requestQuantity: 15 },
-    ],
-  },
-  {
-    requestId: "REQ-251024-28",
-    requestDate: "2025-10-24 13:00",
-    agency: "세종카월드",
-    agencyLocation: "세종특별자치시",
-    manager: "황민재",
-    managerPosition: "대리",
-    managerContact: "010-9999-4444",
-    submissionDate: "2025-10-24 13:20",
-    status: "승인",
-    remarks: "테스트 완료용",
-    partItems: [
-      { partCode: "BRK-210", partName: "브레이크패드", requestQuantity: 10 },
-    ],
-  },
-  {
-    requestId: "REQ-251025-29",
-    requestDate: "2025-10-25 10:20",
-    agency: "전북오토서비스",
-    agencyLocation: "전라북도 익산시",
-    manager: "김도윤",
-    managerPosition: "매니저",
-    managerContact: "010-7878-2323",
-    submissionDate: "2025-10-25 10:40",
-    status: "승인",
-    remarks: "",
-    partItems: [
-      { partCode: "CRK-301", partName: "크랭크샤프트", requestQuantity: 1 },
-    ],
-  },
-  {
-    requestId: "REQ-251026-30",
-    requestDate: "2025-10-26 09:15",
-    agency: "남양주모터라인",
-    agencyLocation: "경기도 남양주시",
-    manager: "박지호",
-    managerPosition: "부장",
-    managerContact: "010-1313-7777",
-    submissionDate: "2025-10-26 09:40",
-    status: "승인",
-    remarks: "마감 발주",
-    partItems: [
-      { partCode: "RAD-701", partName: "라디에이터", requestQuantity: 2 },
-      { partCode: "WTR-602", partName: "워터펌프", requestQuantity: 2 },
-    ],
-  },
-];
+  timeout: 10000, // 10초 제한
+});
 
-// API 함수
-export async function fetchRequestRecords(): Promise<RequestRecord[]> {
-  // return (await axios.get("/api/request/records")).data;
-  return requestRecords;
+// 요청 로그
+api.interceptors.request.use(
+  (config) => {
+    console.log(
+      "[Request]",
+      config.method?.toUpperCase(),
+      config.url,
+      config.data || config.params
+    );
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// 응답 로그
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response) {
+      console.error(
+        "[Response Error]",
+        error.response.status,
+        error.response.data
+      );
+    } else {
+      console.error("[Network Error]", error.message);
+    }
+    return Promise.reject(error);
+  }
+);
+
+/**
+ * ✅ 미승인 발주 요청 목록 조회 (POST)
+ *
+ * @param body - 페이지네이션 정보 { page, size, sort }
+ * @param params - 선택적 필터 (startDate, endDate, branchCode, partName)
+ */
+// export async function fetchPendingOrders(
+//   body: { page: number; size: number; sort: string },
+//   params?: {
+//     startDate?: string;
+//     endDate?: string;
+//     branchCode?: string;
+//     partName?: string;
+//   }
+// ): Promise<PendingOrderResponse> {
+//   try {
+//     const res = await api.post("/purchase-orders/head/orders/pending", body, {
+//       params,
+//     });
+//     console.log("✅ [Pending Orders Response]", res.data);
+//     return res.data;
+//   } catch (error: any) {
+//     console.error(
+//       "❌ fetchPendingOrders error:",
+//       error.response?.data || error.message
+//     );
+//     throw new Error(
+//       error.response?.data?.message || "발주 목록 조회 중 오류 발생"
+//     );
+//   }
+// }
+
+// ✅ 미승인 목록 조회
+export async function fetchPendingOrders(
+  body: { page: number; size: number; sort: string },
+  params?: {
+    startDate?: string;
+    endDate?: string;
+    branchCode?: string;
+    partName?: string;
+  }
+): Promise<PendingOrderResponse> {
+  const res = await api.post("/purchase-orders/head/orders/pending", body, {
+    params,
+  });
+  return res.data;
+}
+
+// ✅ 승인/반려 목록 조회
+export async function fetchProcessedOrders(body: {
+  page: number;
+  size: number;
+  sort: string;
+}): Promise<ProcessedOrderResponse> {
+  const res = await api.post("/purchase-orders/head/orders/processed", body);
+  return res.data;
 }

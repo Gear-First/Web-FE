@@ -1,55 +1,80 @@
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
-import type { RequestRecord, RequestStatus } from "../RequestTypes";
-
-// 요청 상태
-const statusVariant: Record<RequestStatus, "rejected" | "info" | "success"> = {
-  반려: "rejected",
-  미승인: "info",
-  승인: "success",
-};
+import {
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_VARIANTS,
+  type ProcessedOrderItem,
+  type OrderStatus,
+} from "../RequestTypes";
 
 /** 승인/반려 처리된 요청 목록 테이블 */
 export default function RequestTable({
   rows,
   onRowClick,
 }: {
-  rows: RequestRecord[];
-  onRowClick: (row: RequestRecord) => void; // 부모 콜백
+  rows: ProcessedOrderItem[];
+  onRowClick: (row: ProcessedOrderItem) => void;
 }) {
   return (
-    <>
-      <Table>
-        <thead>
+    <Table>
+      <thead>
+        <tr>
+          <Th>발주 번호</Th>
+          <Th>대리점</Th>
+          <Th>담당자</Th>
+          <Th>요청 일시</Th>
+          <Th>처리 일시</Th>
+          <Th>상태</Th>
+        </tr>
+      </thead>
+      <tbody>
+        {rows.length === 0 ? (
           <tr>
-            <Th>발주 번호</Th>
-            <Th>요청 일시</Th>
-            <Th>대리점</Th>
-            <Th>담당자</Th>
-            <Th>접수 일시</Th>
-            <Th>상태</Th>
+            <Td colSpan={6} style={{ textAlign: "center", color: "#6b7280" }}>
+              데이터가 없습니다.
+            </Td>
           </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr
-              key={r.requestId}
-              style={{ cursor: "pointer" }}
-              onClick={() => onRowClick(r)} // 부모 콜백
-            >
-              <Td>{r.requestId}</Td>
-              <Td>{r.requestDate}</Td>
-              <Td>{r.agency}</Td>
-              <Td>{r.manager}</Td>
-              <Td>{r.submissionDate}</Td>
-              <Td>
-                <StatusBadge $variant={statusVariant[r.status]}>
-                  {r.status}
-                </StatusBadge>
-              </Td>
-            </tr>
-          ))}
-        </tbody>
-      </Table>
-    </>
+        ) : (
+          rows.map((r) => {
+            const status = r.orderStatus as OrderStatus;
+            return (
+              <tr
+                key={r.orderId}
+                style={{ cursor: "pointer" }}
+                onClick={() => onRowClick(r)}
+              >
+                <Td>{r.orderNumber}</Td>
+                <Td>{r.branchCode}</Td>
+                <Td>{r.engineerName}</Td>
+                <Td>
+                  {new Date(r.requestDate).toLocaleString("ko-KR", {
+                    year: "numeric",
+                    month: "2-digit",
+                    day: "2-digit",
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </Td>
+                <Td>
+                  {r.processedDate
+                    ? new Date(r.processedDate).toLocaleString("ko-KR", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      })
+                    : "-"}
+                </Td>
+                <Td>
+                  <StatusBadge $variant={ORDER_STATUS_VARIANTS[status]}>
+                    {ORDER_STATUS_LABELS[status]}
+                  </StatusBadge>
+                </Td>
+              </tr>
+            );
+          })
+        )}
+      </tbody>
+    </Table>
   );
 }

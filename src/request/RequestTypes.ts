@@ -1,21 +1,83 @@
-export type RequestStatus = "미승인" | "승인" | "반려";
+// 상태 Enum (서버 ENUM 기준 그대로)
+export type OrderStatus =
+  | "PENDING"
+  | "APPROVED"
+  | "REJECTED"
+  | "SHIPPED"
+  | "COMPLETED"
+  | "CANCELLED";
 
-export interface PartItem {
-  partCode: string; // 부품코드
-  partName: string; // 부품명
-  requestQuantity: number; // 수량
+// 상태 한글 변환
+export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
+  PENDING: "승인 대기",
+  APPROVED: "승인 완료",
+  REJECTED: "반려",
+  SHIPPED: "출고 중",
+  COMPLETED: "납품 완료",
+  CANCELLED: "취소",
+};
+
+// 상태 색상 매핑 (PageLayout.StatusBadge에서 사용)
+export const ORDER_STATUS_VARIANTS: Record<
+  OrderStatus,
+  "info" | "success" | "rejected" | "warning"
+> = {
+  PENDING: "info",
+  APPROVED: "success",
+  REJECTED: "rejected",
+  SHIPPED: "warning",
+  COMPLETED: "success",
+  CANCELLED: "info",
+};
+
+// 미승인 발주 목록 DTO
+export interface PendingOrderItem {
+  orderId: number;
+  orderNumber: string;
+  orderStatus: string;
+  branchCode: string;
+  engineerName: string;
+  engineerRole: string;
+  requestDate: string;
+  processedDate: string | null;
 }
 
-export interface RequestRecord {
-  requestId: string; // 발주번호
-  requestDate: string; // 요청일시
-  agency: string; // 대리점
-  agencyLocation: string; // 대리점위치
-  manager: string; // 담당자
-  managerPosition: string; // 담당자직책
-  managerContact: string; // 담당자연락처
-  submissionDate: string; // 접수일시
-  status: RequestStatus; // 상태
-  remarks: string; // 비고
-  partItems: PartItem[]; // 여러 부품 묶음
+export interface PendingOrderResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: {
+    content: PendingOrderItem[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+  };
+}
+
+// 승인/반려 목록
+export interface ProcessedOrderItem {
+  orderId: number;
+  orderNumber: string;
+  orderStatus: string; // APPROVED, REJECTED, CANCELLED 등
+  branchCode: string;
+  engineerName: string;
+  engineerRole: string;
+  requestDate: string;
+  processedDate: string;
+}
+
+export interface ProcessedOrderResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: {
+    content: ProcessedOrderItem[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+  };
 }

@@ -1,5 +1,11 @@
 import { useState, useEffect, useMemo } from "react";
-import type { RequestRecord, RequestStatus } from "../RequestTypes";
+import {
+  ORDER_STATUS_LABELS,
+  ORDER_STATUS_VARIANTS,
+  type PendingOrderItem,
+  type ProcessedOrderItem,
+  type OrderStatus,
+} from "../RequestTypes";
 import { StatusBadge } from "../../components/common/PageLayout";
 import {
   Overlay,
@@ -24,44 +30,31 @@ import Button from "../../components/common/Button";
 // 모달의 동작 모드: 발주/요청 상세
 type DetailVariant = "order" | "request";
 
-// 상태값
-const statusVariant: Record<RequestStatus, "rejected" | "info" | "success"> = {
-  반려: "rejected",
-  미승인: "info",
-  승인: "success",
-};
-
 interface DetailModalProps {
-  record: RequestRecord | null; // 상세에 표시할 레코드
-  isOpen: boolean; // 모달 열림 여부
-  onClose: () => void; // 모달 닫기 콜백
-  variant: DetailVariant; // 모달 모드 (order/request)
-  onApprove?: (requestId: string, remark?: string) => void; // 승인(발주 모드에서만)
-  onReject?: (requestId: string, remark?: string) => void; // 반려(발주 모드에서만)
+  record: (PendingOrderItem | ProcessedOrderItem) | null;
+  isOpen: boolean;
+  onClose: () => void;
+  variant: DetailVariant;
+  onApprove?: (orderId: number, remark?: string) => void;
+  onReject?: (orderId: number, remark?: string) => void;
 }
 
-/** 부품 리스트 섹션 */
-const PartListSection = ({ items }: { items: RequestRecord["partItems"] }) => {
-  // 전체 보기 버튼 상태
+/** 날짜 문자열을 yyyy-mm-dd hh:mm:ss 형태로 간단 변환 */
+const formatDate = (str?: string | null) =>
+  str ? str.replace("T", " ").split(".")[0] : "-";
+
+/** 부품 리스트 섹션 (임시) */
+const PartListSection = ({ items }: { items?: any[] }) => {
   const [showAll, setShowAll] = useState(false);
-
-  // 아이템이 바뀌면 항상 접은 상태로 초기화
-  useEffect(() => {
-    setShowAll(false);
-  }, [items]);
-
-  // 아이템이 없을 때 처리
-  if (!items || items.length === 0) {
+  useEffect(() => setShowAll(false), [items]);
+  if (!items || items.length === 0)
     return (
       <PartList>
         <Value>등록된 부품이 없습니다.</Value>
       </PartList>
     );
-  }
 
-  // showAll=false면 최대 2개만 노출
   const visible = showAll ? items : items.slice(0, 2);
-
   return (
     <PartList>
       {visible.map((item, idx) => (
@@ -76,7 +69,7 @@ const PartListSection = ({ items }: { items: RequestRecord["partItems"] }) => {
             <Value>{item.partCode}</Value>
           </DetailItem>
           <DetailItem>
-            <Value>{item.requestQuantity} EA</Value>
+            <Value>{item.quantity ?? "-"} EA</Value>
           </DetailItem>
         </DetailGrid>
       ))}
@@ -116,20 +109,17 @@ const DetailFields = ({
   </DetailGrid>
 );
 
-// 모드별 UI 설정값
 const VARIANT_CONFIG = {
   order: {
-    title: "발주 상세 정보", // 헤더 타이틀
-    showStatus: false, // StatusBadge 표시 여부
-    showSubmissionDate: false, // 접수일시 필드 표시 여부
-    remarkMode: "editable" as const, // 비고 편집 가능
-    showActions: true, // 승인/반려 버튼 표시
+    title: "발주 상세 정보",
+    showStatus: true,
+    remarkMode: "editable" as const,
+    showActions: true,
   },
   request: {
     title: "요청 상세 정보",
     showStatus: true,
-    showSubmissionDate: true,
-    remarkMode: "readonly" as const, // 비고 읽기 전용
+    remarkMode: "readonly" as const,
     showActions: false,
   },
 };
@@ -143,68 +133,54 @@ const DetailModal = ({
   onReject,
 }: DetailModalProps) => {
   const cfg = VARIANT_CONFIG[variant];
-
-  // 발주 모드에서만 사용하는 비고 입력 상태
   const [remark, setRemark] = useState("");
 
-  // 모달 열릴 때마다 선택 레코드의 비고 초기화
   useEffect(() => {
     if (isOpen && record) {
-      setRemark(record.remarks || "");
+      setRemark((record as any).remarks || "");
     }
   }, [isOpen, record]);
 
-  // record가 없을 때는 빈 배열을 반환하여 안전하게 처리
+  const orderStatus = (record?.orderStatus || "PENDING") as OrderStatus;
+
   const requestFields = useMemo(() => {
     if (!record) return [];
     return [
-      { label: "발주번호", value: record.requestId },
-      { label: "요청일시", value: record.requestDate },
-      ...(cfg.showSubmissionDate
-        ? [{ label: "접수일시", value: record.submissionDate }]
-        : []),
+      { label: "발주 번호", value: record.orderNumber },
+      { label: "요청 일시", value: formatDate(record.requestDate) },
+      { label: "처리 일시", value: formatDate(record.processedDate) },
+      { label: "대리점 코드", value: record.branchCode },
+      { label: "담당자", value: record.engineerName },
+      { label: "직책", value: record.engineerRole },
     ];
-  }, [record, cfg.showSubmissionDate]);
+  }, [record]);
 
-  // 모달이 닫힌 상태이거나 레코드가 없으면 렌더링하지 않음
   if (!isOpen || !record) return null;
-
-  // 헤더 좌측(타이틀 + 상태 뱃지)
-  const headerLeft = (
-    <HeaderLeft>
-      <Title>{cfg.title}</Title>
-      {cfg.showStatus && (
-        <StatusBadge
-          style={{ fontSize: "0.8rem" }}
-          $variant={statusVariant[record.status]}
-        >
-          {record.status}
-        </StatusBadge>
-      )}
-    </HeaderLeft>
-  );
 
   return (
     <Overlay onClick={onClose}>
-      {/* 오버레이 클릭으로 닫히되, 컨테이너 클릭은 전파 중단 */}
       <ModalContainer onClick={(e) => e.stopPropagation()}>
         <Header>
-          {headerLeft}
+          <HeaderLeft>
+            <Title>{cfg.title}</Title>
+            {cfg.showStatus && (
+              <StatusBadge $variant={ORDER_STATUS_VARIANTS[orderStatus]}>
+                {ORDER_STATUS_LABELS[orderStatus]}
+              </StatusBadge>
+            )}
+          </HeaderLeft>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
 
-        {/* 상단 정보 (요청/발주) */}
+        {/* 기본 정보 */}
         <Section>
-          <SectionTitle>
-            {variant === "order" ? "발주 정보" : "요청 정보"}
-          </SectionTitle>
+          <SectionTitle>기본 정보</SectionTitle>
           <DetailFields fields={requestFields} />
         </Section>
 
         {/* 부품 정보 */}
         <Section>
           <SectionTitle>부품 정보</SectionTitle>
-          {/* 테이블 헤더 */}
           <DetailGrid>
             <DetailItem>
               <Label>부품명</Label>
@@ -216,38 +192,14 @@ const DetailModal = ({
               <Label>수량</Label>
             </DetailItem>
           </DetailGrid>
-          <PartListSection items={record.partItems} />
+          <PartListSection items={(record as any).items || []} />
         </Section>
 
-        {/* 대리점 정보 */}
-        <Section>
-          <SectionTitle>대리점 정보</SectionTitle>
-          <DetailFields
-            fields={[
-              { label: "대리점", value: record.agency },
-              { label: "대리점 위치", value: record.agencyLocation },
-            ]}
-          />
-        </Section>
-
-        {/* 담당자 정보 */}
-        <Section>
-          <SectionTitle>담당자 정보</SectionTitle>
-          <DetailFields
-            fields={[
-              { label: "담당자", value: record.manager },
-              { label: "직책", value: record.managerPosition },
-              { label: "연락처", value: record.managerContact },
-            ]}
-          />
-        </Section>
-
-        {/* 비고 + 승인/반려 액션 (variant에 따라 분기) */}
+        {/* 비고 */}
         <Section>
           <SectionTitle>비고</SectionTitle>
           {cfg.remarkMode === "editable" ? (
             <>
-              {/* 발주 모드: 비고 편집 가능 */}
               <TextareaWrapper>
                 <StyledTextarea
                   value={remark}
@@ -264,16 +216,15 @@ const DetailModal = ({
                     marginTop: 6,
                   }}
                 >
-                  {/* 승인/반려 버튼 → 상위 콜백 호출 */}
                   <Button
                     color="primary"
-                    onClick={() => onApprove?.(record.requestId, remark)}
+                    onClick={() => onApprove?.(record.orderId, remark)}
                   >
                     승인
                   </Button>
                   <Button
                     color="danger"
-                    onClick={() => onReject?.(record.requestId, remark)}
+                    onClick={() => onReject?.(record.orderId, remark)}
                   >
                     반려
                   </Button>
@@ -281,8 +232,7 @@ const DetailModal = ({
               )}
             </>
           ) : (
-            // 요청 모드: 비고 읽기 전용
-            <RemarkSection>{record.remarks}</RemarkSection>
+            <RemarkSection>{remark || "비고 없음"}</RemarkSection>
           )}
         </Section>
       </ModalContainer>
