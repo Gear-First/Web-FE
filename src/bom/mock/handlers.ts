@@ -2,12 +2,36 @@
 import { http, HttpResponse } from "msw";
 import { mockdata as bomRecords } from "./mockdata";
 import { paginate } from "../../mocks/shared/utils";
-import type { BOMRecord, BOMCreateDTO, BOMUpdateDTO } from "../BOMTypes";
+import type {
+  BOMRecord,
+  BOMCreateDTO,
+  BOMUpdateDTO,
+  Material,
+} from "../BOMTypes";
 
 // 공통 응답 타입
 type ListResponse<T> = {
   data: T;
   meta?: { total: number; page: number; pageSize: number; totalPages: number };
+};
+
+const fallbackCategories = ["카테고리 A", "카테고리 B", "카테고리 C"];
+
+const materialLabel = (id: number) =>
+  `자재 ${String(id).padStart(3, "0")}`;
+const materialCode = (id: number) => `MAT-${String(id).padStart(4, "0")}`;
+
+const toMaterialFromInfo = (
+  info: BOMCreateDTO["materialInfos"][number],
+  idx = 0
+): Material => {
+  const materialId = Number(info.materialId ?? idx + 1);
+  return {
+    materialId,
+    materialName: materialLabel(materialId),
+    materialCode: materialCode(materialId),
+    materialQty: Number(info.quantity ?? 0) || 0,
+  };
 };
 
 export const bomHandlers = [
@@ -33,8 +57,8 @@ export const bomHandlers = [
         const lower = q.toLowerCase();
         data = data.filter((r) => {
           const base =
-            `${r.bomId} ${r.partName} ${r.partCode} ${r.category}`.toLowerCase();
-          const mats = r.materials
+            `${r.bomCodeId} ${r.partName} ${r.partCode} ${r.category}`.toLowerCase();
+          const mats = (r.materials ?? [])
             .map((m) => `${m.materialName} ${m.materialCode}`.toLowerCase())
             .join(" ");
           return (base + " " + mats).includes(lower);
@@ -59,7 +83,7 @@ export const bomHandlers = [
   http.get<{ id: string }, never, BOMRecord | { message: string }>(
     "/api/bom/records/:id",
     ({ params }) => {
-      const rec = bomRecords.find((r) => r.bomId === params.id);
+      const rec = bomRecords.find((r) => r.bomCodeId === params.id);
       return rec
         ? HttpResponse.json(rec)
         : HttpResponse.json({ message: "Not found" }, { status: 404 });
@@ -70,18 +94,31 @@ export const bomHandlers = [
   http.post<never, BOMCreateDTO, BOMRecord>(
     "/api/bom/records",
     async ({ request }) => {
-      const body = await request.json();
-
+      const body = (await request.json()) as BOMCreateDTO;
+      const partIdStr = String(body.partId);
+      const template =
+        bomRecords.find((r) => r.partId === partIdStr) ?? bomRecords[0];
+      const now = new Date();
+      const bomCodeId = `BOM-${now.getFullYear()}${String(
+        now.getMonth() + 1
+      ).padStart(2, "0")}${String(now.getDate()).padStart(2, "0")}-${String(
+        Math.floor(Math.random() * 900) + 100
+      )}`;
+      const bomCode =
+        template?.bomCode ??
+        `B-${String(Math.floor(Math.random() * 9000) + 1000)}`;
+      const materials = Array.isArray(body.materialInfos)
+        ? body.materialInfos.map(toMaterialFromInfo)
+        : [];
       const created: BOMRecord = {
-        bomId: `BOM-${Date.now()}`,
-        partName: body.partName.trim(),
-        partCode: body.partCode.trim(),
-        category: body.category,
-        materials: body.materials.map((m) => ({
-          materialCode: m.materialCode.trim(),
-          materialName: m.materialName.trim(),
-          materialQty: Number(m.materialQty),
-        })),
+        bomCodeId,
+        bomCode,
+        category: template?.category ?? fallbackCategories[0],
+        partId: partIdStr,
+        partCode:
+          template?.partCode ?? `PART-${String(body.partId).padStart(4, "0")}`,
+        partName: template?.partName ?? `부품 ${partIdStr}`,
+        materials,
         createdDate: new Date().toISOString().slice(0, 10),
       };
 
@@ -94,33 +131,23 @@ export const bomHandlers = [
   http.patch<{ id: string }, BOMUpdateDTO, BOMRecord | { message: string }>(
     "/api/bom/records/:id",
     async ({ params, request }) => {
-      const idx = bomRecords.findIndex((r) => r.bomId === params.id);
+      const idx = bomRecords.findIndex((r) => r.bomCodeId === params.id);
       if (idx < 0) {
         return HttpResponse.json({ message: "Not found" }, { status: 404 });
       }
 
       const patch = (await request.json()) as BOMUpdateDTO;
-      const runtimePatch = patch as Record<string, unknown>;
+      const target = { ...bomRecords[idx] };
 
-      // 식별/시스템 필드 차단
-      delete runtimePatch.bomId;
-      delete runtimePatch.createdDate;
-
-      // materials 정제
-      if (Array.isArray(runtimePatch.materials)) {
-        runtimePatch.materials = (
-          runtimePatch.materials as Array<Record<string, unknown>>
-        ).map((m) => ({
-          materialCode: String(m.materialCode ?? "").trim(),
-          materialName: String(m.materialName ?? "").trim(),
-          materialQty: Number(m.materialQty ?? 0),
-        }));
+      if (patch.partId !== undefined) {
+        target.partId = String(patch.partId);
       }
 
-      bomRecords[idx] = {
-        ...bomRecords[idx],
-        ...(runtimePatch as BOMUpdateDTO),
-      };
+      if (Array.isArray(patch.materialInfos)) {
+        target.materials = patch.materialInfos.map(toMaterialFromInfo);
+      }
+
+      bomRecords[idx] = target;
       return HttpResponse.json(bomRecords[idx]);
     }
   ),
@@ -131,11 +158,11 @@ export const bomHandlers = [
     never,
     { ok: boolean; removedId: string } | { message: string }
   >("/api/bom/records/:id", ({ params }) => {
-    const idx = bomRecords.findIndex((r) => r.bomId === params.id);
+    const idx = bomRecords.findIndex((r) => r.bomCodeId === params.id);
     if (idx < 0) {
       return HttpResponse.json({ message: "Not found" }, { status: 404 });
     }
     const removed = bomRecords.splice(idx, 1)[0];
-    return HttpResponse.json({ ok: true, removedId: removed.bomId });
+    return HttpResponse.json({ ok: true, removedId: removed.bomCodeId });
   }),
 ];

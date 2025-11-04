@@ -7,6 +7,7 @@ import PartPage from "../part/PartPage";
 import PropertyPage from "../property/PropertyPage";
 import ItemPage from "../items/ItemPage";
 import PurchasingPage from "../purchasing/PurchasingPage";
+import HumanPage from "../human/HumanPage";
 import LoginPage from "../login/LoginPage";
 import ForgotPasswordPage from "../login/ForgotPasswordPage";
 
@@ -24,6 +25,7 @@ const AppRoutes = () => {
       <Route path="/inbound" element={<InboundPage />} />
       <Route path="/outbound" element={<OutboundPage />} />
       <Route path="/purchasing" element={<PurchasingPage />} />
+      <Route path="/human" element={<HumanPage />} />
     </Routes>
   );
 };
