@@ -5,48 +5,106 @@ import {
   SectionCard,
   SectionHeader,
   SectionTitle,
+  FilterGroup,
 } from "../components/common/PageLayout";
-import { useQuery } from "@tanstack/react-query";
-import { purchasingKeys, fetchPurchasingRecords } from "./PurchasingApi";
+import SearchBox from "../components/common/SearchBox";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { addCompany, fetchCompanyList } from "./PurchasingApi";
 import type { PurchasingRecord } from "./PurchasingTypes";
 import PurchasingTable from "./components/PurchasingTable";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import SourcingSection from "./components/SourcingSection";
 import Button from "../components/common/Button";
 import PurchasingRegisterModal from "./components/PurchasingModal";
+import Pagination from "../components/common/Pagination";
+import resetIcon from "../assets/reset.svg";
+import searchIcon from "../assets/search.svg";
 
 export default function PurchasingPage() {
-  /** 데이터 fetch */
-  const { data: records = [], isLoading: isFetching } = useQuery<
-    PurchasingRecord[],
-    Error
-  >({
-    queryKey: purchasingKeys.records,
-    queryFn: fetchPurchasingRecords,
+  const queryClient = useQueryClient();
+
+  const [pageAll, setPageAll] = useState(1);
+  const [pageSizeAll, setPageSizeAll] = useState(10);
+  const [keyword, setKeyword] = useState("");
+  const [appliedKeyword, setAppliedKeyword] = useState("");
+
+  const { data: allCompaniesData, fetchStatus: fetchAllStatus } = useQuery({
+    queryKey: ["companyList", "all", pageAll, pageSizeAll, appliedKeyword],
+    queryFn: () =>
+      fetchCompanyList({
+        keyword: appliedKeyword,
+        page: pageAll - 1,
+        size: pageSizeAll,
+      }),
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
   });
+
+  const allCompanies = allCompaniesData?.data ?? [];
+  const totalAll = allCompaniesData?.meta?.total ?? 0;
+  const totalPagesAll = allCompaniesData?.meta?.totalPages ?? 1;
+  const isFetchingAll = fetchAllStatus === "fetching";
+
+  const onSearch = () => {
+    setAppliedKeyword(keyword.trim());
+    setPageAll(1);
+  };
+
+  const onReset = () => {
+    setKeyword("");
+    setAppliedKeyword("");
+    setPageAll(1);
+  };
 
   // 모달 상태
   const [isModalOpen, setIsModalOpen] = useState(false);
-
-  // 선택된 레코드 상태 추가
   const [selectedRecord, setSelectedRecord] = useState<PurchasingRecord | null>(
     null
   );
-
-  // 모달 모드 상태 (register | view | edit)
   const [modalMode, setModalMode] = useState<"register" | "view" | "edit">(
     "register"
   );
 
-  // 등록 상태 필터
-  const registeredRecords = useMemo(() => {
-    return records.filter((r) => r.status === "등록");
-  }, [records]);
+  /** 선정된 업체 (isSelected=true) */
+  const [pageSelected, setPageSelected] = useState(1);
+  const [pageSizeSelected, setPageSizeSelected] = useState(10);
+  const [keywordSelected, setKeywordSelected] = useState("");
+  const [appliedKeywordSelected, setAppliedKeywordSelected] = useState("");
 
-  // 선정 상태 필터
-  const selectedRecords = useMemo(() => {
-    return records.filter((r) => r.status === "선정");
-  }, [records]);
+  const { data: selectedCompaniesData, fetchStatus: fetchSelectedStatus } =
+    useQuery({
+      queryKey: [
+        "companyList",
+        true,
+        pageSelected,
+        pageSizeSelected,
+        appliedKeywordSelected,
+      ],
+      queryFn: () =>
+        fetchCompanyList({
+          keyword: appliedKeywordSelected,
+          isSelected: true,
+          page: pageSelected - 1,
+          size: pageSizeSelected,
+        }),
+      staleTime: 5 * 60 * 1000,
+      placeholderData: (prev) => prev,
+    });
+
+  const selectedCompanies = selectedCompaniesData?.data ?? [];
+  const totalSelected = selectedCompaniesData?.meta?.total ?? 0;
+  const totalPagesSelected = selectedCompaniesData?.meta?.totalPages ?? 1;
+  const isFetchingSelected = fetchSelectedStatus === "fetching";
+
+  const onSearchSelected = () => {
+    setAppliedKeywordSelected(keywordSelected.trim());
+    setPageSelected(1);
+  };
+  const onResetSelected = () => {
+    setKeywordSelected("");
+    setAppliedKeywordSelected("");
+    setPageSelected(1);
+  };
 
   return (
     <Layout>
@@ -56,7 +114,7 @@ export default function PurchasingPage() {
           <SectionHeader>
             <div>
               <SectionTitle>등록된 업체</SectionTitle>
-              <SectionCaption>자재 견적/발주 레코드</SectionCaption>
+              <SectionCaption>조회된 전체 목록</SectionCaption>
             </div>
             <Button
               color="black"
@@ -69,42 +127,36 @@ export default function PurchasingPage() {
               업체 등록
             </Button>
           </SectionHeader>
+
+          <SectionHeader style={{ justifyContent: "flex-end" }}>
+            <FilterGroup>
+              <SearchBox
+                keyword={keyword}
+                onKeywordChange={setKeyword}
+                onSearch={onSearch}
+                onReset={onReset}
+                placeholder="자재명 / 업체명 검색"
+              />
+              <Button variant="icon" onClick={onSearch}>
+                <img src={searchIcon} width={18} height={18} alt="검색" />
+              </Button>
+              <Button variant="icon" onClick={onReset}>
+                <img src={resetIcon} width={18} height={18} alt="초기화" />
+              </Button>
+            </FilterGroup>
+          </SectionHeader>
+
+          {/* 로딩중에도 테이블 유지 */}
           <PurchasingTable
-            rows={registeredRecords}
+            rows={allCompanies}
             showContractDate={false}
+            showOrderCount={false}
             onRowClick={(r) => {
               setSelectedRecord(r);
               setModalMode("view");
               setIsModalOpen(true);
             }}
           />
-        </SectionCard>
-
-        {/* 등록 모달 (현재는 mock용, 서버 연동 시 mutation 사용) */}
-        <PurchasingRegisterModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          initialData={selectedRecord ?? undefined}
-          mode={modalMode}
-          onSubmit={(data) => {
-            console.log("저장/등록 데이터:", data);
-            setIsModalOpen(false);
-          }}
-        />
-
-        {/* 공급업체 선정 섹션 */}
-        <SourcingSection />
-
-        {/* 선정된 업체 섹션 */}
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>선정 업체</SectionTitle>
-              <SectionCaption>자재 견적/발주 레코드</SectionCaption>
-            </div>
-          </SectionHeader>
-
-          <PurchasingTable rows={selectedRecords} showContractDate={true} />
 
           <div
             style={{
@@ -115,11 +167,140 @@ export default function PurchasingPage() {
             }}
           >
             <div style={{ height: 18 }}>
-              {isFetching && (
+              {isFetchingAll && (
                 <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
               )}
             </div>
           </div>
+
+          <Pagination
+            page={pageAll}
+            totalPages={Math.max(1, totalPagesAll)}
+            onChange={(next) => setPageAll(next)}
+            isBusy={isFetchingAll}
+            maxButtons={5}
+            totalItems={totalAll}
+            pageSize={pageSizeAll}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={(n) => {
+              setPageSizeAll(n);
+              setPageAll(1);
+            }}
+            showSummary
+            showPageSize
+            align="center"
+          />
+        </SectionCard>
+
+        {/* 등록 모달 */}
+        <PurchasingRegisterModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          initialData={selectedRecord ?? undefined}
+          mode={modalMode}
+          onSubmit={async (data) => {
+            try {
+              const payload = {
+                materialId: data.materialId,
+                materialCode: data.materialCode ?? "",
+                materialName: data.materialName,
+                price: data.purchasingPrice,
+                companyName: data.company,
+                quantity: data.requiredQuantityPerPeriod,
+                spentDay: data.requiredPeriodInDays,
+                surveyDate: data.surveyDate,
+                untilDate: data.expiryDate,
+              };
+              const res = await addCompany(payload);
+              if (res.success) {
+                alert("업체 등록이 완료되었습니다.");
+                setIsModalOpen(false);
+                queryClient.invalidateQueries({ queryKey: ["companyList"] });
+              } else {
+                alert("등록 실패: " + res.message);
+              }
+            } catch {
+              alert("등록 중 오류가 발생했습니다.");
+            }
+          }}
+        />
+
+        {/* 공급업체 선정 섹션 */}
+        <SourcingSection />
+
+        {/* 선정된 업체 섹션 */}
+        <SectionCard>
+          <SectionHeader>
+            <div>
+              <SectionTitle>선정된 업체</SectionTitle>
+              <SectionCaption>
+                isSelected=true 조건으로 조회된 목록
+              </SectionCaption>
+            </div>
+          </SectionHeader>
+
+          <SectionHeader style={{ justifyContent: "flex-end" }}>
+            <FilterGroup>
+              <SearchBox
+                keyword={keywordSelected}
+                onKeywordChange={setKeywordSelected}
+                onSearch={onSearchSelected}
+                onReset={onResetSelected}
+                placeholder="자재명 / 업체명 검색"
+              />
+              <Button variant="icon" onClick={onSearchSelected}>
+                <img src={searchIcon} width={18} height={18} alt="검색" />
+              </Button>
+              <Button variant="icon" onClick={onResetSelected}>
+                <img src={resetIcon} width={18} height={18} alt="초기화" />
+              </Button>
+            </FilterGroup>
+          </SectionHeader>
+
+          {/* 로딩중에도 테이블 유지 */}
+          <PurchasingTable
+            rows={selectedCompanies}
+            showContractDate={true}
+            showOrderCount={true}
+            onRowClick={(r) => {
+              setSelectedRecord(r);
+              setModalMode("view");
+              setIsModalOpen(true);
+            }}
+          />
+
+          <div
+            style={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              margin: "8px 0 12px",
+            }}
+          >
+            <div style={{ height: 18 }}>
+              {isFetchingSelected && (
+                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
+              )}
+            </div>
+          </div>
+
+          <Pagination
+            page={pageSelected}
+            totalPages={Math.max(1, totalPagesSelected)}
+            onChange={(next) => setPageSelected(next)}
+            isBusy={isFetchingSelected}
+            maxButtons={5}
+            totalItems={totalSelected}
+            pageSize={pageSizeSelected}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={(n) => {
+              setPageSizeSelected(n);
+              setPageSelected(1);
+            }}
+            showSummary
+            showPageSize
+            align="center"
+          />
         </SectionCard>
       </PageContainer>
     </Layout>
