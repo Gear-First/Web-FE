@@ -286,7 +286,7 @@ export default function PurchasingModal({
         </Section>
 
         {/* 일정 관련 */}
-        <Section>
+        <Section style={{ paddingBottom: "20px" }}>
           <SectionTitle>일정 정보</SectionTitle>
           <DetailGrid $cols={3}>
             <DetailItem>
@@ -322,9 +322,9 @@ export default function PurchasingModal({
         </Section>
 
         {/* 하단 버튼 */}
-        <Section style={{ textAlign: "center" }}>
-          {/* 등록 */}
-          {mode === "register" && (
+        {/* <Section style={{ textAlign: "center" }}> */}
+        {/* 등록 */}
+        {/* {mode === "register" && (
             <>
               <Button
                 style={{
@@ -339,10 +339,10 @@ export default function PurchasingModal({
                 취소
               </Button>
             </>
-          )}
+          )} */}
 
-          {/* 상세 보기 */}
-          {mode === "view" && (
+        {/* 상세 보기 */}
+        {/* {mode === "view" && (
             <>
               <Button
                 style={{
@@ -357,10 +357,10 @@ export default function PurchasingModal({
                 삭제
               </Button>
             </>
-          )}
+          )} */}
 
-          {/* 수정 */}
-          {mode === "edit" && (
+        {/* 수정 */}
+        {/* {mode === "edit" && (
             <>
               <Button
                 style={{
@@ -376,7 +376,7 @@ export default function PurchasingModal({
               </Button>
             </>
           )}
-        </Section>
+        </Section> */}
         <MaterialSearchModal
           isOpen={isSearchModalOpen}
           onClose={() => setSearchModalOpen(false)}

@@ -135,7 +135,7 @@ export default function PurchasingPage() {
                 onKeywordChange={setKeyword}
                 onSearch={onSearch}
                 onReset={onReset}
-                placeholder="부품명 / 업체명 검색"
+                placeholder="자재명 / 업체명 검색"
               />
               <Button variant="icon" onClick={onSearch}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />
@@ -246,7 +246,7 @@ export default function PurchasingPage() {
                 onKeywordChange={setKeywordSelected}
                 onSearch={onSearchSelected}
                 onReset={onResetSelected}
-                placeholder="부품명 / 업체명 검색"
+                placeholder="자재명 / 업체명 검색"
               />
               <Button variant="icon" onClick={onSearchSelected}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />

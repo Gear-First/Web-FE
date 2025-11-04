@@ -104,13 +104,13 @@ export async function fetchCompanyList(params?: {
 // 업체 후보 리스트 조회 (공급업체 선정용)
 export async function fetchCompanyCandidates(params: {
   endDate: string;
-  material: string;
+  keyword: string;
 }) {
   try {
     const res = await api.get("/getCompanyList", {
       params: {
         endDate: params.endDate,
-        material: params.material,
+        keyword: params.keyword,
         page: 0,
         size: 10,
         sort: "createdAt",

@@ -64,6 +64,7 @@ export default function SourcingSection() {
   const [materialCode, setMaterialCode] = useState("");
   const [materialName, setMaterialName] = useState("");
   const [needDate, setNeedDate] = useState("");
+  const [tempDate, setTempDate] = useState("");
 
   const [isSearchModalOpen, setSearchModalOpen] = useState(false); // 검색 모달 제어
   const handleSelectMaterial = (selected: MaterialItem) => {
@@ -86,22 +87,24 @@ export default function SourcingSection() {
   >([]);
 
   const handleSearch = async () => {
+    const dateToUse = tempDate; // 임시 날짜를 지역 변수에 저장
+    setNeedDate(dateToUse); // 상태도 업데이트 (다음 렌더링용)
+
     if (!materialName && !materialCode) {
       alert("자재명 또는 코드 중 하나를 입력하세요.");
       return;
     }
-    if (!needDate) {
+    if (!dateToUse) {
       alert("날짜를 선택해주세요.");
       return;
     }
-
     try {
       // YYYY-MM-DD → YYYYMMDD로 변환
       const formattedDate = needDate.replaceAll("-", "");
 
       const candidates = await fetchCompanyCandidates({
         endDate: formattedDate,
-        material: materialName || materialCode,
+        keyword: materialName || materialCode,
       });
 
       setVendorCandidates(
@@ -261,8 +264,8 @@ export default function SourcingSection() {
           /> */}
 
           <SingleDatePicker
-            value={needDate} // 현재 선택된 날짜 (상태)
-            onChange={(v) => setNeedDate(v)} // 날짜 선택 시 상태 업데이트
+            value={tempDate}
+            onChange={(v) => setTempDate(v)} // 클릭 시 임시 상태에만 반영
             placeholder="날짜 선택"
           />
           <SearchButton onClick={handleSearch}>조회</SearchButton>
@@ -271,7 +274,7 @@ export default function SourcingSection() {
         {/* 오른쪽: 후보 공급업체 */}
         <div>
           <VendorQuotesTable
-            rows={filteredCandidates as VendorQuoteWithSelected[]} // or 그냥 rows={filteredCandidates}
+            rows={filteredCandidates} // or 그냥 rows={filteredCandidates}
             needDate={needDate}
             onSelect={handleSelectQuote}
           />
