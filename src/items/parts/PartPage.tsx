@@ -173,9 +173,6 @@ export default function PartPage() {
               <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
             )}
           </div>
-          <span style={{ fontSize: 12, color: "#6b7280" }}>
-            총 {total.toLocaleString()}건
-          </span>
         </div>
 
         <Pagination

@@ -2,8 +2,13 @@ import { useState } from "react";
 import styled from "styled-components";
 import Button from "../../components/common/Button";
 import { StatusBadge } from "../../components/common/PageLayout";
-import type { UserRecord } from "../HumanTypes";
-import { fmtDate } from "../../utils/string";
+import type {
+  CreateUserDTO,
+  Rank,
+  Region,
+  UserRecord,
+  WorkType,
+} from "../HumanTypes";
 import UserRegisterModal from "./UserRegisterModal";
 
 const Overlay = styled.div`
@@ -81,10 +86,12 @@ type Props = {
   isOpen: boolean;
   record: UserRecord | null;
   onClose: () => void;
-  /** 필요시 외부에서도 수정 트리거를 쓰려면 유지 */
-  onEdit?: (record: UserRecord) => void;
   onDelete?: (record: UserRecord) => void;
+  onEdit?: (dto: CreateUserDTO) => Promise<void> | void;
   disableOverlayClose?: boolean;
+  regions?: Region[];
+  workTypes?: WorkType[];
+  ranks?: Rank[];
 };
 
 export default function UserDetailModal({
@@ -110,6 +117,7 @@ export default function UserDetailModal({
           <Header>
             <Title>사용자 상세</Title>
             <button
+              type="button"
               onClick={onClose}
               aria-label="close"
               style={{
@@ -133,9 +141,9 @@ export default function UserDetailModal({
               <Label>직급</Label>
               <Value>
                 <StatusBadge
-                  $variant={record.role === "LEADER" ? "success" : "info"}
+                  $variant={record.rank === "LEADER" ? "success" : "info"}
                 >
-                  {record.role === "LEADER" ? "팀장" : "사원"}
+                  {record.rank === "LEADER" ? "팀장" : "사원"}
                 </StatusBadge>
               </Value>
             </Item>
@@ -147,7 +155,7 @@ export default function UserDetailModal({
 
             <Item>
               <Label>연락처</Label>
-              <Value>{record.phone}</Value>
+              <Value>{record.phoneNum}</Value>
             </Item>
 
             <Item>
@@ -157,27 +165,21 @@ export default function UserDetailModal({
 
             <Item>
               <Label>지점</Label>
-              <Value>{record.branch}</Value>
-            </Item>
-
-            <Item style={{ gridColumn: "1 / -1" }}>
-              <Label>가입일</Label>
-              <Value>{fmtDate(record.createdAt)}</Value>
+              <Value>{record.workType}</Value>
             </Item>
           </Body>
 
           <Footer>
             {onDelete && <Button onClick={() => onDelete(record)}>삭제</Button>}
             <Button
+              type="button"
               onClick={() => {
-                // 외부 onEdit도 호출하고 싶으면 유지
-                onEdit?.(record);
                 setOpenEdit(true);
               }}
             >
               수정
             </Button>
-            <Button onClick={onClose} color="black">
+            <Button type="button" onClick={onClose} color="black">
               닫기
             </Button>
           </Footer>
@@ -189,12 +191,10 @@ export default function UserDetailModal({
         isOpen={openEdit}
         initial={record}
         onClose={() => setOpenEdit(false)}
-        onUpdate={async () => {
-          // TODO: 여기서 실제 업데이트 API 호출
-          // await updateUser();
-          // 성공 후 목록 새로고침 필요하면 상위에서 invalidate 처리
+        onUpdate={async (dto) => {
+          await onEdit?.(dto);
           setOpenEdit(false);
-          onClose(); // 수정 완료 후 상세 모달도 닫고 싶으면 유지
+          onClose();
         }}
       />
     </>
