@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import {
   ORDER_STATUS_LABELS,
   ORDER_STATUS_VARIANTS,
@@ -20,12 +20,17 @@ import {
   DetailItem,
   Label,
   Value,
-  PartList,
   TextareaWrapper,
   StyledTextarea,
   RemarkSection,
 } from "../../components/common/ModalPageLayout";
 import Button from "../../components/common/Button";
+import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
+import { useQuery } from "@tanstack/react-query";
+import { fetchOrderDetail } from "../RequestApi";
+import { Td, Th } from "../../components/common/PageLayout";
+import type { OrderInfoItem } from "../RequestTypes";
+import { fmtDate } from "../../utils/string";
 
 // 모달의 동작 모드: 발주/요청 상세
 type DetailVariant = "order" | "request";
@@ -39,80 +44,10 @@ interface DetailModalProps {
   onReject?: (orderId: number, remark?: string) => void;
 }
 
-/** 날짜 문자열을 yyyy-mm-dd hh:mm:ss 형태로 간단 변환 */
-const formatDate = (str?: string | null) =>
-  str ? str.replace("T", " ").split(".")[0] : "-";
-
-/** 부품 리스트 섹션 (임시) */
-const PartListSection = ({ items }: { items?: any[] }) => {
-  const [showAll, setShowAll] = useState(false);
-  useEffect(() => setShowAll(false), [items]);
-  if (!items || items.length === 0)
-    return (
-      <PartList>
-        <Value>등록된 부품이 없습니다.</Value>
-      </PartList>
-    );
-
-  const visible = showAll ? items : items.slice(0, 2);
-  return (
-    <PartList>
-      {visible.map((item, idx) => (
-        <DetailGrid
-          key={`${item.partCode}-${idx}`}
-          style={{ marginBottom: "4px" }}
-        >
-          <DetailItem>
-            <Value>{item.partName}</Value>
-          </DetailItem>
-          <DetailItem>
-            <Value>{item.partCode}</Value>
-          </DetailItem>
-          <DetailItem>
-            <Value>{item.quantity ?? "-"} EA</Value>
-          </DetailItem>
-        </DetailGrid>
-      ))}
-      {!showAll && items.length > 2 && (
-        <div style={{ textAlign: "center", marginTop: 8 }}>
-          <button
-            onClick={() => setShowAll(true)}
-            style={{
-              background: "none",
-              border: "none",
-              color: "#2563eb",
-              cursor: "pointer",
-              fontSize: "0.9rem",
-            }}
-          >
-            전체 보기 ({items.length}개)
-          </button>
-        </div>
-      )}
-    </PartList>
-  );
-};
-
-/** 라벨-값 그리드 공통 렌더러 */
-const DetailFields = ({
-  fields,
-}: {
-  fields: Array<{ label: string; value?: React.ReactNode }>;
-}) => (
-  <DetailGrid>
-    {fields.map((f, i) => (
-      <DetailItem key={i}>
-        <Label>{f.label}</Label>
-        <Value>{f.value ?? "-"}</Value>
-      </DetailItem>
-    ))}
-  </DetailGrid>
-);
-
 const VARIANT_CONFIG = {
   order: {
     title: "발주 상세 정보",
-    showStatus: true,
+    showStatus: false,
     remarkMode: "editable" as const,
     showActions: true,
   },
@@ -135,25 +70,33 @@ const DetailModal = ({
   const cfg = VARIANT_CONFIG[variant];
   const [remark, setRemark] = useState("");
 
+  const orderId = record?.orderId;
+  const enabled = Boolean(isOpen && orderId);
+
+  // 상세 데이터 조회
+  const {
+    data: detail,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["order-detail", orderId],
+    queryFn: () => fetchOrderDetail(orderId!),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+  });
+
   useEffect(() => {
     if (isOpen && record) {
       setRemark((record as any).remarks || "");
     }
   }, [isOpen, record]);
 
+  const order = detail?.data as OrderInfoItem | undefined;
   const orderStatus = (record?.orderStatus || "PENDING") as OrderStatus;
 
-  const requestFields = useMemo(() => {
-    if (!record) return [];
-    return [
-      { label: "발주 번호", value: record.orderNumber },
-      { label: "요청 일시", value: formatDate(record.requestDate) },
-      { label: "처리 일시", value: formatDate(record.processedDate) },
-      { label: "대리점 코드", value: record.branchCode },
-      { label: "담당자", value: record.engineerName },
-      { label: "직책", value: record.engineerRole },
-    ];
-  }, [record]);
+  useEffect(() => {
+    if (isOpen && order) setRemark(order.note || "");
+  }, [isOpen, order]);
 
   if (!isOpen || !record) return null;
 
@@ -171,28 +114,182 @@ const DetailModal = ({
           </HeaderLeft>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
-
-        {/* 기본 정보 */}
+        {/* 발주 정보 */}
         <Section>
-          <SectionTitle>기본 정보</SectionTitle>
-          <DetailFields fields={requestFields} />
+          <SectionTitle>발주 정보</SectionTitle>
+          <DetailGrid>
+            <DetailItem>
+              <Label>발주 번호</Label>
+              <Value>{order?.orderNumber}</Value>
+            </DetailItem>
+
+            <DetailItem>
+              <Label>요청 일시</Label>
+              <Value>{fmtDate(order?.requestDate)}</Value>
+            </DetailItem>
+            <DetailItem></DetailItem>
+
+            {variant === "request" && (
+              <>
+                <DetailItem>
+                  <Label>처리 일시</Label>
+                  <Value>{fmtDate(order?.processedDate)}</Value>
+                </DetailItem>
+                <DetailItem>
+                  <Label>출고 일시</Label>
+                  <Value>{fmtDate(order?.transferDate)}</Value>
+                </DetailItem>
+                <DetailItem>
+                  <Label>완료 일시</Label>
+                  <Value>{fmtDate(order?.completedDate)}</Value>
+                </DetailItem>
+              </>
+            )}
+          </DetailGrid>
         </Section>
 
         {/* 부품 정보 */}
         <Section>
           <SectionTitle>부품 정보</SectionTitle>
+          <TableScroll $maxHeight={200}>
+            <StickyTable
+              $stickyTop={0}
+              $headerBg="#fafbfc"
+              style={{
+                borderCollapse: "collapse",
+                width: "100%",
+              }}
+            >
+              <thead>
+                <tr style={{ borderBottom: "1px solid #e5e7eb" }}>
+                  <Th style={{ textAlign: "center", padding: "6px 10px" }}>
+                    부품명
+                  </Th>
+                  <Th style={{ textAlign: "center", padding: "6px 10px" }}>
+                    부품코드
+                  </Th>
+                  <Th style={{ textAlign: "center", padding: "6px 10px" }}>
+                    수량
+                  </Th>
+                </tr>
+              </thead>
+              <tbody>
+                {isLoading ? (
+                  <tr>
+                    <Td
+                      colSpan={3}
+                      style={{
+                        textAlign: "center",
+                        color: "#6b7280",
+                        padding: "8px 0",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      불러오는 중…
+                    </Td>
+                  </tr>
+                ) : error ? (
+                  <tr>
+                    <Td
+                      colSpan={3}
+                      style={{
+                        textAlign: "center",
+                        color: "#ef4444",
+                        padding: "8px 0",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      조회 실패
+                    </Td>
+                  </tr>
+                ) : detail?.data?.items?.length ? (
+                  detail.data.items.map((item: any, idx: number) => (
+                    <tr
+                      key={idx}
+                      style={{
+                        borderBottom: "1px solid #f1f5f9",
+                        background: idx % 2 === 0 ? "#fff" : "#f9fafb",
+                      }}
+                    >
+                      <Td
+                        style={{
+                          padding: "6px 10px",
+                          textAlign: "center",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        {item.partName ?? "-"}
+                      </Td>
+                      <Td
+                        style={{
+                          padding: "6px 10px",
+                          textAlign: "center",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        {item.partCode ?? "-"}
+                      </Td>
+                      <Td
+                        style={{
+                          padding: "6px 10px",
+                          textAlign: "center",
+                          fontSize: "0.8rem",
+                        }}
+                      >
+                        {item.quantity ?? "-"}
+                      </Td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <Td
+                      colSpan={3}
+                      style={{
+                        textAlign: "center",
+                        color: "#6b7280",
+                        padding: "8px 0",
+                        fontSize: "0.8rem",
+                      }}
+                    >
+                      부품 정보가 없습니다.
+                    </Td>
+                  </tr>
+                )}
+              </tbody>
+            </StickyTable>
+          </TableScroll>
+        </Section>
+        {/* 대리점 정보 */}
+        <Section>
+          <SectionTitle>대리점 정보</SectionTitle>
           <DetailGrid>
             <DetailItem>
-              <Label>부품명</Label>
+              <Label>대리점</Label>
+              <Value>{order?.branchCode}</Value>
             </DetailItem>
             <DetailItem>
-              <Label>부품코드</Label>
-            </DetailItem>
-            <DetailItem>
-              <Label>수량</Label>
+              <Label>대리점 위치</Label>
+              <Value>{order?.branchCode}</Value>
             </DetailItem>
           </DetailGrid>
-          <PartListSection items={(record as any).items || []} />
+        </Section>
+        {/* 담당자 정보 */}
+        <Section>
+          <SectionTitle>담당자 정보</SectionTitle>
+          <DetailGrid>
+            <DetailItem>
+              <Label>담당자</Label>
+              <Value>{order?.engineerName}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>직책</Label>
+              <Value>{order?.engineerRole}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>이메일</Label>
+              <Value>{order?.engineerRole}</Value>
+            </DetailItem>
+          </DetailGrid>
         </Section>
 
         {/* 비고 */}
