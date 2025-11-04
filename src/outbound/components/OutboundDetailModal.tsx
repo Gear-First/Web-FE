@@ -31,21 +31,22 @@ interface Props {
 
 const statusVariant: Record<
   OutboundStatus,
-  "warning" | "rejected" | "info" | "success"
+  "warning" | "info" | "success" | "rejected"
 > = {
-  대기: "warning",
-  지연: "rejected",
-  진행중: "info",
-  완료: "success",
+  PENDING: "warning",
+  IN_PROGRESS: "info",
+  COMPLETED: "success",
+  CANCELLED: "rejected",
 };
 
+// 부품 상태 매핑
 const statusPartVariant: Record<
   OutboundPartStatus,
   "warning" | "info" | "success"
 > = {
-  대기: "warning",
-  출고: "info",
-  완료: "success",
+  PENDING: "warning",
+  READY: "info",
+  COMPLETED: "success",
 };
 
 const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
@@ -58,7 +59,7 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
   useEffect(() => {
     if (isOpen && record) {
       setIsLoading(true);
-      fetchOutboundDetail(record.outboundId)
+      fetchOutboundDetail(record.shippingNo)
         .then((data) => setDetail(data))
         .finally(() => setIsLoading(false));
     }
@@ -114,11 +115,11 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                 </DetailItem>
                 <DetailItem>
                   <Label>출고일시</Label>
-                  <Value>{formatDate(detail.shippedAt)}</Value>
+                  <Value>{formatDate(detail.shippedAt ?? "")}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>납품예정일</Label>
-                  <Value>{formatDate(detail.expectedShipDate)}</Value>
+                  <Value>{formatDate(detail.expectedShipDate ?? "")}</Value>
                 </DetailItem>
               </DetailGrid>
             </Section>

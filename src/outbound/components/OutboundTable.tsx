@@ -48,10 +48,10 @@ export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
               <Td>{r.branchName}</Td>
               <Td>{r.totalQty.toLocaleString() || "-"}</Td>
               <Td>{formatDate(r.requestedAt)}</Td>
-              <Td>{formatDate(r.shippedAt)}</Td>
+              <Td>{formatDate(r.shippedAt ?? "")}</Td>
               <Td>
-                <StatusBadge $variant={statusVariant[r.status ?? "PENDING"]}>
-                  {r.status ?? "PENDING"}
+                <StatusBadge $variant={statusVariant[r.status]}>
+                  {r.status}
                 </StatusBadge>
               </Td>
             </tr>
