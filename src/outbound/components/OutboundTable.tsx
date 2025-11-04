@@ -5,12 +5,12 @@ import OutboundDetailModal from "../components/OutboundDetailModal";
 
 const statusVariant: Record<
   OutboundStatus,
-  "warning" | "rejected" | "info" | "success"
+  "warning" | "info" | "success" | "rejected"
 > = {
-  대기: "warning",
-  지연: "rejected",
-  진행중: "info",
-  완료: "success",
+  PENDING: "warning",
+  IN_PROGRESS: "info",
+  COMPLETED: "success",
+  CANCELLED: "rejected",
 };
 
 export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
@@ -37,21 +37,21 @@ export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
         <tbody>
           {rows.map((r) => (
             <tr
-              key={r.outboundId}
+              key={r.noteId}
               style={{ cursor: "pointer" }}
               onClick={() => {
                 setSelectedRecord(r);
                 setIsModalOpen(true);
               }}
             >
-              <Td>{r.outboundId}</Td>
-              <Td>{r.destination}</Td>
-              <Td>{r.totalQuantity.toLocaleString() || "-"}</Td>
-              <Td>{formatDate(r.receiptDate)}</Td>
-              <Td>{formatDate(r.issuedDate)}</Td>
+              <Td>{r.shippingNo}</Td>
+              <Td>{r.branchName}</Td>
+              <Td>{r.totalQty.toLocaleString() || "-"}</Td>
+              <Td>{formatDate(r.requestedAt)}</Td>
+              <Td>{formatDate(r.shippedAt)}</Td>
               <Td>
-                <StatusBadge $variant={statusVariant[r.status]}>
-                  {r.status}
+                <StatusBadge $variant={statusVariant[r.status ?? "PENDING"]}>
+                  {r.status ?? "PENDING"}
                 </StatusBadge>
               </Td>
             </tr>

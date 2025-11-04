@@ -94,31 +94,31 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
               <DetailGrid>
                 <DetailItem>
                   <Label>출고번호</Label>
-                  <Value>{detail.outboundId}</Value>
+                  <Value>{detail.shippingNo}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>출고수량</Label>
-                  <Value>{detail.totalQuantity.toLocaleString()}</Value>
+                  <Value>{detail.totalQty.toLocaleString()}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>접수일시</Label>
-                  <Value>{formatDate(detail.issuedDate)}</Value>
+                  <Value>{formatDate(detail.requestedAt)}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>출고대상(창고)</Label>
-                  <Value>{detail.deliveryFactory}</Value>
+                  <Value>{detail.shippedAt}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>납품처</Label>
-                  <Value>{detail.destination}</Value>
+                  <Value>{detail.branchName}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>출고일시</Label>
-                  <Value>{formatDate(detail.receiptDate)}</Value>
+                  <Value>{formatDate(detail.shippedAt)}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>납품예정일</Label>
-                  <Value>{formatDate(detail.expectedDeliveryDate)}</Value>
+                  <Value>{formatDate(detail.expectedShipDate)}</Value>
                 </DetailItem>
               </DetailGrid>
             </Section>
@@ -142,17 +142,16 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {detail.partItems.map((p) => (
-                      <tr key={p.partCode}>
-                        <Td>{p.partName}</Td>
-                        <Td>{p.partCode}</Td>
-                        <Td>{p.partQuantity.toLocaleString()}</Td>
+                    {detail.lines?.map((line) => (
+                      <tr key={line.lineId}>
+                        <Td>{line.productName}</Td>
+                        <Td>{line.productSerial}</Td>
+                        <Td>{line.pickedQty.toLocaleString()}</Td>
                         <Td>
                           <StatusBadge
-                            style={{ fontSize: "0.7rem" }}
-                            $variant={statusPartVariant[p.partStatus]}
+                            $variant={statusPartVariant[line.status]}
                           >
-                            {p.partStatus}
+                            {line.status}
                           </StatusBadge>
                         </Td>
                       </tr>
@@ -168,15 +167,15 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
               <DetailGrid>
                 <DetailItem>
                   <Label>담당자</Label>
-                  <Value>{detail.manager}</Value>
+                  <Value>{detail.assigneeName}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>부서</Label>
-                  <Value>{detail.managerPosition}</Value>
+                  <Value>{detail.assigneeDept}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>연락처</Label>
-                  <Value>{detail.managerContact}</Value>
+                  <Value>{detail.assigneePhone}</Value>
                 </DetailItem>
               </DetailGrid>
             </Section>
@@ -185,7 +184,7 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
             <Section>
               <SectionTitle>비고</SectionTitle>
               <RemarkSection>
-                <Value>{detail.remarks}</Value>
+                <Value>{detail.remark}</Value>
               </RemarkSection>
             </Section>
           </>

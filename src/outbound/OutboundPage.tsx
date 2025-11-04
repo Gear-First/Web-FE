@@ -11,7 +11,6 @@ import {
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import OutboundTable from "./components/OutboundTable";
-import type { OutboundStatus } from "./OutboundTypes";
 import { outboundKeys, fetchOutboundRecords } from "./OutboundApi";
 import resetIcon from "../assets/reset.svg";
 import searchIcon from "../assets/search.svg";
@@ -20,33 +19,35 @@ import DateRange from "../components/common/DateRange";
 import Button from "../components/common/Button";
 import Pagination from "../components/common/Pagination";
 
-type StatusFilter = OutboundStatus | "ALL";
+type StatusFilter = "all" | "done" | "not-done";
 
-type AppliedFilters = {
+interface AppliedFilters {
   status: StatusFilter;
   keyword: string;
-  startDate: string | null; // YYYY-MM-DD
-  endDate: string | null; // YYYY-MM-DD
-};
+  dateFrom: string | null;
+  dateTo: string | null;
+  warehouseCode?: string;
+}
 
 export default function OutboundPage() {
-  const statusOptions: StatusFilter[] = [
-    "ALL",
-    "대기",
-    "지연",
-    "진행중",
-    "완료",
-  ]; // 입력값(즉시 반영 X)
+  const statusOptions = [
+    // API용 상태 필터 옵션
+    { label: "전체", value: "all" },
+    { label: "완료", value: "done" },
+    { label: "미완료", value: "not-done" },
+  ] as const;
+
   const [keyword, setKeyword] = useState("");
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
 
-  // 적용 필터(검색 버튼 눌렀을 때만 반영)
+  // 검색 조건 (검색 버튼 눌러야 반영)
   const [applied, setApplied] = useState<AppliedFilters>({
-    status: "ALL",
+    status: "all",
     keyword: "",
-    startDate: null,
-    endDate: null,
+    dateFrom: null,
+    dateTo: null,
+    warehouseCode: "",
   });
 
   // 페이지네이션 상태
@@ -58,23 +59,24 @@ export default function OutboundPage() {
     queryFn: () =>
       fetchOutboundRecords({
         status: applied.status,
-        q: applied.keyword,
-        startDate: applied.startDate,
-        endDate: applied.endDate,
+        dateFrom: applied.dateFrom,
+        dateTo: applied.dateTo,
+        warehouseCode: applied.warehouseCode || "",
         page: page - 1,
-        pageSize,
+        size: pageSize,
       }),
-    // placeholderData: keepPreviousData,
   });
 
   const records = data?.data ?? [];
   const meta = data?.meta ?? { total: 0, totalPages: 1 };
+
   const onSearch = () => {
     setApplied((prev) => ({
       ...prev,
       keyword: keyword.trim(),
-      startDate: startDate || null,
-      endDate: endDate || null,
+      dateFrom: startDate || null,
+      dateTo: endDate || null,
+      warehouseCode: keyword.trim(),
     }));
     setPage(1);
   };
@@ -83,7 +85,13 @@ export default function OutboundPage() {
     setKeyword("");
     setStartDate("");
     setEndDate("");
-    setApplied({ status: "ALL", keyword: "", startDate: null, endDate: null });
+    setApplied({
+      status: "all",
+      keyword: "",
+      dateFrom: null,
+      dateTo: null,
+      warehouseCode: "",
+    });
     setPage(1);
   };
 
@@ -105,13 +113,13 @@ export default function OutboundPage() {
                 value={applied.status}
                 onChange={(e) => {
                   const value = e.target.value as StatusFilter;
-                  setApplied((prev) => ({ ...prev, status: value })); // applied 상태 업데이트
-                  setPage(1); // 페이지 초기화
+                  setApplied((prev) => ({ ...prev, status: value }));
+                  setPage(1);
                 }}
               >
                 {statusOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt === "ALL" ? "전체" : opt}
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
                   </option>
                 ))}
               </Select>
@@ -129,7 +137,7 @@ export default function OutboundPage() {
                 onKeywordChange={setKeyword}
                 onSearch={onSearch}
                 onReset={onReset}
-                placeholder="부품코드 / 부품명 검색"
+                placeholder="부품코드 / 부품명 검색 / 창고"
               />
 
               <Button variant="icon" onClick={onSearch}>
