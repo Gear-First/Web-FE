@@ -44,28 +44,23 @@ export default function RequestPage() {
 
   const queryClient = useQueryClient();
 
-  // ✅ 반려 기능 (React Query invalidate 포함)
-  const handleReject = async (orderId: number) => {
-    const note = prompt("반려 사유를 입력하세요.");
-    if (!note || !note.trim()) {
-      alert("반려 사유를 입력해야 합니다.");
-      return;
-    }
-
-    if (!confirm("정말 이 발주를 반려하시겠습니까?")) return;
+  // 반려 기능 (React Query invalidate 포함)
+  const handleReject = async (orderId: number, remark?: string) => {
+    const note = remark?.trim() ?? "";
 
     try {
       const res = await rejectOrder(orderId, note);
       alert(res.message || "반려되었습니다.");
 
-      // 모든 관련 목록 리프레시
+      setIsModalOpen(false);
+
+      // 목록 새로고침
       queryClient.invalidateQueries({ queryKey: ["pending-orders"] });
       queryClient.invalidateQueries({ queryKey: ["rejected-orders"] });
     } catch (err: any) {
       alert(err.response?.data?.message || "반려 요청 실패");
     }
   };
-
   // 미승인 필터
   const [keywordPending, setKeywordPending] = useState("");
   const [appliedPendingKeyword, setAppliedPendingKeyword] = useState("");
@@ -253,7 +248,7 @@ export default function RequestPage() {
                 onKeywordChange={setKeywordPending}
                 onSearch={onSearchPending}
                 onReset={onResetPending}
-                placeholder="부품명 검색"
+                placeholder="발주번호 / 대리점 검색"
               />
               <Button variant="icon" onClick={onSearchPending}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />
@@ -330,7 +325,7 @@ export default function RequestPage() {
                 onKeywordChange={setKeywordApproved}
                 onSearch={onSearchApproved}
                 onReset={onResetApproved}
-                placeholder="부품명 검색"
+                placeholder="발주번호 / 대리점 검색"
               />
               <Button variant="icon" onClick={onSearchApproved}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />
@@ -395,7 +390,7 @@ export default function RequestPage() {
                 onKeywordChange={setKeywordRejected}
                 onSearch={onSearchRejected}
                 onReset={onResetRejected}
-                placeholder="부품명 검색"
+                placeholder="발주번호 / 대리점 검색"
               />
               <Button variant="icon" onClick={onSearchRejected}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />

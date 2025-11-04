@@ -329,7 +329,7 @@ const DetailModal = ({
               )}
             </>
           ) : (
-            <RemarkSection>{remark || "비고 없음"}</RemarkSection>
+            <RemarkSection>{order?.note || "비고 없음"}</RemarkSection>
           )}
         </Section>
       </ModalContainer>

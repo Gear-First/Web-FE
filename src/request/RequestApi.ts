@@ -90,7 +90,7 @@ export async function fetchOrderDetail(
 
 // 발주 반려
 export async function rejectOrder(orderId: number, note: string) {
-  const res = await api.post(`/purchase-orders/${orderId}/reject`, {
+  const res = await api.patch(`/purchase-orders/${orderId}/reject`, {
     note,
   });
   return res.data;
