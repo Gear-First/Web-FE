@@ -146,7 +146,7 @@ export default function PurchasingPage() {
             </FilterGroup>
           </SectionHeader>
 
-          {/* ✅ 로딩중에도 테이블 유지 */}
+          {/* 로딩중에도 테이블 유지 */}
           <PurchasingTable
             rows={allCompanies}
             showContractDate={false}

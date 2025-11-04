@@ -5,8 +5,6 @@ const api = axios.create({
   headers: { "Content-Type": "application/json" },
 });
 
-import type { PurchasingRecord } from "./PurchasingTypes";
-
 export const purchasingKeys = {
   records: ["purchasing", "records"] as const,
 };

@@ -4,7 +4,6 @@ import {
   SectionTitle,
   SectionCaption,
 } from "../../components/common/PageLayout";
-
 import { useState } from "react";
 import VendorQuotesTable from "./VendorQuotesTable";
 import BasketTable from "./BasketTable";
@@ -88,7 +87,7 @@ export default function SourcingSection() {
 
   const handleSearch = async () => {
     const dateToUse = tempDate; // 임시 날짜를 지역 변수에 저장
-    setNeedDate(dateToUse); // 상태도 업데이트 (다음 렌더링용)
+    setNeedDate(dateToUse); // 상태도 업데이트
 
     if (!materialName && !materialCode) {
       alert("자재명 또는 코드 중 하나를 입력하세요.");
