@@ -2,14 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import Button from "../../components/common/Button";
 import type {
-  BranchType,
   CreateUserDTO,
-  UserRole,
   UserRecord,
+  Region,
+  WorkType,
 } from "../HumanTypes";
-import { Eye, EyeOff } from "lucide-react";
+import type { Rank } from "../HumanTypes";
+import { useRegions, useWorkTypes } from "./queries";
 
-/* ===== styled ===== */
 const Overlay = styled.div`
   position: fixed;
   inset: 0;
@@ -81,7 +81,7 @@ const Select = styled.select`
     border-color: #111;
   }
 `;
-const Error = styled.div`
+const ErrorBox = styled.div`
   grid-column: 1 / -1;
   background: #fef2f2;
   color: #991b1b;
@@ -91,122 +91,107 @@ const Error = styled.div`
   font-size: 0.9rem;
 `;
 
-const InputWrapper = styled.div`
-  position: relative;
-  display: flex;
-  align-items: center;
-`;
-const PasswordInput = styled(Input)`
-  padding-right: 40px;
-  width: 100%;
-`;
-const IconButton = styled.button`
-  position: absolute;
-  top: 50%;
-  right: 10px;
-  transform: translateY(-50%);
-  background: none;
-  border: none;
-  padding: 4px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #6b7280;
-  transition: color 0.15s ease;
-  &:hover {
-    color: #111827;
-  }
-  &:focus-visible {
-    outline: 2px solid #111;
-    outline-offset: 2px;
-  }
-`;
-
-/* ===== types & props ===== */
-type Mode = "create" | "edit";
-
 type Props = {
-  mode: Mode;
+  mode: "create" | "edit";
   isOpen: boolean;
   onClose: () => void;
-  /** edit 모드일 때 프리필용 */
   initial?: Partial<UserRecord>;
-  /** 등록 제출 */
   onCreate?: (dto: CreateUserDTO) => Promise<void> | void;
-  /** 수정 제출 (password 제외) */
-  onUpdate?: (
-    id: string,
-    dto: Omit<CreateUserDTO, "password">
-  ) => Promise<void> | void;
-  regions?: string[];
+  onUpdate?: (dto: CreateUserDTO) => Promise<void> | void;
+  currentUserId?: number;
 };
 
-const DEFAULT_REGIONS = [
-  "서울",
-  "부산",
-  "경기",
-  "인천",
-  "대전",
-  "대구",
-  "광주",
-  "울산",
-  "세종",
+const DEFAULT_RANKS: Rank[] = [
+  { rankId: 1, rankName: "EMPLOYEE" },
+  { rankId: 2, rankName: "LEADER" },
 ];
 
-/* ===== component ===== */
+const KO_TO_KEY = (v?: string) =>
+  v === "사원" ? "EMPLOYEE" : v === "팀장" ? "LEADER" : v ?? "EMPLOYEE";
+
 export default function UserRegisterModal({
   mode,
   isOpen,
   onClose,
   initial,
-
-  regions = DEFAULT_REGIONS,
+  onCreate,
+  onUpdate,
+  currentUserId = 0,
 }: Props) {
   const isEdit = mode === "edit";
 
-  // 공통 폼 모델 (편집에서도 password는 포함되지만, 제출 시 제외)
+  const { data: regionRes } = useRegions(isOpen);
+  const { data: workTypeRes } = useWorkTypes(isOpen);
+
+  const regions: Region[] = regionRes?.data ?? [];
+  const workTypes: WorkType[] = workTypeRes?.data ?? [];
+
   const [form, setForm] = useState<CreateUserDTO>({
     name: "",
     email: "",
-    phone: "",
-    password: "",
-    role: "EMPLOYEE",
-    region: regions[0] ?? "서울",
-    branch: "본사",
+    phoneNum: "",
+    rank: "EMPLOYEE",
+    regionId: 0,
+    workTypeId: 0,
+    userId: currentUserId,
   });
-  const [showPassword, setShowPassword] = useState(false);
+
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  // initial → form 프리필
   useEffect(() => {
     if (!isOpen) return;
+
     setError(null);
     setBusy(false);
-    setShowPassword(false);
+
+    const fallbackRegionId = regions[0]?.regionId ?? 0;
+    const fallbackWorkTypeId = workTypes[0]?.workTypeId ?? 0;
+
+    const regionId =
+      initial?.regionId ??
+      regions.find((r) => r.regionName === initial?.region)?.regionId ??
+      fallbackRegionId;
+
+    const workTypeId =
+      initial?.workTypeId ??
+      workTypes.find((w) => w.workTypeName === initial?.workType)?.workTypeId ??
+      fallbackWorkTypeId;
+
     setForm({
       name: initial?.name ?? "",
       email: initial?.email ?? "",
-      phone: initial?.phone ?? "",
-      password: "", // edit에서는 비워두고 제출에서도 제외
-      role: initial?.role ?? "EMPLOYEE",
-      region: initial?.region ?? regions[0] ?? "서울",
-      branch: initial?.branch ?? "본사",
+      phoneNum: initial?.phoneNum ?? "",
+      rank: KO_TO_KEY(initial?.rank) as "EMPLOYEE" | "LEADER",
+      regionId,
+      workTypeId,
+      userId: currentUserId,
     });
-  }, [isOpen, initial, regions, isEdit]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, initial?.id]);
 
-  const isValidEmail = (v: string) => /\S+@\S+\.\S+/.test(v);
-  const isValidPhone = (v: string) =>
-    /^0\d{1,2}-?\d{3,4}-?\d{4}$/.test(v.replace(/\s/g, ""));
+  useEffect(() => {
+    if (!isOpen || regions.length === 0) return;
+    if (!regions.some((r) => r.regionId === form.regionId)) {
+      setForm((prev) => ({ ...prev, regionId: regions[0].regionId }));
+    }
+  }, [isOpen, regions, form.regionId]);
+
+  useEffect(() => {
+    if (!isOpen || workTypes.length === 0) return;
+    if (!workTypes.some((w) => w.workTypeId === form.workTypeId)) {
+      setForm((prev) => ({ ...prev, workTypeId: workTypes[0].workTypeId }));
+    }
+  }, [isOpen, workTypes, form.workTypeId]);
 
   const canSubmit = useMemo(() => {
     if (!form.name.trim()) return false;
-    if (!isValidEmail(form.email)) return false;
-    if (!isValidPhone(form.phone)) return false;
-    if (!isEdit && form.password.trim().length < 8) return false;
+    if (!form.email.trim()) return false;
+    if (!form.phoneNum.trim()) return false;
+    if (!form.regionId || !form.workTypeId) return false;
+    if (!form.rank) return false;
     return true;
-  }, [form, isEdit]);
+  }, [form]);
 
   if (!isOpen) return null;
 
@@ -215,17 +200,28 @@ export default function UserRegisterModal({
     value: CreateUserDTO[K]
   ) => setForm((prev) => ({ ...prev, [key]: value }));
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
     if (!canSubmit) {
-      setError(
-        isEdit
-          ? "입력값을 확인해주세요."
-          : "입력값을 확인해주세요. (이메일/연락처 형식, 비밀번호 8자 이상)"
-      );
+      setError("입력값을 확인해주세요. (이메일/연락처 형식 등)");
       return;
     }
     setError(null);
     setBusy(true);
+    try {
+      if (isEdit && typeof onUpdate === "function") {
+        await onUpdate(form); // DTO 전체 (userId 포함)
+      } else if (!isEdit && typeof onCreate === "function") {
+        await onCreate(form);
+      }
+      onClose();
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "요청 처리 중 오류가 발생했습니다."
+      );
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -262,11 +258,18 @@ export default function UserRegisterModal({
             <Field>
               회원직급
               <Select
-                value={form.role}
-                onChange={(e) => update("role", e.target.value as UserRole)}
+                value={form.rank}
+                onChange={(e) =>
+                  update("rank", e.target.value as "EMPLOYEE" | "LEADER")
+                }
               >
-                <option value="EMPLOYEE">사원 (EMPLOYEE)</option>
-                <option value="LEADER">팀장 (LEADER)</option>
+                {DEFAULT_RANKS.map((r) => (
+                  <option key={r.rankId} value={r.rankName}>
+                    {r.rankName === "EMPLOYEE"
+                      ? "사원 (EMPLOYEE)"
+                      : "팀장 (LEADER)"}
+                  </option>
+                ))}
               </Select>
             </Field>
 
@@ -278,71 +281,52 @@ export default function UserRegisterModal({
                 onChange={(e) => update("email", e.target.value)}
                 placeholder="user@gearfirst.com"
                 required
-                // 편집 시 이메일 고정하려면 아래 주석 해제
-                // disabled={isEdit}
               />
             </Field>
 
             <Field>
               연락처
               <Input
-                value={form.phone}
-                onChange={(e) => update("phone", e.target.value)}
+                value={form.phoneNum}
+                onChange={(e) => update("phoneNum", e.target.value)}
                 placeholder="010-1234-5678"
                 required
               />
             </Field>
 
             <Field>
-              비밀번호
-              <InputWrapper>
-                <PasswordInput
-                  type={showPassword ? "text" : "password"}
-                  value={form.password}
-                  onChange={(e) => update("password", e.target.value)}
-                  placeholder="8자 이상"
-                  required
-                  aria-label="비밀번호"
-                />
-                <IconButton
-                  type="button"
-                  onClick={() => setShowPassword((v) => !v)}
-                  aria-label={
-                    showPassword ? "비밀번호 숨기기" : "비밀번호 보기"
-                  }
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </IconButton>
-              </InputWrapper>
-            </Field>
-
-            <Field>
               지역
               <Select
-                value={form.region}
-                onChange={(e) => update("region", e.target.value)}
+                value={String(form.regionId || "")}
+                onChange={(e) => update("regionId", Number(e.target.value))}
               >
+                {!regions.length && <option value="">지역 로딩 중…</option>}
+                {!!regions.length && <option value="">지역 선택</option>}
                 {regions.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
+                  <option key={r.regionId} value={r.regionId}>
+                    {r.regionName}
                   </option>
                 ))}
               </Select>
             </Field>
 
-            <Field style={{ gridColumn: "1 / -1" }}>
+            <Field>
               지점
               <Select
-                value={form.branch}
-                onChange={(e) => update("branch", e.target.value as BranchType)}
+                value={String(form.workTypeId || "")}
+                onChange={(e) => update("workTypeId", Number(e.target.value))}
               >
-                <option value="본사">본사</option>
-                <option value="대리점">대리점</option>
-                <option value="창고">창고</option>
+                {!workTypes.length && <option value="">지점 로딩 중…</option>}
+                {!!workTypes.length && <option value="">지점 선택</option>}
+                {workTypes.map((w) => (
+                  <option key={w.workTypeId} value={w.workTypeId}>
+                    {w.workTypeName}
+                  </option>
+                ))}
               </Select>
             </Field>
 
-            {error && <Error>{error}</Error>}
+            {error && <ErrorBox>{error}</ErrorBox>}
           </Body>
 
           <Footer>
