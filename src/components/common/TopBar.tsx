@@ -2,6 +2,7 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 import styled from "styled-components";
 import BellIcon from "../../assets/BellIcon.png";
+import Logo from "../../assets/logo_gearfirst.svg";
 
 const TopBarContainer = styled.header`
   background: white;
@@ -46,6 +47,10 @@ const IconButton = styled.button`
   cursor: pointer;
 `;
 
+const HeaderLogo = styled.img`
+  width: 120px;
+`;
+
 const TopBar: React.FC = () => {
   const menus = [
     { id: 0, name: "요청관리", path: "/request" },
@@ -61,7 +66,7 @@ const TopBar: React.FC = () => {
 
   return (
     <TopBarContainer>
-      <div>GearFirst</div>
+      <HeaderLogo src={Logo} />
       <MenuGroup>
         {menus.map((menu) => (
           <MenuLink key={menu.path} to={menu.path}>

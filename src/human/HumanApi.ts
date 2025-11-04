@@ -1,98 +1,138 @@
-import type { ListResponse } from "../api";
-import type { CreateUserDTO, UserRecord } from "./HumanTypes";
-
-// ---- 실제 API 연동 시 이 부분만 바꾸면 됨 ----
-const mockDB: UserRecord[] = [
-  {
-    id: "U-001",
-    name: "김민수",
-    email: "minsu@gearfirst.com",
-    phone: "010-1234-5678",
-    role: "EMPLOYEE",
-    region: "서울",
-    branch: "본사",
-    createdAt: "2025-10-20T12:10:00Z",
-  },
-  {
-    id: "U-002",
-    name: "박지영",
-    email: "jiyoung@gearfirst.com",
-    phone: "010-2222-3333",
-    role: "LEADER",
-    region: "경기",
-    branch: "대리점",
-    createdAt: "2025-10-22T09:00:00Z",
-  },
-];
+import {
+  USER_BASE_PATH,
+  type ApiPage,
+  type ApiResponse,
+  type ListResponse,
+} from "../api";
+import type { CreateUserDTO, Region, UserRecord, WorkType } from "./HumanTypes";
 
 export type UserListParams = {
-  q?: string; // 이름/이메일 검색
-  role?: "EMPLOYEE" | "LEADER" | "ALL";
-  branch?: "본사" | "대리점" | "창고" | "ALL";
-  region?: string; // 선택 시 해당 지역만
-  page?: number; // 1-based
+  q?: string;
+  rank?: string;
+  workTypeId?: number;
+  regionId?: number;
+  page?: number;
   pageSize?: number;
 };
 
 export const userKeys = {
   list: ["users", "list"] as const,
+  region: ["users", "region"] as const,
+  workType: ["users", "workType"] as const,
 };
 
-export async function fetchUsers(
-  params: UserListParams
-): Promise<ListResponse<UserRecord[]>> {
-  // --- 실제 API 예시 ---
-  // const res = await axios.get("/api/users", { params: { ...params, page: params.page-1 } });
-  // return res.data;
+// 지역 조회
+export async function getRegion(): Promise<ListResponse<Region[]>> {
+  const url = `${USER_BASE_PATH}/getRegion`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
 
-  // --- Mock ---
-  const { q, role, branch, region, page = 1, pageSize = 10 } = params || {};
-  let rows = [...mockDB];
+  if (!res.ok) throw new Error(`지역 조회 실패 (${res.status})`);
 
-  if (q) {
-    const s = q.toLowerCase();
-    rows = rows.filter(
-      (r) =>
-        r.name.toLowerCase().includes(s) ||
-        r.email.toLowerCase().includes(s) ||
-        r.phone.includes(q)
-    );
-  }
-  if (role && role !== "ALL") rows = rows.filter((r) => r.role === role);
-  if (branch && branch !== "ALL")
-    rows = rows.filter((r) => r.branch === branch);
-  if (region && region !== "ALL")
-    rows = rows.filter((r) => r.region === region);
+  const json: ApiResponse<Region[]> = await res.json();
+  if (!json.success) throw new Error(json.message || "지역 조회 실패");
 
-  const total = rows.length;
-  const start = (page - 1) * pageSize;
-  const paged = rows.slice(start, start + pageSize);
-
-  await new Promise((r) => setTimeout(r, 300)); // loading 느낌
+  const data = Array.isArray(json.data) ? json.data : [];
 
   return {
-    data: paged,
+    data,
+  };
+}
+
+// 지점 조회
+export async function getWorkType(): Promise<ListResponse<WorkType[]>> {
+  const url = `${USER_BASE_PATH}/getWorkType`;
+  const res = await fetch(url, { headers: { Accept: "application/json" } });
+
+  if (!res.ok) throw new Error(`지점 조회 실패 (${res.status})`);
+
+  const json: ApiResponse<WorkType[]> = await res.json();
+  if (!json.success) throw new Error(json.message || "지점 조회 실패");
+
+  const data = Array.isArray(json.data) ? json.data : [];
+
+  return {
+    data,
+  };
+}
+
+// 유저 조회
+export async function fetchUsers(
+  params: UserListParams = {}
+): Promise<ListResponse<UserRecord[]>> {
+  const {
+    q,
+    rank = "ALL",
+    workTypeId,
+    regionId,
+    page = 1,
+    pageSize = 10,
+  } = params;
+
+  const url = `${USER_BASE_PATH}/getAllUser`;
+  const qs = new URLSearchParams();
+
+  if (rank && rank !== "ALL") qs.set("rank", rank);
+  if (typeof workTypeId === "number" && workTypeId > 0)
+    qs.set("workTypeId", String(workTypeId));
+  if (typeof regionId === "number" && regionId > 0)
+    qs.set("regionId", String(regionId));
+  if (q) qs.set("keyword", q);
+
+  qs.set("page", String(page - 1));
+  qs.set("size", String(pageSize));
+  qs.set("sort", "");
+
+  const res = await fetch(`${url}?${qs.toString()}`, {
+    headers: { Accept: "application/json" },
+  });
+
+  if (!res.ok) throw new Error(`유저 조회 실패 (${res.status})`);
+
+  const json: ApiResponse<ApiPage<UserRecord>> = await res.json();
+  if (!json.success) throw new Error(json.message || "유저 조회 실패");
+
+  const items = Array.isArray(json.data?.content) ? json.data.content : [];
+
+  const total = json.data.totalElements ?? items.length;
+  const totalPages =
+    json.data.totalPages ?? Math.max(1, Math.ceil(total / pageSize));
+
+  return {
+    data: items,
     meta: {
       total,
       page,
       pageSize,
-      totalPages: Math.max(1, Math.ceil(total / pageSize)),
+      totalPages,
     },
   };
 }
 
+// 유저 생성
 export async function createUser(dto: CreateUserDTO): Promise<UserRecord> {
-  // --- 실제 API 예시 ---
-  // const res = await axios.post("/api/users", dto);
-  // return res.data;
+  const res = await fetch(`${USER_BASE_PATH}/createUser`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(dto),
+  });
+  if (!res.ok) throw new Error(`유저 생성 실패 (${res.status})`);
 
-  // --- Mock ---
-  const rec: UserRecord = {
-    ...dto,
-    id: `U-${String(Math.floor(Math.random() * 9000) + 1000)}`,
-    createdAt: new Date().toISOString(),
-  };
-  mockDB.unshift(rec);
-  await new Promise((r) => setTimeout(r, 300));
-  return rec;
+  const json: ApiResponse<UserRecord> = await res.json();
+  if (!json.success) throw new Error(json.message || "유저 생성 실패");
+
+  return json.data;
+}
+
+// 유저 수정
+export async function updateUser(dto: CreateUserDTO): Promise<UserRecord> {
+  const res = await fetch(`${USER_BASE_PATH}/updateUser`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(dto),
+  });
+  if (!res.ok) throw new Error(`유저 수정 실패 (${res.status})`);
+
+  const json: ApiResponse<UserRecord> = await res.json();
+  if (!json.success) throw new Error(json.message || "유저 수정 실패");
+  return json.data;
 }
