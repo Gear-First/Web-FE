@@ -19,17 +19,20 @@ export const handlers = [
       data = data.filter((r) => r.status === status);
     if (q && q.trim()) {
       const lower = q.toLowerCase();
-      data = data.filter((r) =>
-        `${r.inboundId} ${r.inboundId} ${r.vendor} ${r.warehouse}`
+      data = data.filter((r) => {
+        const haystack = `${r.noteId} ${r.receivingNo} ${r.supplierName} ${r.warehouseCode}`
           .toLowerCase()
-          .includes(lower)
-      );
+          .includes(lower);
+        return haystack;
+      });
     }
     if (startDate || endDate) {
       const s = startDate ? new Date(startDate) : null;
       const e = endDate ? new Date(endDate) : null;
       data = data.filter((r) => {
-        const d = new Date(r.receivedDate);
+        const targetDate = r.requestedAt ?? r.completedAt ?? "";
+        if (!targetDate) return !s && !e;
+        const d = new Date(targetDate);
         return (s ? d >= s : true) && (e ? d <= e : true);
       });
     }
@@ -46,7 +49,10 @@ export const handlers = [
 
   // (옵션) Inbound 상세
   http.get("/api/inbound/records/:id", ({ params }) => {
-    const rec = inboundRecords.find((r) => r.inboundId === params.id);
+    const rec = inboundRecords.find(
+      (r) =>
+        r.receivingNo === params.id || String(r.noteId) === String(params.id)
+    );
     return rec
       ? HttpResponse.json(rec)
       : HttpResponse.json({ message: "Not found" }, { status: 404 });

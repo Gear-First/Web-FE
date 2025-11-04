@@ -1,4 +1,4 @@
-import type { MaterialRecords } from "../MaterialTypes";
+import type { MaterialRecord } from "../MaterialTypes";
 import { createRNG, dateAdd } from "../../../mocks/shared/utils";
 
 /**
@@ -9,7 +9,7 @@ import { createRNG, dateAdd } from "../../../mocks/shared/utils";
 export function generateMaterialMock(
   count = 150,
   seed = 20251028
-): MaterialRecords[] {
+): MaterialRecord[] {
   const rng = createRNG(seed);
 
   // 자재명 및 코드 prefix 패턴
@@ -35,13 +35,13 @@ export function generateMaterialMock(
   const genDate = () => dateAdd(baseDate, Math.floor(rng() * 60)); // 2개월 내 랜덤 날짜
 
   // 실제 배열 생성
-  const materials: MaterialRecords[] = Array.from({ length: count }, (_, i) => {
+  const materials: MaterialRecord[] = Array.from({ length: count }, (_, i) => {
     const cat = categories[Math.floor(rng() * categories.length)];
     const name = cat.names[Math.floor(rng() * cat.names.length)];
     const code = genCode(cat.prefix);
 
-    const record: MaterialRecords = {
-      materialId: `MAT-${String(i + 1).padStart(4, "0")}`,
+    const record: MaterialRecord = {
+      id: i + 1,
       materialCode: code,
       materialName: name,
       createdDate: genDate(),

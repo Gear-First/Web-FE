@@ -1,5 +1,5 @@
 import { http, HttpResponse } from "msw";
-import type { PartCreateDTO, PartRecords, PartUpdateDTO } from "../PartTypes";
+import type { PartCreateDTO, PartRecord, PartUpdateDTO } from "../PartTypes";
 import { PartMockdata } from "./mockdata";
 import { paginate } from "../../../mocks/shared/utils";
 
@@ -10,7 +10,7 @@ type ListResponse<T> = {
 
 export const partHandlers = [
   // 목록 조회
-  http.get<never, never, ListResponse<PartRecords[]>>(
+  http.get<never, never, ListResponse<PartRecord[]>>(
     "/api/parts/records",
     ({ request }) => {
       const url = new URL(request.url);
@@ -24,18 +24,20 @@ export const partHandlers = [
       let data = PartMockdata.slice();
 
       if (category && category !== "ALL") {
-        data = data.filter((r) => r.category === category);
+        data = data.filter(
+          (r) =>
+            r.category.name === category ||
+            String(r.category.id) === String(category)
+        );
       }
 
       if (q && q.trim()) {
         const lower = q.toLowerCase();
         data = data.filter((r) => {
-          const base =
-            `${r.partId} ${r.partName} ${r.partCode} ${r.category}`.toLowerCase();
-          const mats = r.materials
-            .map((m) => `${m.materialName} ${m.materialCode}`.toLowerCase())
-            .join(" ");
-          return (base + " " + mats).includes(lower);
+          const base = `${r.partId} ${r.partName} ${r.partCode} ${r.category.name}`
+            .toLowerCase()
+            .includes(lower);
+          return base;
         });
       }
 
@@ -54,8 +56,8 @@ export const partHandlers = [
     }
   ),
 
-  // 상세 조회 (성공 PartRecords | 실패 {message})
-  http.get<{ id: string }, never, PartRecords | { message: string }>(
+  // 상세 조회 (성공 PartRecord | 실패 {message})
+  http.get<{ id: string }, never, PartRecord | { message: string }>(
     "/api/parts/records/:id",
     ({ params }) => {
       const rec = PartMockdata.find((r) => r.partId === params.id);
@@ -65,22 +67,20 @@ export const partHandlers = [
     }
   ),
 
-  // 생성 (RequestBody=PartCreateDTO, ResponseBody=PartRecords)
-  http.post<never, PartCreateDTO, PartRecords>(
+  // 생성 (RequestBody=PartCreateDTO, ResponseBody=PartRecord)
+  http.post<never, PartCreateDTO, PartRecord>(
     "/api/parts/records",
     async ({ request }) => {
-      const body = await request.json(); // PartCreateDTO
+      const body = (await request.json()) as PartCreateDTO;
 
-      const created: PartRecords = {
+      const created: PartRecord = {
         partId: `PART-${Date.now()}`,
-        partName: body.partName.trim(),
-        partCode: body.partCode.trim(),
-        category: body.category,
-        materials: body.materials.map((m) => ({
-          materialCode: m.materialCode.trim(),
-          materialName: m.materialName.trim(),
-          materialQty: Number(m.materialQty),
-        })),
+        partName: body.name.trim(),
+        partCode: body.code.trim(),
+        category: {
+          id: body.categoryId,
+          name: `카테고리 ${String(body.categoryId)}`,
+        },
         createdDate: new Date().toISOString().slice(0, 10),
       };
 
@@ -89,8 +89,8 @@ export const partHandlers = [
     }
   ),
 
-  // 수정 (성공 PartRecords | 실패 {message})
-  http.patch<{ id: string }, PartUpdateDTO, PartRecords | { message: string }>(
+  // 수정 (성공 PartRecord | 실패 {message})
+  http.patch<{ id: string }, PartUpdateDTO, PartRecord | { message: string }>(
     "/api/parts/records/:id",
     async ({ params, request }) => {
       const idx = PartMockdata.findIndex((r) => r.partId === params.id);
@@ -98,25 +98,22 @@ export const partHandlers = [
         return HttpResponse.json({ message: "Not found" }, { status: 404 });
       }
 
-      // runtime에서 들어온 partId 제거 (any 대신 Record 사용)
       const patch = (await request.json()) as PartUpdateDTO;
-      const runtimePatch = patch as unknown as Record<string, unknown>;
-      delete runtimePatch.partId;
+      const target = { ...PartMockdata[idx] };
 
-      let safePatch: PartUpdateDTO = runtimePatch as PartUpdateDTO;
-
-      if (safePatch.materials) {
-        safePatch = {
-          ...safePatch,
-          materials: safePatch.materials.map((m) => ({
-            materialCode: m.materialCode.trim(),
-            materialName: m.materialName.trim(),
-            materialQty: Number(m.materialQty),
-          })),
+      if (patch.code) target.partCode = patch.code.trim();
+      if (patch.name) target.partName = patch.name.trim();
+      if (patch.categoryId !== undefined) {
+        target.category = {
+          id: patch.categoryId,
+          name: `카테고리 ${String(patch.categoryId)}`,
         };
       }
+      if (patch.enabled !== undefined) {
+        target.enabled = !!patch.enabled;
+      }
 
-      PartMockdata[idx] = { ...PartMockdata[idx], ...safePatch };
+      PartMockdata[idx] = target;
       return HttpResponse.json(PartMockdata[idx]);
     }
   ),
