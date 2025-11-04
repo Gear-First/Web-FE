@@ -170,6 +170,7 @@ export default function RequestPage() {
   const [appliedEndDateRejected, setAppliedEndDateRejected] = useState("");
   const [pageRejected, setPageRejected] = useState(1);
   const [pageSizeRejected, setPageSizeRejected] = useState(10);
+  const [status, setStatus] = useState("");
 
   const { data: rejectedData, fetchStatus: rejectedFetchStatus } = useQuery({
     queryKey: [
