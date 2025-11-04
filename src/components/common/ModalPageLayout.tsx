@@ -185,7 +185,7 @@ export const Input = styled.input`
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-
+  width: 80%;
   &:focus {
     border-color: #111827;
   }

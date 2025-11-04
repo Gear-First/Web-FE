@@ -5,6 +5,7 @@ import {
   DetailItem,
   Header,
   HeaderLeft,
+  Input,
   Label,
   ModalContainer,
   Overlay,
@@ -16,7 +17,7 @@ import Button from "../../../components/common/Button";
 import styled from "styled-components";
 import { Select } from "../../../components/common/PageLayout";
 
-import type { PartFormModel, PartCategory } from "../PartTypes";
+import type { PartFormModel, ServerPartCategory } from "../PartTypes";
 import { fetchPartCategories } from "../PartApi";
 
 interface Props {
@@ -37,8 +38,8 @@ const PartRegisterModal = ({
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
   const [partPrice, setPartPrice] = useState<number | "">("");
-  const [categoryId, setCategoryId] = useState<number | "">("");
-  const [categories, setCategories] = useState<PartCategory[]>([]);
+  const [categoryId, setCategoryId] = useState<string | number | "">("");
+  const [categories, setCategories] = useState<ServerPartCategory[]>([]);
   const [enabled, setEnabled] = useState<boolean>(true);
 
   /* 카테고리 로드 */
@@ -197,16 +198,6 @@ const PartRegisterModal = ({
 };
 
 export default PartRegisterModal;
-
-// 모달 상단 인풋
-const Input = styled.input`
-  width: 50%;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.92rem;
-  background: #fff;
-`;
 
 // 하단 액션
 const Actions = styled.div`

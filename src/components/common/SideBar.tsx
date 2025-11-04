@@ -77,6 +77,7 @@ const menuItems = [
   { to: "/property", label: "자산 관리" },
   { to: "/inbound", label: "입고 관리" },
   { to: "/outbound", label: "출고 관리" },
+  { to: "/human", label: "인사 관리" },
 ];
 
 const SideBar: React.FC<SideBarProps> = ({ open, onToggle }) => {

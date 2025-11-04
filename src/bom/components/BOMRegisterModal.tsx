@@ -5,6 +5,7 @@ import {
   DetailItem,
   Header,
   HeaderLeft,
+  Input,
   Label,
   ModalContainer,
   Overlay,
@@ -445,15 +446,6 @@ const HeaderRow = styled.div`
   justify-content: space-between;
   align-items: center;
   margin-bottom: 10px;
-`;
-
-const Input = styled.input`
-  width: 50%;
-  border: 1px solid #e5e7eb;
-  border-radius: 10px;
-  padding: 10px 12px;
-  font-size: 0.92rem;
-  background: #fff;
 `;
 
 const Actions = styled.div`
