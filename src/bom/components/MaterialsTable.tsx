@@ -3,6 +3,18 @@ import { Th, Td } from "../../components/common/PageLayout";
 import { TableScroll, StickyTable } from "../../components/common/ScrollTable";
 import type { ReactNode } from "react";
 import { Input } from "../../components/common/ModalPageLayout";
+import Button from "../../components/common/Button";
+
+// 상단에 추가
+const CellInput = styled(Input)`
+  width: 100%;
+  box-sizing: border-box;
+`;
+
+// 필요하면 셀도 감싸서 overflow 제어
+const Cell = styled(Td)`
+  overflow: hidden;
+`;
 
 export type MaterialRow = {
   id: string;
@@ -34,11 +46,11 @@ export default function MaterialsTable({
   onRemove,
   maxHeight = 220,
   verticalLines = true,
-  renderSearchButton,
 }: Props) {
   return (
     <TableScroll $maxHeight={maxHeight}>
       <StickyTable
+        $colWidths={["30%", "30%", "10%", "10%"]}
         $stickyTop={0}
         $headerBg="#fafbfc"
         $zebra
@@ -46,46 +58,43 @@ export default function MaterialsTable({
       >
         <thead>
           <tr>
-            <Th style={{ width: 140 }}>자재코드</Th>
+            <Th>자재코드</Th>
             <Th>자재명</Th>
-            <Th style={{ width: 120 }}>수량</Th>
-            {renderSearchButton && <Th style={{ width: 120 }}>검색</Th>}
-            <Th style={{ width: 90 }}>삭제</Th>
+            <Th>수량</Th>
+            <Th>삭제</Th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <Td
-                colSpan={renderSearchButton ? 5 : 4}
-                style={{ textAlign: "center", color: "#6b7280" }}
-              >
+              {/* 빈행일 때는 colSpan 지정 안 하면 셀 깨집니다 */}
+              <Td colSpan={4} style={{ textAlign: "center", color: "#6b7280" }}>
                 자재 행이 없습니다.
               </Td>
             </tr>
           ) : (
             rows.map((row) => (
               <tr key={row.id}>
-                <Td>
-                  <Input
+                <Cell>
+                  <CellInput
                     value={row.materialCode}
                     onChange={(e) =>
                       onChange(row.id, "materialCode", e.target.value)
                     }
                     readOnly
                   />
-                </Td>
-                <Td>
-                  <Input
+                </Cell>
+                <Cell>
+                  <CellInput
                     value={row.materialName}
                     onChange={(e) =>
                       onChange(row.id, "materialName", e.target.value)
                     }
                     readOnly
                   />
-                </Td>
-                <Td>
-                  <Input
+                </Cell>
+                <Cell>
+                  <CellInput
                     type="number"
                     min={1}
                     value={row.materialQty}
@@ -97,15 +106,12 @@ export default function MaterialsTable({
                       )
                     }
                   />
-                </Td>
-
-                {renderSearchButton && <Td>{renderSearchButton(row)}</Td>}
-
-                <Td>
-                  <DeleteBtn type="button" onClick={() => onRemove(row.id)}>
+                </Cell>
+                <Cell>
+                  <Button color="danger" onClick={() => onRemove(row.id)}>
                     삭제
-                  </DeleteBtn>
-                </Td>
+                  </Button>
+                </Cell>
               </tr>
             ))
           )}
@@ -114,19 +120,3 @@ export default function MaterialsTable({
     </TableScroll>
   );
 }
-
-/* ---------- styled ---------- */
-
-const DeleteBtn = styled.button`
-  border: 1px solid #ef4444;
-  color: #ef4444;
-  background: #fff;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  cursor: pointer;
-
-  &:hover {
-    background: #fee2e2;
-  }
-`;

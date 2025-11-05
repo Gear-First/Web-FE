@@ -366,7 +366,6 @@ const BOMRegisterModal = ({
               <DetailItem>
                 <Label>부품 카테고리</Label>
                 <Input
-                  style={{ width: "50%" }}
                   value={partCate}
                   onChange={(e) => setPartCate(e.target.value)}
                   readOnly
