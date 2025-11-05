@@ -36,10 +36,10 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
     <LayoutWrapper>
       <TopBar />
       <MainWrapper>
-        <SideBar
+        {/* <SideBar
           open={isSidebarOpen}
           onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        />
+        /> */}
         <ContentArea>{children}</ContentArea>
       </MainWrapper>
     </LayoutWrapper>
