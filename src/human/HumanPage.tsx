@@ -18,7 +18,6 @@ import UserTable from "./components/UserTable";
 import UserRegisterModal from "./components/UserRegisterModal";
 import { createUser, userKeys } from "./HumanApi";
 import { type CreateUserDTO, type Region, type WorkType } from "./HumanTypes";
-import searchIcon from "../assets/search.svg";
 import resetIcon from "../assets/reset.svg";
 import { useRegions, useUsers, useWorkTypes } from "./components/queries";
 
@@ -105,89 +104,84 @@ export default function HumanPage() {
                 구성원 계정의 등록·검색·필터링을 관리합니다.
               </SectionCaption>
             </div>
-          </SectionHeader>
-
-          <SectionHeader>
             <Button onClick={() => setOpenReg(true)}>회원가입 +</Button>
-            <FilterGroup>
-              <Select
-                value={rank}
-                onChange={(e) =>
-                  setRank(e.target.value as "EMPLOYEE" | "LEADER" | "ALL")
-                }
-              >
-                <option value="ALL">전체 직급</option>
-                <option value="EMPLOYEE">사원</option>
-                <option value="LEADER">팀장</option>
-              </Select>
-
-              <Select
-                value={workType === "ALL" ? "ALL" : String(workType.workTypeId)}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (v === "ALL") {
-                    setWorkType("ALL");
-                  } else {
-                    const selected = workTypeOptions.find(
-                      (w) => String(w.workTypeId) === v
-                    );
-                    setWorkType(selected ?? "ALL");
-                  }
-                }}
-                disabled={isWorkTypeLoading}
-              >
-                {workTypeOptions.map((w) => (
-                  <option
-                    key={w.workTypeId}
-                    value={
-                      w.workTypeName === "ALL" ? "ALL" : String(w.workTypeId)
-                    }
-                  >
-                    {w.workTypeName === "ALL" ? "전체 지점" : w.workTypeName}
-                  </option>
-                ))}
-              </Select>
-
-              <Select
-                value={region === "ALL" ? "ALL" : String(region.regionId)}
-                onChange={(e) => {
-                  const v = e.target.value;
-                  if (v === "ALL") {
-                    setRegion("ALL");
-                  } else {
-                    const selected = regionOptions.find(
-                      (r) => String(r.regionId) === v
-                    );
-                    setRegion(selected ?? "ALL");
-                  }
-                }}
-                disabled={isRegionLoading}
-              >
-                {regionOptions.map((r) => (
-                  <option
-                    key={r.regionId}
-                    value={r.regionName === "ALL" ? "ALL" : String(r.regionId)}
-                  >
-                    {r.regionName === "ALL" ? "전체 지역" : r.regionName}
-                  </option>
-                ))}
-              </Select>
-
-              <SearchBox
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                onSearch={onSearch}
-                onReset={onReset}
-                placeholder="이름 / 이메일 / 연락처 검색"
-              />
-              <Button variant="icon" onClick={onSearch}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onReset}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
           </SectionHeader>
+
+          <FilterGroup>
+            <Button variant="icon" onClick={onReset}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <Select
+              value={rank}
+              onChange={(e) =>
+                setRank(e.target.value as "EMPLOYEE" | "LEADER" | "ALL")
+              }
+            >
+              <option value="ALL">전체 직급</option>
+              <option value="EMPLOYEE">사원</option>
+              <option value="LEADER">팀장</option>
+            </Select>
+
+            <Select
+              value={workType === "ALL" ? "ALL" : String(workType.workTypeId)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "ALL") {
+                  setWorkType("ALL");
+                } else {
+                  const selected = workTypeOptions.find(
+                    (w) => String(w.workTypeId) === v
+                  );
+                  setWorkType(selected ?? "ALL");
+                }
+              }}
+              disabled={isWorkTypeLoading}
+            >
+              {workTypeOptions.map((w) => (
+                <option
+                  key={w.workTypeId}
+                  value={
+                    w.workTypeName === "ALL" ? "ALL" : String(w.workTypeId)
+                  }
+                >
+                  {w.workTypeName === "ALL" ? "전체 지점" : w.workTypeName}
+                </option>
+              ))}
+            </Select>
+
+            <Select
+              value={region === "ALL" ? "ALL" : String(region.regionId)}
+              onChange={(e) => {
+                const v = e.target.value;
+                if (v === "ALL") {
+                  setRegion("ALL");
+                } else {
+                  const selected = regionOptions.find(
+                    (r) => String(r.regionId) === v
+                  );
+                  setRegion(selected ?? "ALL");
+                }
+              }}
+              disabled={isRegionLoading}
+            >
+              {regionOptions.map((r) => (
+                <option
+                  key={r.regionId}
+                  value={r.regionName === "ALL" ? "ALL" : String(r.regionId)}
+                >
+                  {r.regionName === "ALL" ? "전체 지역" : r.regionName}
+                </option>
+              ))}
+            </Select>
+
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              onReset={onReset}
+              placeholder="이름 / 이메일 / 연락처 검색"
+            />
+          </FilterGroup>
 
           <UserTable rows={rows} />
 

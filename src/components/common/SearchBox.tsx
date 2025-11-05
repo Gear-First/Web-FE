@@ -6,6 +6,7 @@ interface Props {
   onSearch: () => void;
   onReset: () => void;
   placeholder?: string;
+  width?: string;
 }
 
 export default function SearchBox({
@@ -13,6 +14,7 @@ export default function SearchBox({
   onKeywordChange,
   onSearch,
   placeholder = "검색어를 입력하세요",
+  width,
 }: Props) {
   return (
     <Wrapper>
@@ -27,6 +29,7 @@ export default function SearchBox({
           }
         }}
         placeholder={placeholder}
+        $width={width}
       />
     </Wrapper>
   );
@@ -38,10 +41,10 @@ const Wrapper = styled.div`
   gap: 8px;
 `;
 
-const Input = styled.input`
+const Input = styled.input<{ $width?: string }>`
   padding: 8px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   font-size: 0.9rem;
-  width: 200px;
+  width: ${({ $width }) => $width || "200px"};
 `;

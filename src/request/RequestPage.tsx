@@ -18,7 +18,6 @@ import DateRange from "../components/common/DateRange";
 import SearchBox from "../components/common/SearchBox";
 import Button from "../components/common/Button";
 import resetIcon from "../assets/reset.svg";
-import searchIcon from "../assets/search.svg";
 import {
   fetchPendingOrders,
   fetchProcessedOrders,
@@ -239,29 +238,24 @@ export default function RequestPage() {
           </SectionHeader>
 
           {/* 필터 영역 */}
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <DateRange
-                startDate={startDatePending}
-                endDate={endDatePending}
-                onStartDateChange={setStartDatePending}
-                onEndDateChange={setEndDatePending}
-              />
-              <SearchBox
-                keyword={keywordPending}
-                onKeywordChange={setKeywordPending}
-                onSearch={onSearchPending}
-                onReset={onResetPending}
-                placeholder="발주번호 / 대리점 검색"
-              />
-              <Button variant="icon" onClick={onSearchPending}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onResetPending}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onResetPending}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <DateRange
+              startDate={startDatePending}
+              endDate={endDatePending}
+              onStartDateChange={setStartDatePending}
+              onEndDateChange={setEndDatePending}
+            />
+            <SearchBox
+              keyword={keywordPending}
+              onKeywordChange={setKeywordPending}
+              onSearch={onSearchPending}
+              onReset={onResetPending}
+              placeholder="발주번호 / 대리점 검색"
+            />
+          </FilterGroup>
 
           {/* 테이블 */}
           <OrderTable
@@ -305,40 +299,33 @@ export default function RequestPage() {
             </div>
           </SectionHeader>
           {/* 필터 영역 */}
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <Select
-                value={status}
-                onChange={(e) =>
-                  setStatus(e.target.value as OrderStatus | "ALL")
-                }
-              >
-                <option value="ALL">전체</option>
-                <option value="APPROVED">승인 완료</option>
-                <option value="SHIPPED">출고 중</option>
-                <option value="COMPLETED">납품 완료</option>
-              </Select>
-              <DateRange
-                startDate={startDateProcessed}
-                endDate={endDateProcessed}
-                onStartDateChange={setStartDateProcessed}
-                onEndDateChange={setEndDateProcessed}
-              />
-              <SearchBox
-                keyword={keywordProcessed}
-                onKeywordChange={setKeywordProcessed}
-                onSearch={onSearchProcessed}
-                onReset={onResetProcessed}
-                placeholder="발주번호 / 대리점 검색"
-              />
-              <Button variant="icon" onClick={onSearchProcessed}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onResetProcessed}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onResetProcessed}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <Select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as OrderStatus | "ALL")}
+            >
+              <option value="ALL">전체</option>
+              <option value="APPROVED">승인 완료</option>
+              <option value="SHIPPED">출고 중</option>
+              <option value="COMPLETED">납품 완료</option>
+            </Select>
+            <DateRange
+              startDate={startDateProcessed}
+              endDate={endDateProcessed}
+              onStartDateChange={setStartDateProcessed}
+              onEndDateChange={setEndDateProcessed}
+            />
+            <SearchBox
+              keyword={keywordProcessed}
+              onKeywordChange={setKeywordProcessed}
+              onSearch={onSearchProcessed}
+              onReset={onResetProcessed}
+              placeholder="발주번호 / 대리점 검색"
+            />
+          </FilterGroup>
           <RequestTable
             rows={processedData?.data?.content ?? []}
             onRowClick={(rec) => handleOpen(rec, "request")}
@@ -371,39 +358,32 @@ export default function RequestPage() {
             </div>
           </SectionHeader>
           {/* 필터 영역 */}
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <Select
-                value={status}
-                onChange={(e) =>
-                  setStatus(e.target.value as OrderStatus | "ALL")
-                }
-              >
-                <option value="ALL">전체</option>
-                <option value="REJECTED">반려</option>
-                <option value="CANCELLED">취소</option>
-              </Select>
-              <DateRange
-                startDate={startDateCancel}
-                endDate={endDateCancel}
-                onStartDateChange={setStartDatePending}
-                onEndDateChange={setEndDatePending}
-              />
-              <SearchBox
-                keyword={keywordCancel}
-                onKeywordChange={setKeywordCancel}
-                onSearch={onSearchCancel}
-                onReset={onResetCancel}
-                placeholder="발주번호 / 대리점 검색"
-              />
-              <Button variant="icon" onClick={onSearchCancel}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onResetCancel}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onResetCancel}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <Select
+              value={status}
+              onChange={(e) => setStatus(e.target.value as OrderStatus | "ALL")}
+            >
+              <option value="ALL">전체</option>
+              <option value="REJECTED">반려</option>
+              <option value="CANCELLED">취소</option>
+            </Select>
+            <DateRange
+              startDate={startDateCancel}
+              endDate={endDateCancel}
+              onStartDateChange={setStartDatePending}
+              onEndDateChange={setEndDatePending}
+            />
+            <SearchBox
+              keyword={keywordCancel}
+              onKeywordChange={setKeywordCancel}
+              onSearch={onSearchCancel}
+              onReset={onResetCancel}
+              placeholder="발주번호 / 대리점 검색"
+            />
+          </FilterGroup>
           <RequestTable
             rows={cancelData?.data?.content ?? []}
             onRowClick={(rec) => handleOpen(rec, "request")}

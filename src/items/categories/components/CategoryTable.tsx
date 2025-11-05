@@ -53,7 +53,6 @@ export default function CategoryTable({ rows }: { rows: CategoryRecord[] }) {
       <Table>
         <thead>
           <tr>
-            <Th>ID</Th>
             <Th>카테고리명</Th>
             <Th>설명</Th>
           </tr>
@@ -72,7 +71,6 @@ export default function CategoryTable({ rows }: { rows: CategoryRecord[] }) {
                 style={{ cursor: "pointer" }}
                 onClick={() => openDetail(r)}
               >
-                <Td>{r.id}</Td>
                 <Td>{r.name}</Td>
                 <Td>{r.description ?? "-"}</Td>
               </tr>

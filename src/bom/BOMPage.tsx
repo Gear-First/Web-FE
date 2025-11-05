@@ -28,13 +28,11 @@ import BOMRegisterModal, {
   type AddMaterialsPayload,
 } from "./components/BOMRegisterModal";
 import resetIcon from "../assets/reset.svg";
-import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
 import Pagination from "../components/common/Pagination";
 import type { ListResponse } from "../api";
 
-// ✅ 카테고리는 자유 문자열 + "ALL"
 type CateFilter = string | "ALL";
 
 type AppliedFilters = {
@@ -165,10 +163,6 @@ export default function BOMPage() {
                   자재 소요량 산출 및 계획을 관리합니다.
                 </SectionCaption>
               </div>
-            </SectionHeader>
-
-            {/* 상단 도구 모음 */}
-            <SectionHeader>
               <Button
                 onClick={() => {
                   setRegMode("create");
@@ -178,45 +172,40 @@ export default function BOMPage() {
               >
                 BOM +
               </Button>
-
-              <FilterGroup>
-                {/* 카테고리 (즉시 반영) */}
-                <Select
-                  value={cate}
-                  onChange={(e) => onChangeCate(e.target.value as CateFilter)}
-                >
-                  {CATE_OPTIONS.map((opt) => (
-                    <option key={opt} value={opt}>
-                      {opt === "ALL" ? "전체 카테고리" : opt}
-                    </option>
-                  ))}
-                </Select>
-
-                {/* 날짜 범위 */}
-                <DateRange
-                  startDate={startDate}
-                  endDate={endDate}
-                  onStartDateChange={setStartDate}
-                  onEndDateChange={setEndDate}
-                />
-
-                {/* 검색어 */}
-                <SearchBox
-                  keyword={keyword}
-                  onKeywordChange={setKeyword}
-                  onSearch={onSearch}
-                  onReset={onReset}
-                  placeholder="부품코드 / 부품명 검색"
-                />
-
-                <Button variant="icon" onClick={onSearch} aria-label="검색">
-                  <img src={searchIcon} width={18} height={18} alt="검색" />
-                </Button>
-                <Button variant="icon" onClick={onReset} aria-label="초기화">
-                  <img src={resetIcon} width={18} height={18} alt="초기화" />
-                </Button>
-              </FilterGroup>
             </SectionHeader>
+
+            <FilterGroup>
+              <Button variant="icon" onClick={onReset} aria-label="초기화">
+                <img src={resetIcon} width={18} height={18} alt="초기화" />
+              </Button>
+              <Select
+                value={cate}
+                onChange={(e) => onChangeCate(e.target.value as CateFilter)}
+              >
+                {CATE_OPTIONS.map((opt) => (
+                  <option key={opt} value={opt}>
+                    {opt === "ALL" ? "전체 카테고리" : opt}
+                  </option>
+                ))}
+              </Select>
+
+              {/* 날짜 범위 */}
+              <DateRange
+                startDate={startDate}
+                endDate={endDate}
+                onStartDateChange={setStartDate}
+                onEndDateChange={setEndDate}
+              />
+
+              {/* 검색어 */}
+              <SearchBox
+                keyword={keyword}
+                onKeywordChange={setKeyword}
+                onSearch={onSearch}
+                onReset={onReset}
+                placeholder="부품코드 / 부품명 검색"
+              />
+            </FilterGroup>
 
             {/* 테이블 */}
             <BOMTable rows={records} />

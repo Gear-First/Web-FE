@@ -16,7 +16,6 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMaterial, materialKeys } from "./MaterialApi";
 import SearchBox from "../../components/common/SearchBox";
-import searchIcon from "../../assets/search.svg";
 import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
 import MaterialTable from "./components/MaterialTable";
@@ -109,9 +108,6 @@ export default function MaterialPage() {
             <SectionTitle>자재 관리</SectionTitle>
             <SectionCaption>자재 기본정보를 관리합니다.</SectionCaption>
           </div>
-        </SectionHeader>
-
-        <SectionHeader>
           <Button
             onClick={() => {
               setRegMode("create");
@@ -121,29 +117,27 @@ export default function MaterialPage() {
           >
             자재 +
           </Button>
-
-          <FilterGroup>
-            <DateRange
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-            />
-            <SearchBox
-              keyword={keyword}
-              onKeywordChange={setKeyword}
-              onSearch={onSearch}
-              onReset={onReset}
-              placeholder="자재코드 / 자재명 검색"
-            />
-            <Button variant="icon" onClick={onSearch}>
-              <img src={searchIcon} width={18} height={18} alt="검색" />
-            </Button>
-            <Button variant="icon" onClick={onReset}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
-          </FilterGroup>
         </SectionHeader>
+
+        <FilterGroup>
+          <Button variant="icon" onClick={onReset}>
+            <img src={resetIcon} width={18} height={18} alt="초기화" />
+          </Button>
+          <DateRange
+            startDate={startDate}
+            endDate={endDate}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
+            width="100px"
+          />
+          <SearchBox
+            keyword={keyword}
+            onKeywordChange={setKeyword}
+            onSearch={onSearch}
+            onReset={onReset}
+            placeholder="자재코드 / 자재명 검색"
+          />
+        </FilterGroup>
 
         <MaterialTable rows={records} />
 

@@ -33,7 +33,6 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
     setTimeout(() => setSelectedRecord(null), 0);
   };
 
-  // 현재 update/delete는 MSW용 가짜 API 경로
   const updateMut = useMutation<
     MaterialRecord,
     Error,
@@ -67,7 +66,6 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
           <tr>
             <Th>자재 코드</Th>
             <Th>자재명</Th>
-            <Th>작성일자</Th>
           </tr>
         </thead>
         <tbody>
@@ -79,7 +77,6 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
             >
               <Td>{r.materialCode}</Td>
               <Td>{r.materialName}</Td>
-              <Td>{r.createdDate || "-"}</Td>
             </tr>
           ))}
         </tbody>

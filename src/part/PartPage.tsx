@@ -14,7 +14,6 @@ import { fetchPartRecords } from "./PartApi";
 import SearchBox from "../components/common/SearchBox";
 import Button from "../components/common/Button";
 import resetIcon from "../assets/reset.svg";
-import searchIcon from "../assets/search.svg";
 import Pagination from "../components/common/Pagination";
 
 export default function PartPage() {
@@ -62,23 +61,18 @@ export default function PartPage() {
             </div>
           </SectionHeader>
 
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <SearchBox
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                onSearch={onSearch}
-                onReset={onReset}
-                placeholder="부품코드 / 부품명 검색"
-              />
-              <Button variant="icon" onClick={onSearch}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onReset}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onReset}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              onReset={onReset}
+              placeholder="부품코드 / 부품명 검색"
+            />
+          </FilterGroup>
 
           <PartTable rows={partData?.data.items ?? []} />
 

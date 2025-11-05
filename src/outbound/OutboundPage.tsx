@@ -16,7 +16,6 @@ import {
   fetchOutboundDoneRecords,
 } from "./OutboundApi";
 import resetIcon from "../assets/reset.svg";
-import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
 import Button from "../components/common/Button";
@@ -157,39 +156,34 @@ export default function OutboundPage() {
             </div>
           </SectionHeader>
 
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <Select
-                value={pendingStatus}
-                onChange={(e) =>
-                  setPendingStatus(e.target.value as typeof pendingStatus)
-                }
-              >
-                <option value="ALL">전체</option>
-                <option value="PENDING">대기</option>
-                <option value="IN_PROGRESS">진행중</option>
-              </Select>
-              <DateRange
-                startDate={pendingStartDate}
-                endDate={pendingEndDate}
-                onStartDateChange={setPendingStartDate}
-                onEndDateChange={setPendingEndDate}
-              />
-              <SearchBox
-                keyword={pendingKeyword}
-                onKeywordChange={setPendingKeyword}
-                onSearch={onSearchPending}
-                onReset={onResetPending}
-                placeholder="창고코드 검색"
-              />
-              <Button variant="icon" onClick={onSearchPending}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onResetPending}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onResetPending}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <Select
+              value={pendingStatus}
+              onChange={(e) =>
+                setPendingStatus(e.target.value as typeof pendingStatus)
+              }
+            >
+              <option value="ALL">전체</option>
+              <option value="PENDING">대기</option>
+              <option value="IN_PROGRESS">진행중</option>
+            </Select>
+            <DateRange
+              startDate={pendingStartDate}
+              endDate={pendingEndDate}
+              onStartDateChange={setPendingStartDate}
+              onEndDateChange={setPendingEndDate}
+            />
+            <SearchBox
+              keyword={pendingKeyword}
+              onKeywordChange={setPendingKeyword}
+              onSearch={onSearchPending}
+              onReset={onResetPending}
+              placeholder="창고코드 검색"
+            />
+          </FilterGroup>
 
           <OutboundTable rows={pendingRecords} />
           <Pagination
@@ -220,39 +214,34 @@ export default function OutboundPage() {
             </div>
           </SectionHeader>
 
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <Select
-                value={doneStatus}
-                onChange={(e) =>
-                  setDoneStatus(e.target.value as typeof doneStatus)
-                }
-              >
-                <option value="ALL">전체</option>
-                <option value="COMPLETED">완료</option>
-                <option value="DELAYED">지연</option>
-              </Select>
-              <DateRange
-                startDate={doneStartDate}
-                endDate={doneEndDate}
-                onStartDateChange={setDoneStartDate}
-                onEndDateChange={setDoneEndDate}
-              />
-              <SearchBox
-                keyword={doneKeyword}
-                onKeywordChange={setDoneKeyword}
-                onSearch={onSearchDone}
-                onReset={onResetDone}
-                placeholder="창고코드 검색"
-              />
-              <Button variant="icon" onClick={onSearchDone}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onResetDone}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onResetDone}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <Select
+              value={doneStatus}
+              onChange={(e) =>
+                setDoneStatus(e.target.value as typeof doneStatus)
+              }
+            >
+              <option value="ALL">전체</option>
+              <option value="COMPLETED">완료</option>
+              <option value="DELAYED">지연</option>
+            </Select>
+            <DateRange
+              startDate={doneStartDate}
+              endDate={doneEndDate}
+              onStartDateChange={setDoneStartDate}
+              onEndDateChange={setDoneEndDate}
+            />
+            <SearchBox
+              keyword={doneKeyword}
+              onKeywordChange={setDoneKeyword}
+              onSearch={onSearchDone}
+              onReset={onResetDone}
+              placeholder="창고코드 검색"
+            />
+          </FilterGroup>
 
           <OutboundTable rows={doneRecords} />
           <Pagination

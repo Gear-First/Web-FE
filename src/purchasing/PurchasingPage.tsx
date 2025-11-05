@@ -18,7 +18,6 @@ import Button from "../components/common/Button";
 import PurchasingRegisterModal from "./components/PurchasingModal";
 import Pagination from "../components/common/Pagination";
 import resetIcon from "../assets/reset.svg";
-import searchIcon from "../assets/search.svg";
 
 export default function PurchasingPage() {
   const queryClient = useQueryClient();
@@ -128,23 +127,18 @@ export default function PurchasingPage() {
             </Button>
           </SectionHeader>
 
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <SearchBox
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                onSearch={onSearch}
-                onReset={onReset}
-                placeholder="자재명 / 업체명 검색"
-              />
-              <Button variant="icon" onClick={onSearch}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onReset}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onReset}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              onReset={onReset}
+              placeholder="자재명 / 업체명 검색"
+            />
+          </FilterGroup>
 
           {/* 로딩중에도 테이블 유지 */}
           <PurchasingTable
@@ -239,23 +233,18 @@ export default function PurchasingPage() {
             </div>
           </SectionHeader>
 
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <SearchBox
-                keyword={keywordSelected}
-                onKeywordChange={setKeywordSelected}
-                onSearch={onSearchSelected}
-                onReset={onResetSelected}
-                placeholder="자재명 / 업체명 검색"
-              />
-              <Button variant="icon" onClick={onSearchSelected}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onResetSelected}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onResetSelected}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <SearchBox
+              keyword={keywordSelected}
+              onKeywordChange={setKeywordSelected}
+              onSearch={onSearchSelected}
+              onReset={onResetSelected}
+              placeholder="자재명 / 업체명 검색"
+            />
+          </FilterGroup>
 
           {/* 로딩중에도 테이블 유지 */}
           <PurchasingTable
