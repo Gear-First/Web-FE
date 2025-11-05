@@ -120,16 +120,12 @@ const PartDetailModal = ({
           <SectionTitle>작성 정보</SectionTitle>
           <DetailGrid>
             <DetailItem>
-              <Label>작성일자</Label>
+              <Label>작성일</Label>
               <Value>{detail?.createdDate ?? record.createdDate}</Value>
             </DetailItem>
             <DetailItem>
               <Label>최근 수정일</Label>
               <Value>{detail?.updatedDate}</Value>
-            </DetailItem>
-            <DetailItem>
-              <Label>작성자</Label>
-              <Value>박우진</Value>
             </DetailItem>
           </DetailGrid>
         </Section>

@@ -10,6 +10,7 @@ interface Props {
   endDate: string;
   onStartDateChange: (v: string) => void;
   onEndDateChange: (v: string) => void;
+  width?: string;
 }
 
 // 안전 파서/포맷터
@@ -38,32 +39,31 @@ const isValidYMD = (s: string) => /^\d{4}-\d{2}-\d{2}$/.test(s);
 
 // DatePicker용 커스텀 인풋
 type CustomInputProps = React.InputHTMLAttributes<HTMLInputElement> & {
-  onValueChange?: (v: string) => void; // 우리가 추가하는 prop (상위 상태 업데이트)
+  onValueChange?: (v: string) => void;
+  $width?: string;
 };
 
 const CustomInput = forwardRef<HTMLInputElement, CustomInputProps>(
-  ({ onValueChange, onChange, onBlur, ...props }, ref) => {
+  ({ onValueChange, onChange, onBlur, $width, ...props }, ref) => {
     return (
       <InputWrap>
         <InputField
           ref={ref}
           {...props}
           inputMode="numeric"
+          $width={$width}
           onChange={(e) => {
-            // 숫자만 추출 후 마스킹
             const digits = onlyDigits(e.currentTarget.value);
             const masked = maskYYYYMMDD(digits);
             e.currentTarget.value = masked;
 
             onChange?.(e);
 
-            // 완전한 yyyy-mm-dd 되면 상위로 즉시 반영
             if (isValidYMD(masked)) {
               onValueChange?.(masked);
             }
           }}
           onBlur={(e) => {
-            // 블러 시 불완전 입력이면 비우거나(선택) 보정 로직을 넣을 수 있음
             const v = e.currentTarget.value;
             if (!isValidYMD(v)) {
               // e.currentTarget.value = "";
@@ -83,6 +83,7 @@ export default function DateRange({
   endDate,
   onStartDateChange,
   onEndDateChange,
+  width = "150px",
 }: Props) {
   const start = toDate(startDate);
   const end = toDate(endDate);
@@ -92,7 +93,7 @@ export default function DateRange({
       {/* 시작일 */}
       <DatePicker
         selected={start}
-        onChange={(d) => onStartDateChange(fmt(d as Date | null))} // 달력 클릭
+        onChange={(d) => onStartDateChange(fmt(d as Date | null))}
         selectsStart
         startDate={start}
         endDate={end}
@@ -104,7 +105,8 @@ export default function DateRange({
           <CustomInput
             placeholder="시작일"
             value={startDate}
-            onValueChange={onStartDateChange} // 타이핑 완료 시 상위에 반영
+            onValueChange={onStartDateChange}
+            $width={width}
           />
         }
         popperContainer={(p) => (
@@ -131,6 +133,7 @@ export default function DateRange({
             placeholder="종료일"
             value={endDate}
             onValueChange={onEndDateChange}
+            $width={width}
           />
         }
         popperContainer={(p) => (
@@ -152,9 +155,9 @@ const InputWrap = styled.div`
   display: inline-flex;
   align-items: center;
 `;
-const InputField = styled.input`
-  width: 150px;
-  padding: 8px 36px 8px 10px; /* 아이콘 자리 */
+const InputField = styled.input<{ $width?: string }>`
+  width: ${({ $width }) => $width || "150px"};
+  padding: 8px 36px 8px 10px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   font-size: 0.9rem;

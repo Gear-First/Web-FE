@@ -75,8 +75,9 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
             <Th>부품코드</Th>
             <Th>부품명</Th>
             <Th>카테고리</Th>
-            {/* <Th>상태</Th> */}
-            <Th>작성일자</Th>
+            <Th>안전수량</Th>
+            <Th>가격</Th>
+            <Th>상태</Th>
           </tr>
         </thead>
         <tbody>
@@ -89,8 +90,9 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
               <Td>{r.partCode}</Td>
               <Td>{r.partName}</Td>
               <Td>{r.category.name}</Td>
-              {/* <Td>{r.enabled}</Td> */}
               <Td>{r.createdDate}</Td>
+              <Td>{r.createdDate}</Td>
+              <Td>{r.enabled}</Td>
             </tr>
           ))}
         </tbody>

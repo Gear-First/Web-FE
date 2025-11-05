@@ -15,7 +15,6 @@ import {
   type QueryKey,
 } from "@tanstack/react-query";
 import SearchBox from "../../components/common/SearchBox";
-import searchIcon from "../../assets/search.svg";
 import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
 import type { ListResponse } from "../../api";
@@ -131,9 +130,6 @@ export default function CategoryPage() {
               부품 카테고리를 생성/수정/삭제합니다.
             </SectionCaption>
           </div>
-        </SectionHeader>
-
-        <SectionHeader>
           <Button
             onClick={() => {
               setRegMode("create");
@@ -143,29 +139,27 @@ export default function CategoryPage() {
           >
             카테고리 +
           </Button>
-
-          <FilterGroup>
-            <DateRange
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-            />
-            <SearchBox
-              keyword={keyword}
-              onKeywordChange={setKeyword}
-              onSearch={onSearch}
-              onReset={onReset}
-              placeholder="카테고리명 / 설명 검색"
-            />
-            <Button variant="icon" onClick={onSearch}>
-              <img src={searchIcon} width={18} height={18} alt="검색" />
-            </Button>
-            <Button variant="icon" onClick={onReset}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
-          </FilterGroup>
         </SectionHeader>
+
+        <FilterGroup>
+          <Button variant="icon" onClick={onReset}>
+            <img src={resetIcon} width={18} height={18} alt="초기화" />
+          </Button>
+          <DateRange
+            startDate={startDate}
+            endDate={endDate}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
+            width="100px"
+          />
+          <SearchBox
+            keyword={keyword}
+            onKeywordChange={setKeyword}
+            onSearch={onSearch}
+            onReset={onReset}
+            placeholder="카테고리명 / 설명 검색"
+          />
+        </FilterGroup>
 
         <CategoryTable rows={records} />
 

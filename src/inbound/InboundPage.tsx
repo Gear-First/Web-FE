@@ -19,7 +19,6 @@ import InboundTable from "./components/InboundTable";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
 import Button from "../components/common/Button";
-import searchIcon from "../assets/search.svg";
 import resetIcon from "../assets/reset.svg";
 import Pagination from "../components/common/Pagination";
 
@@ -127,29 +126,24 @@ export default function InboundPage() {
             </div>
           </SectionHeader>
 
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <DateRange
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={setStartDate}
-                onEndDateChange={setEndDate}
-              />
-              <SearchBox
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                onSearch={onSearch}
-                onReset={onReset}
-                placeholder="입고번호 / 입고대상 / 공급업체 검색"
-              />
-              <Button variant="icon" onClick={onSearch}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onReset}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onReset}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <DateRange
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+            />
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              onReset={onReset}
+              placeholder="입고번호 / 입고대상 / 공급업체 검색"
+            />
+          </FilterGroup>
 
           <InboundTable rows={recordsNotDone} />
 
@@ -200,29 +194,24 @@ export default function InboundPage() {
             </div>
           </SectionHeader>
 
-          <SectionHeader style={{ justifyContent: "flex-end" }}>
-            <FilterGroup>
-              <DateRange
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={setStartDate}
-                onEndDateChange={setEndDate}
-              />
-              <SearchBox
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                onSearch={onSearch}
-                onReset={onReset}
-                placeholder="입고번호 / 입고대상 / 공급업체 검색"
-              />
-              <Button variant="icon" onClick={onSearch}>
-                <img src={searchIcon} width={18} height={18} alt="검색" />
-              </Button>
-              <Button variant="icon" onClick={onReset}>
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-            </FilterGroup>
-          </SectionHeader>
+          <FilterGroup>
+            <Button variant="icon" onClick={onReset}>
+              <img src={resetIcon} width={18} height={18} alt="초기화" />
+            </Button>
+            <DateRange
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+            />
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              onReset={onReset}
+              placeholder="입고번호 / 입고대상 / 공급업체 검색"
+            />
+          </FilterGroup>
 
           <InboundTable rows={recordsDone} />
 

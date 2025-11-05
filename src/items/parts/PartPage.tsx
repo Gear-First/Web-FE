@@ -22,7 +22,6 @@ import {
 } from "./PartTypes";
 
 import SearchBox from "../../components/common/SearchBox";
-import searchIcon from "../../assets/search.svg";
 import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
 import { usePartSearch } from "./hooks/usePartSearch";
@@ -122,10 +121,6 @@ export default function PartPage() {
               부품 기본정보 및 자재구성을 관리합니다.
             </SectionCaption>
           </div>
-          {/* 우측으로 이동 */}
-        </SectionHeader>
-
-        <SectionHeader>
           <Button
             onClick={() => {
               setRegMode("create");
@@ -135,28 +130,26 @@ export default function PartPage() {
           >
             부품 +
           </Button>
-          <FilterGroup>
-            <DateRange
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
-            />
-            <SearchBox
-              keyword={keyword}
-              onKeywordChange={setKeyword}
-              onSearch={onSearch}
-              onReset={onReset}
-              placeholder="부품코드 / 부품명 검색"
-            />
-            <Button variant="icon" onClick={onSearch} aria-label="검색">
-              <img src={searchIcon} width={18} height={18} alt="검색" />
-            </Button>
-            <Button variant="icon" onClick={onReset} aria-label="초기화">
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
-          </FilterGroup>
         </SectionHeader>
+
+        <FilterGroup>
+          <Button variant="icon" onClick={onReset} aria-label="초기화">
+            <img src={resetIcon} width={18} height={18} alt="초기화" />
+          </Button>
+          <DateRange
+            startDate={startDate}
+            endDate={endDate}
+            onStartDateChange={setStartDate}
+            onEndDateChange={setEndDate}
+          />
+          <SearchBox
+            keyword={keyword}
+            onKeywordChange={setKeyword}
+            onSearch={onSearch}
+            onReset={onReset}
+            placeholder="부품코드 / 부품명 검색"
+          />
+        </FilterGroup>
 
         <PartTable rows={records} />
 

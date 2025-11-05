@@ -38,8 +38,11 @@ export const SectionCaption = styled.p`
 
 export const FilterGroup = styled.div`
   display: flex;
-  gap: 12px;
+  margin-bottom: 1.25rem;
+  align-items: center;
+  gap: 10px;
   flex-wrap: wrap;
+  justify-content: flex-end;
 `;
 
 export const Select = styled.select`
