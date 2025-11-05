@@ -1,5 +1,6 @@
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
-import type { InventoryPartRecord, PartStatus } from "../PartTypes";
+import type { PartRecord, PartStatus } from "../PartTypes";
+import { fmtDate } from "../../utils/string";
 
 // 요청 상태
 const statusVariant: Record<PartStatus, "rejected" | "info" | "success"> = {
@@ -8,7 +9,13 @@ const statusVariant: Record<PartStatus, "rejected" | "info" | "success"> = {
   부족: "rejected",
 };
 
-export default function PartTable({ rows }: { rows: InventoryPartRecord[] }) {
+export default function PartTable({ rows }: { rows: PartRecord[] }) {
+  // 상태 계산 로직
+  const getStatus = (r: PartRecord): PartStatus => {
+    if (r.lowStock) return "부족";
+    if (r.onHandQty <= r.safetyStockQty * 1.2) return "적정";
+    return "여유";
+  };
   return (
     <>
       <Table>
@@ -19,24 +26,37 @@ export default function PartTable({ rows }: { rows: InventoryPartRecord[] }) {
             <Th>부품명</Th>
             <Th>가용 재고</Th>
             <Th>안전 재고</Th>
+            <Th>마지막 수정일</Th>
             <Th>상태</Th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((r) => (
-            <tr key={r.id}>
-              <Td>{r.warehouseId}</Td>
-              <Td>{r.partCode}</Td>
-              <Td>{r.partName}</Td>
-              <Td>{r.partQuantity.toLocaleString()}</Td>
-              <Td>{r.safetyStock.toLocaleString()}</Td>
-              <Td>
-                <StatusBadge $variant={statusVariant[r.status]}>
-                  {r.status}
-                </StatusBadge>
+          {rows.length > 0 ? (
+            rows.map((r, i) => {
+              const status = getStatus(r);
+              return (
+                <tr key={i}>
+                  <Td>{r.warehouseCode}</Td>
+                  <Td>{r.part.code}</Td>
+                  <Td>{r.part.name}</Td>
+                  <Td>{r.onHandQty.toLocaleString()}</Td>
+                  <Td>{r.safetyStockQty.toLocaleString()}</Td>
+                  <Td>{fmtDate(r.lastUpdatedAt)}</Td>
+                  <Td>
+                    <StatusBadge $variant={statusVariant[status]}>
+                      {status}
+                    </StatusBadge>
+                  </Td>
+                </tr>
+              );
+            })
+          ) : (
+            <tr>
+              <Td colSpan={6} style={{ textAlign: "center", color: "#6b7280" }}>
+                재고 데이터가 없습니다.
               </Td>
             </tr>
-          ))}
+          )}
         </tbody>
       </Table>
     </>

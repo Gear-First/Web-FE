@@ -279,15 +279,15 @@ const DetailModal = ({
           <DetailGrid>
             <DetailItem>
               <Label>담당자</Label>
-              <Value>{order?.engineerName}</Value>
+              <Value>{order?.engineerName ?? "-"}</Value>
             </DetailItem>
             <DetailItem>
               <Label>직책</Label>
-              <Value>{order?.engineerRole}</Value>
+              <Value>{order?.engineerRole ?? "-"}</Value>
             </DetailItem>
             <DetailItem>
               <Label>이메일</Label>
-              <Value>{order?.engineerRole}</Value>
+              <Value>{order?.engineerRole ?? "-"}</Value>
             </DetailItem>
           </DetailGrid>
         </Section>
