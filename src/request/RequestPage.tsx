@@ -7,6 +7,11 @@ import {
   SectionTitle,
   FilterGroup,
   Select,
+  SummaryGrid,
+  SummaryCard,
+  SummaryLabel,
+  SummaryValue,
+  SummaryNote,
 } from "../components/common/PageLayout";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -213,6 +218,15 @@ export default function RequestPage() {
     setPageCancel(1);
   };
 
+  const pendingTotal = pendingData?.data?.totalElements ?? 0;
+  const processedTotal = processedData?.data?.totalElements ?? 0;
+  const cancelTotal = cancelData?.data?.totalElements ?? 0;
+  const openTotal = pendingTotal + cancelTotal;
+  const approvalRate =
+    processedTotal + pendingTotal > 0
+      ? Math.round((processedTotal / (processedTotal + pendingTotal)) * 100)
+      : 0;
+
   // 모달 열기
   const handleOpen = (
     rec: PendingOrderItem | ProcessedOrderItem,
@@ -226,6 +240,35 @@ export default function RequestPage() {
   return (
     <Layout>
       <PageContainer>
+        <SummaryGrid>
+          <SummaryCard>
+            <SummaryLabel>승인 대기</SummaryLabel>
+            <SummaryValue>
+              {pendingFetchStatus === "fetching"
+                ? "· · ·"
+                : pendingTotal.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>검토 필요 요청 수</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>승인 완료</SummaryLabel>
+            <SummaryValue>
+              {processedFetchStatus === "fetching"
+                ? "· · ·"
+                : processedTotal.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>승인 진행률 {approvalRate}%</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>취소 · 반려</SummaryLabel>
+            <SummaryValue>
+              {cancelFetchStatus === "fetching"
+                ? "· · ·"
+                : cancelTotal.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>재확인 필요 {openTotal.toLocaleString()}건</SummaryNote>
+          </SummaryCard>
+        </SummaryGrid>
         {/* 미승인 요청 목록 */}
         <SectionCard>
           <SectionHeader>

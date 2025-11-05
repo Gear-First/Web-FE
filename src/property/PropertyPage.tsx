@@ -7,6 +7,11 @@ import {
   SectionTitle,
   FilterGroup,
   Select,
+  SummaryGrid,
+  SummaryCard,
+  SummaryLabel,
+  SummaryValue,
+  SummaryNote,
 } from "../components/common/PageLayout";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
@@ -56,10 +61,17 @@ export default function PropertyPage() {
   });
 
   const isFetching = fetchStatus === "fetching";
+  const isBusy = isLoading || isFetching;
 
   // 서버 응답 사용
   const items = data?.data ?? [];
   const total = data?.meta?.total ?? 0;
+  const assetValue = items.reduce(
+    (sum, item) => sum + item.partPrice * item.partQuantity,
+    0
+  );
+  const avgUnit =
+    items.length > 0 ? Math.round(assetValue / items.length) : 0;
   const totalPages = Math.max(1, data?.meta?.totalPages ?? 1);
   const warehouses = data?.facets?.warehouses ?? [];
 
@@ -78,6 +90,33 @@ export default function PropertyPage() {
   return (
     <Layout>
       <PageContainer>
+        <SummaryGrid>
+          <SummaryCard>
+            <SummaryLabel>총 자산 항목</SummaryLabel>
+            <SummaryValue>
+              {isBusy ? "· · ·" : total.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>필터 기준 자산 등록 건수</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>표본 자산 가치</SummaryLabel>
+            <SummaryValue>
+              ₩
+              {isBusy ? "· · ·" : assetValue.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>현재 페이지 집계 금액</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>평균 단가</SummaryLabel>
+            <SummaryValue>
+              ₩
+              {isBusy ? "· · ·" : avgUnit.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>
+              {warehouse === "ALL" ? "전체 창고" : `${warehouse} 창고`} 기준
+            </SummaryNote>
+          </SummaryCard>
+        </SummaryGrid>
         <SectionCard>
           <SectionHeader>
             <div>
@@ -126,7 +165,7 @@ export default function PropertyPage() {
             }}
           >
             <div style={{ height: 18 }}>
-              {(isLoading || isFetching) && (
+              {isBusy && (
                 <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
               )}
             </div>

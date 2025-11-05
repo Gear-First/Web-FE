@@ -1,6 +1,5 @@
-import React, { useState } from "react";
+import type { FC, ReactNode } from "react";
 import styled from "styled-components";
-import SideBar from "../common/SideBar";
 import TopBar from "../common/TopBar";
 
 const LayoutWrapper = styled.div`
@@ -26,20 +25,14 @@ const ContentArea = styled.div`
 `;
 
 interface LayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
-const Layout: React.FC<LayoutProps> = ({ children }) => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-
+const Layout: FC<LayoutProps> = ({ children }) => {
   return (
     <LayoutWrapper>
       <TopBar />
       <MainWrapper>
-        {/* <SideBar
-          open={isSidebarOpen}
-          onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
-        /> */}
         <ContentArea>{children}</ContentArea>
       </MainWrapper>
     </LayoutWrapper>

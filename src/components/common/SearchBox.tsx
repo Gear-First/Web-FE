@@ -47,4 +47,8 @@ const Input = styled.input<{ $width?: string }>`
   border: 1px solid #e5e7eb;
   font-size: 0.9rem;
   width: ${({ $width }) => $width || "200px"};
+  &:focus {
+    outline: none;
+    border-color: #111;
+  }
 `;
