@@ -2,19 +2,8 @@ import { styled } from "styled-components";
 import { Th, Td } from "../../components/common/PageLayout";
 import { TableScroll, StickyTable } from "../../components/common/ScrollTable";
 import type { ReactNode } from "react";
-import { Input } from "../../components/common/ModalPageLayout";
 import Button from "../../components/common/Button";
-
-// 상단에 추가
-const CellInput = styled(Input)`
-  width: 100%;
-  box-sizing: border-box;
-`;
-
-// 필요하면 셀도 감싸서 overflow 제어
-const Cell = styled(Td)`
-  overflow: hidden;
-`;
+import { Input } from "../../components/common/ModalPageLayout";
 
 export type MaterialRow = {
   id: string;
@@ -36,7 +25,6 @@ type Props = {
   compact?: boolean;
   verticalLines?: boolean;
   sticky?: boolean;
-
   renderSearchButton?: (row: MaterialRow) => ReactNode;
 };
 
@@ -67,7 +55,6 @@ export default function MaterialsTable({
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              {/* 빈행일 때는 colSpan 지정 안 하면 셀 깨집니다 */}
               <Td colSpan={4} style={{ textAlign: "center", color: "#6b7280" }}>
                 자재 행이 없습니다.
               </Td>
@@ -75,26 +62,20 @@ export default function MaterialsTable({
           ) : (
             rows.map((row) => (
               <tr key={row.id}>
-                <Cell>
-                  <CellInput
-                    value={row.materialCode}
-                    onChange={(e) =>
-                      onChange(row.id, "materialCode", e.target.value)
-                    }
-                    readOnly
-                  />
-                </Cell>
-                <Cell>
-                  <CellInput
-                    value={row.materialName}
-                    onChange={(e) =>
-                      onChange(row.id, "materialName", e.target.value)
-                    }
-                    readOnly
-                  />
-                </Cell>
-                <Cell>
-                  <CellInput
+                <Td>
+                  <CellValue data-empty={!row.materialCode}>
+                    {row.materialCode || "자재를 선택해주세요"}
+                  </CellValue>
+                </Td>
+
+                <Td>
+                  <CellValue data-empty={!row.materialName}>
+                    {row.materialName || "자재를 선택해주세요"}
+                  </CellValue>
+                </Td>
+
+                <Td>
+                  <QtyInput
                     type="number"
                     min={1}
                     value={row.materialQty}
@@ -106,12 +87,13 @@ export default function MaterialsTable({
                       )
                     }
                   />
-                </Cell>
-                <Cell>
+                </Td>
+
+                <Td>
                   <Button color="danger" onClick={() => onRemove(row.id)}>
                     삭제
                   </Button>
-                </Cell>
+                </Td>
               </tr>
             ))
           )}
@@ -120,3 +102,28 @@ export default function MaterialsTable({
     </TableScroll>
   );
 }
+
+const CellValue = styled.div`
+  height: 36px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #111827;
+
+  &[data-empty="true"] {
+    color: #9ca3af;
+  }
+`;
+
+const QtyInput = styled(Input)`
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+
+  &:focus {
+    border-color: #cbd5e1;
+  }
+`;

@@ -3,9 +3,9 @@ import {
   CloseButton,
   DetailGrid,
   DetailItem,
+  Footer,
   Header,
   HeaderLeft,
-  Input,
   Label,
   ModalContainer,
   Overlay,
@@ -321,9 +321,7 @@ const BOMRegisterModal = ({
                   : "BOM 등록(자재 등록)"}
               </Title>
             </HeaderLeft>
-            <CloseButton onClick={onClose} aria-label="닫기">
-              &times;
-            </CloseButton>
+            <CloseButton onClick={onClose}>&times;</CloseButton>
           </Header>
 
           <Section>
@@ -347,29 +345,23 @@ const BOMRegisterModal = ({
             <DetailGrid style={{ marginTop: "1rem" }}>
               <DetailItem>
                 <Label>부품 코드</Label>
-                <Input
-                  value={partCode}
-                  onChange={(e) => setPartCode(e.target.value)}
-                  readOnly
-                />
+                <StaticValue data-empty={!partCode}>
+                  {partCode || "부품을 선택해주세요"}
+                </StaticValue>
               </DetailItem>
 
               <DetailItem>
                 <Label>부품명</Label>
-                <Input
-                  value={partName}
-                  onChange={(e) => setPartName(e.target.value)}
-                  readOnly
-                />
+                <StaticValue data-empty={!partName}>
+                  {partName || "부품을 선택해주세요"}
+                </StaticValue>
               </DetailItem>
 
               <DetailItem>
                 <Label>부품 카테고리</Label>
-                <Input
-                  value={partCate}
-                  onChange={(e) => setPartCate(e.target.value)}
-                  readOnly
-                />
+                <StaticValue data-empty={!partCate}>
+                  {partCate || "부품을 선택해주세요"}
+                </StaticValue>
               </DetailItem>
             </DetailGrid>
           </Section>
@@ -407,16 +399,14 @@ const BOMRegisterModal = ({
             </div>
           </Section>
 
-          <Section>
-            <Actions>
-              <Button color="gray" onClick={onClose}>
-                취소
-              </Button>
-              <Button onClick={handleSubmit}>
-                {mode === "edit" ? "수정 저장" : "등록"}
-              </Button>
-            </Actions>
-          </Section>
+          <Footer>
+            <Button color="gray" onClick={onClose}>
+              취소
+            </Button>
+            <Button onClick={handleSubmit}>
+              {mode === "edit" ? "수정 저장" : "등록"}
+            </Button>
+          </Footer>
         </ModalContainer>
       </Overlay>
 
@@ -447,8 +437,8 @@ const HeaderRow = styled.div`
   margin-bottom: 10px;
 `;
 
-const Actions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
+const StaticValue = styled.div`
+  &[data-empty="true"] {
+    color: #9ca3af;
+  }
 `;
