@@ -1,34 +1,27 @@
-import type { InventoryPartRecord } from "./PartTypes";
+import axios from "axios";
+import type { PartResponse } from "./PartTypes";
 
-// --- query keys ---
 export const partKeys = {
-  records: ["part", "records"] as const,
+  records: ["part", "part-records"] as const,
 };
 
-export type PartQueryParams = {
-  warehouse?: string;
-  keyword?: string; // 부품코드/부품명
-  page: number;
-  pageSize: number;
-};
+// axios 인스턴스 생성
+const api = axios.create({
+  baseURL: "http://34.120.215.23/warehouse/api/v1", // 백엔드 API 주소
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 10000, // 10초 제한
+});
 
-export type ListResponse<T> = {
-  data: T;
-  meta: { total: number; page: number; pageSize: number; totalPages: number };
-  facets?: { warehouses?: string[] };
-};
-
-export async function fetchPartRecords(params: PartQueryParams) {
-  const qs = new URLSearchParams({
-    ...(params.warehouse && params.warehouse !== "ALL"
-      ? { warehouse: params.warehouse }
-      : {}),
-    ...(params.keyword ? { keyword: params.keyword } : {}),
-    page: String(params.page),
-    pageSize: String(params.pageSize),
-  });
-
-  const res = await fetch(`/api/part/records?${qs.toString()}`);
-  if (!res.ok) throw new Error("Failed to fetch part records");
-  return (await res.json()) as ListResponse<InventoryPartRecord[]>;
+//
+export async function fetchPartRecords(params: {
+  warehouseCode?: string; // 창고코드
+  partKeyword?: string; // 부품코드/부품명
+  supplierName?: string; // 공급업체
+  page?: number;
+  size?: number;
+}): Promise<PartResponse> {
+  const res = await api.get("/inventory/onhand", { params });
+  return res.data;
 }
