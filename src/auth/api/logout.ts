@@ -1,19 +1,17 @@
-import { clearTokens } from "../utils/token";
-const AUTH_BASE =
-  (import.meta.env.VITE_AUTH_BASE as string) ?? "http://localhost:8084";
+const AUTH_SERVER =
+  import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
 
-export async function logout() {
-  try {
-    await fetch(`${AUTH_BASE}/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-  } catch (error) {
-    // 네트워크 오류나 서버 응답 실패 시 무시 (로그만 남김)
-    console.warn("Logout request failed:", error);
-  } finally {
-    // 로컬 토큰 정리 후 로그인 화면으로 이동
-    clearTokens();
-    window.location.replace("/login");
-  }
+export function logout(): void {
+  // 서버 세션/쿠키가 있다면 동시에 무효화
+  fetch(`${AUTH_SERVER}/logout`, {
+    method: "POST",
+    credentials: "include",
+  }).catch(() => {
+    // 서버 로그아웃 실패해도 클라이언트 토큰은 지움
+  });
+
+  sessionStorage.clear();
+  localStorage.clear();
+
+  window.location.href = "/";
 }
