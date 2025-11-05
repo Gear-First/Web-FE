@@ -3,6 +3,7 @@ import {
   CloseButton,
   DetailGrid,
   DetailItem,
+  Footer,
   Header,
   HeaderLeft,
   Input,
@@ -14,7 +15,6 @@ import {
   Title,
 } from "../../../components/common/ModalPageLayout";
 import Button from "../../../components/common/Button";
-import styled from "styled-components";
 import type { MaterialFormModel } from "../MaterialTypes";
 
 interface Props {
@@ -64,7 +64,7 @@ const MaterialRegisterModal = ({
 
   return (
     <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
             <Title>{mode === "edit" ? "자재 수정" : "자재 등록"}</Title>
@@ -97,25 +97,17 @@ const MaterialRegisterModal = ({
           </DetailGrid>
         </Section>
 
-        <Section>
-          <Actions>
-            <Button color="gray" onClick={onClose}>
-              취소
-            </Button>
-            <Button onClick={handleSubmit}>
-              {mode === "edit" ? "수정 저장" : "등록"}
-            </Button>
-          </Actions>
-        </Section>
+        <Footer>
+          <Button color="gray" onClick={onClose}>
+            취소
+          </Button>
+          <Button onClick={handleSubmit}>
+            {mode === "edit" ? "수정 저장" : "등록"}
+          </Button>
+        </Footer>
       </ModalContainer>
     </Overlay>
   );
 };
 
 export default MaterialRegisterModal;
-
-const Actions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-`;

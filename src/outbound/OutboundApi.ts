@@ -3,11 +3,12 @@ import axios from "axios";
 import type { OutboundRecord } from "./OutboundTypes";
 
 export const outboundKeys = {
-  records: ["outbound", "records"] as const,
+  base: ["outbound"] as const, // 기본 키
+  notDoneRecords: ["outbound", "not-done"] as const,
+  doneRecords: ["outbound", "done"] as const,
 };
 
 export type OutboundListParams = {
-  status?: "done" | "not-done" | "all";
   dateFrom?: string | null;
   dateTo?: string | null;
   warehouseCode?: string;
@@ -20,7 +21,9 @@ export type ListResponse<T> = {
   meta?: { total: number; page: number; pageSize: number; totalPages: number };
 };
 
-export async function fetchOutboundRecords(
+// 공통 fetch 함수 (코드 중복 제거용)
+async function fetchOutboundList(
+  baseUrl: string,
   params?: OutboundListParams
 ): Promise<ListResponse<OutboundRecord[]>> {
   const qs = new URLSearchParams();
@@ -31,7 +34,7 @@ export async function fetchOutboundRecords(
   if (params?.page !== undefined) qs.set("page", String(params.page));
   if (params?.size !== undefined) qs.set("size", String(params.size));
 
-  const url = `http://34.120.215.23/warehouse/api/v1/shipping/notes?${qs.toString()}`;
+  const url = `${baseUrl}?${qs.toString()}`;
   const res = await axios.get(url);
 
   if (res.status !== 200)
@@ -50,6 +53,22 @@ export async function fetchOutboundRecords(
   };
 }
 
+// 미완료 출고 목록 (not-done)
+export async function fetchOutboundNotDoneRecords(
+  params?: OutboundListParams
+): Promise<ListResponse<OutboundRecord[]>> {
+  const baseUrl = "http://34.120.215.23/warehouse/api/v1/shipping/not-done";
+  return fetchOutboundList(baseUrl, params);
+}
+
+// 완료 출고 목록 (done)
+export async function fetchOutboundDoneRecords(
+  params?: OutboundListParams
+): Promise<ListResponse<OutboundRecord[]>> {
+  const baseUrl = "http://34.120.215.23/warehouse/api/v1/shipping/done";
+  return fetchOutboundList(baseUrl, params);
+}
+
 // 출고 상세 조회
 export async function fetchOutboundDetail(
   noteId: string
@@ -60,5 +79,5 @@ export async function fetchOutboundDetail(
   if (res.status !== 200)
     throw new Error(`출고 상세 요청 실패 (${res.status})`);
 
-  return res.data?.data as OutboundRecord;
+  return res.data.data;
 }

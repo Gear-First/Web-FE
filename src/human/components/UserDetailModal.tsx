@@ -1,5 +1,4 @@
 import { useState } from "react";
-import styled from "styled-components";
 import Button from "../../components/common/Button";
 import { StatusBadge } from "../../components/common/PageLayout";
 import type {
@@ -10,77 +9,19 @@ import type {
   WorkType,
 } from "../HumanTypes";
 import UserRegisterModal from "./UserRegisterModal";
-
-const Overlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(17, 24, 39, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-`;
-
-const Modal = styled.div`
-  width: 640px;
-  max-width: 95%;
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-`;
-
-const Header = styled.div`
-  padding: 16px 20px;
-  border-bottom: 1px solid #eef2f7;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-`;
-
-const Title = styled.h3`
-  margin: 0;
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #111827;
-`;
-
-const Body = styled.div`
-  padding: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 16px;
-
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const Footer = styled.div`
-  padding: 14px 20px;
-  border-top: 1px solid #eef2f7;
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-`;
-
-const Item = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-`;
-
-const Label = styled.span`
-  font-size: 0.82rem;
-  color: #6b7280;
-`;
-
-const Value = styled.span`
-  font-size: 0.96rem;
-  color: #111827;
-  word-break: break-all;
-`;
+import {
+  CloseButton,
+  DetailGrid,
+  DetailItem,
+  Footer,
+  Header,
+  Label,
+  ModalContainer,
+  Overlay,
+  Section,
+  Title,
+  Value,
+} from "../../components/common/ModalPageLayout";
 
 type Props = {
   isOpen: boolean;
@@ -113,61 +54,51 @@ export default function UserDetailModal({
   return (
     <>
       <Overlay onClick={handleOverlayClick}>
-        <Modal onClick={(e) => e.stopPropagation()}>
+        <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
           <Header>
             <Title>사용자 상세</Title>
-            <button
-              type="button"
-              onClick={onClose}
-              aria-label="close"
-              style={{
-                background: "none",
-                border: "none",
-                fontSize: 18,
-                cursor: "pointer",
-              }}
-            >
-              ✕
-            </button>
+            <CloseButton onClick={onClose}>✕</CloseButton>
           </Header>
 
-          <Body>
-            <Item>
-              <Label>이름</Label>
-              <Value>{record.name}</Value>
-            </Item>
+          <Section>
+            <DetailGrid $cols={2}>
+              <DetailItem>
+                <Label>이름</Label>
+                <Value>{record.name}</Value>
+              </DetailItem>
 
-            <Item>
-              <Label>직급</Label>
-              <Value>
-                <StatusBadge
-                  $variant={record.rank === "LEADER" ? "success" : "info"}
-                >
-                  {record.rank === "LEADER" ? "팀장" : "사원"}
-                </StatusBadge>
-              </Value>
-            </Item>
+              <DetailItem>
+                <Label>직급</Label>
+                <Value>
+                  <StatusBadge
+                    $variant={record.rank === "LEADER" ? "success" : "info"}
+                  >
+                    {record.rank === "LEADER" ? "팀장" : "사원"}
+                  </StatusBadge>
+                </Value>
+              </DetailItem>
 
-            <Item>
-              <Label>이메일</Label>
-              <Value>{record.email}</Value>
-            </Item>
+              <DetailItem>
+                <Label>이메일</Label>
+                <Value>{record.email}</Value>
+              </DetailItem>
 
-            <Item>
-              <Label>연락처</Label>
-              <Value>{record.phoneNum}</Value>
-            </Item>
+              <DetailItem>
+                <Label>연락처</Label>
+                <Value>{record.phoneNum}</Value>
+              </DetailItem>
 
-            <Item>
-              <Label>지역</Label>
-              <Value>{record.region}</Value>
-            </Item>
+              <DetailItem>
+                <Label>지역</Label>
+                <Value>{record.region}</Value>
+              </DetailItem>
 
-            <Item>
-              <Label>지점</Label>
-              <Value>{record.workType}</Value>
-            </Item>
-          </Body>
+              <DetailItem>
+                <Label>지점</Label>
+                <Value>{record.workType}</Value>
+              </DetailItem>
+            </DetailGrid>
+          </Section>
 
           <Footer>
             {onDelete && <Button onClick={() => onDelete(record)}>삭제</Button>}
@@ -183,7 +114,7 @@ export default function UserDetailModal({
               닫기
             </Button>
           </Footer>
-        </Modal>
+        </ModalContainer>
       </Overlay>
 
       <UserRegisterModal

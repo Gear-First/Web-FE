@@ -1,25 +1,18 @@
 import { useState } from "react";
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
-import type { OutboundRecord, OutboundStatus } from "../OutboundTypes";
+import type { OutboundRecord } from "../OutboundTypes";
 import OutboundDetailModal from "../components/OutboundDetailModal";
-
-const statusVariant: Record<
-  OutboundStatus,
-  "warning" | "info" | "success" | "rejected"
-> = {
-  PENDING: "warning",
-  IN_PROGRESS: "info",
-  COMPLETED: "success",
-  CANCELLED: "rejected",
-};
+import {
+  OUTBOUND_STATUS_LABELS,
+  OUTBOUND_STATUS_VARIANTS,
+} from "../OutboundTypes";
+import { fmtDate } from "../../utils/string";
 
 export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
   const [selectedRecord, setSelectedRecord] = useState<OutboundRecord | null>(
     null
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const formatDate = (dateStr: string) =>
-    dateStr ? dateStr.slice(0, 16).replace("T", " ") : "-";
 
   return (
     <>
@@ -28,6 +21,7 @@ export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
           <tr>
             <Th>출고 번호</Th>
             <Th>대리점</Th>
+            <Th>창고</Th>
             <Th>출고 수량</Th>
             <Th>접수 일시</Th>
             <Th>출고 일시</Th>
@@ -46,12 +40,13 @@ export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
             >
               <Td>{r.shippingNo}</Td>
               <Td>{r.branchName}</Td>
+              <Td>{r.warehouseCode}</Td>
               <Td>{r.totalQty.toLocaleString() || "-"}</Td>
-              <Td>{formatDate(r.requestedAt)}</Td>
-              <Td>{formatDate(r.shippedAt ?? "")}</Td>
+              <Td>{fmtDate(r.requestedAt)}</Td>
+              <Td>{fmtDate(r.shippedAt ?? "")}</Td>
               <Td>
-                <StatusBadge $variant={statusVariant[r.status]}>
-                  {r.status}
+                <StatusBadge $variant={OUTBOUND_STATUS_VARIANTS[r.status]}>
+                  {OUTBOUND_STATUS_LABELS[r.status]}
                 </StatusBadge>
               </Td>
             </tr>

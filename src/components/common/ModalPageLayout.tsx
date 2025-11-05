@@ -1,4 +1,4 @@
-import styled from "styled-components";
+import styled, { css } from "styled-components";
 
 /* 모달 전체 배경 */
 export const Overlay = styled.div`
@@ -10,18 +10,55 @@ export const Overlay = styled.div`
   justify-content: center;
   z-index: 2000;
 `;
+interface ModalContainerProps {
+  width?: string; // ex) "800px" or "60%"
+  maxWidth?: string; // ex) "90%"
+  height?: string; // ex) "600px"
+  padding?: string; // ex) "24px"
+}
 
 /* 모달 컨테이너 */
-export const ModalContainer = styled.div`
+export const ModalContainer = styled.div<ModalContainerProps>`
   background: #fff;
   border-radius: 16px;
-  width: 1000px;
-  max-width: 95%;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
   animation: fadeIn 0.3s ease-out;
   position: relative;
   overflow: hidden;
   border: 1px solid #e5e7eb;
+
+  ${({ width }) =>
+    width &&
+    css`
+      width: ${width};
+    `}
+  ${({ maxWidth }) =>
+    maxWidth &&
+    css`
+      max-width: ${maxWidth};
+    `}
+  ${({ height }) =>
+    height &&
+    css`
+      height: ${height};
+    `}
+  ${({ padding }) =>
+    padding &&
+    css`
+      padding: ${padding};
+    `}
+
+  /* 기본값 */
+  ${({ width }) =>
+    !width &&
+    css`
+      width: 1000px;
+    `}
+  ${({ maxWidth }) =>
+    !maxWidth &&
+    css`
+      max-width: 95%;
+    `}
 
   @keyframes fadeIn {
     from {
@@ -159,6 +196,13 @@ export const StyledTextarea = styled.textarea`
   box-sizing: border-box;
 `;
 
+export const Footer = styled.div`
+  padding: 14px 20px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+`;
+
 /* 버튼 */
 export const Button = styled.button<{ color?: string }>`
   background-color: ${({ color }) => color || "#ccc"};
@@ -185,7 +229,6 @@ export const Input = styled.input`
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-  width: 80%;
   &:focus {
     border-color: #111827;
   }

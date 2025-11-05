@@ -22,6 +22,13 @@ import {
 } from "../../components/common/ModalPageLayout";
 import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
 import { fetchOutboundDetail } from "../OutboundApi";
+import {
+  OUTBOUND_STATUS_LABELS,
+  OUTBOUND_STATUS_VARIANTS,
+  OUTBOUND_PART_STATUS_LABELS,
+  OUTBOUND_PART_STATUS_VARIANTS,
+} from "../OutboundTypes";
+import { fmtDate } from "../../utils/string";
 
 interface Props {
   record: OutboundRecord | null;
@@ -29,37 +36,14 @@ interface Props {
   onClose: () => void;
 }
 
-const statusVariant: Record<
-  OutboundStatus,
-  "warning" | "info" | "success" | "rejected"
-> = {
-  PENDING: "warning",
-  IN_PROGRESS: "info",
-  COMPLETED: "success",
-  CANCELLED: "rejected",
-};
-
-// 부품 상태 매핑
-const statusPartVariant: Record<
-  OutboundPartStatus,
-  "warning" | "info" | "success"
-> = {
-  PENDING: "warning",
-  READY: "info",
-  COMPLETED: "success",
-};
-
 const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
   const [detail, setDetail] = useState<OutboundRecord | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const formatDate = (dateStr: string) =>
-    dateStr ? dateStr.slice(0, 16).replace("T", " ") : "-";
-
   useEffect(() => {
     if (isOpen && record) {
       setIsLoading(true);
-      fetchOutboundDetail(record.shippingNo)
+      fetchOutboundDetail(record.noteId.toString())
         .then((data) => setDetail(data))
         .finally(() => setIsLoading(false));
     }
@@ -76,9 +60,9 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
             {detail && (
               <StatusBadge
                 style={{ fontSize: "0.8rem" }}
-                $variant={statusVariant[detail.status]}
+                $variant={OUTBOUND_STATUS_VARIANTS[detail.status]}
               >
-                {detail.status}
+                {OUTBOUND_STATUS_LABELS[detail.status]}
               </StatusBadge>
             )}
           </HeaderLeft>
@@ -99,15 +83,15 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                 </DetailItem>
                 <DetailItem>
                   <Label>출고수량</Label>
-                  <Value>{detail.totalQty.toLocaleString()}</Value>
+                  <Value>{detail.totalQty}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>접수일시</Label>
-                  <Value>{formatDate(detail.requestedAt)}</Value>
+                  <Value>{fmtDate(detail.requestedAt)}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>출고대상(창고)</Label>
-                  <Value>{detail.shippedAt}</Value>
+                  <Value>{detail.warehouseCode}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>납품처</Label>
@@ -115,11 +99,15 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                 </DetailItem>
                 <DetailItem>
                   <Label>출고일시</Label>
-                  <Value>{formatDate(detail.shippedAt ?? "")}</Value>
+                  <Value>{fmtDate(detail.shippedAt ?? "")}</Value>
                 </DetailItem>
                 <DetailItem>
                   <Label>납품예정일</Label>
-                  <Value>{formatDate(detail.expectedShipDate ?? "")}</Value>
+                  <Value>{fmtDate(detail.expectedShipDate ?? "")}</Value>
+                </DetailItem>
+                <DetailItem>
+                  <Label>완료일</Label>
+                  <Value>{fmtDate(detail.completedAt ?? "")}</Value>
                 </DetailItem>
               </DetailGrid>
             </Section>
@@ -137,7 +125,7 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                   <thead>
                     <tr>
                       <Th>부품명</Th>
-                      <Th>부품코드</Th>
+                      <Th>시리얼코드</Th>
                       <Th>수량</Th>
                       <Th>상태</Th>
                     </tr>
@@ -145,14 +133,22 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                   <tbody>
                     {detail.lines?.map((line) => (
                       <tr key={line.lineId}>
-                        <Td>{line.productName}</Td>
-                        <Td>{line.productSerial}</Td>
-                        <Td>{line.pickedQty.toLocaleString()}</Td>
+                        <Td>{line.product?.name ?? "-"}</Td>
+                        <Td>{line.product?.serial ?? "-"}</Td>
+                        <Td>{line.pickedQty?.toLocaleString() ?? "-"}</Td>
                         <Td>
                           <StatusBadge
-                            $variant={statusPartVariant[line.status]}
+                            $variant={
+                              OUTBOUND_PART_STATUS_VARIANTS[
+                                line.status as keyof typeof OUTBOUND_PART_STATUS_VARIANTS
+                              ]
+                            }
                           >
-                            {line.status}
+                            {
+                              OUTBOUND_PART_STATUS_LABELS[
+                                line.status as keyof typeof OUTBOUND_PART_STATUS_LABELS
+                              ]
+                            }
                           </StatusBadge>
                         </Td>
                       </tr>
@@ -185,7 +181,7 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
             <Section>
               <SectionTitle>비고</SectionTitle>
               <RemarkSection>
-                <Value>{detail.remark}</Value>
+                <Value>{detail.remark ?? "비고 없음"}</Value>
               </RemarkSection>
             </Section>
           </>

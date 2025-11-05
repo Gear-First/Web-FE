@@ -7,6 +7,7 @@ export const TableScroll = styled.div<{ $maxHeight?: number | string }>`
     typeof $maxHeight === "number" ? `${$maxHeight}px` : $maxHeight};
   overflow: auto;
   border: 1px solid #edf1f5;
+  border-bottom: none;
 
   &::-webkit-scrollbar {
     width: 8px;
@@ -61,13 +62,12 @@ export const StickyTable = styled(Table)<{
           }
           th:last-child,
           td:last-child {
-            // border-right: none;
+            border-right: none;
           }
         `
       : css`
           th,
           td {
-            border-right: none;
           }
         `}
 

@@ -1,180 +1,270 @@
 import Layout from "../components/common/Layout";
 import {
   PageContainer,
-  SectionCaption,
   SectionCard,
   SectionHeader,
   SectionTitle,
+  SectionCaption,
   FilterGroup,
   Select,
 } from "../components/common/PageLayout";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import OutboundTable from "./components/OutboundTable";
-import { outboundKeys, fetchOutboundRecords } from "./OutboundApi";
+import {
+  outboundKeys,
+  fetchOutboundNotDoneRecords,
+  fetchOutboundDoneRecords,
+} from "./OutboundApi";
 import resetIcon from "../assets/reset.svg";
 import searchIcon from "../assets/search.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
 import Button from "../components/common/Button";
 import Pagination from "../components/common/Pagination";
-
-type StatusFilter = "all" | "done" | "not-done";
-
-interface AppliedFilters {
-  status: StatusFilter;
-  keyword: string;
-  dateFrom: string | null;
-  dateTo: string | null;
-  warehouseCode?: string;
-}
+import OutboundTable from "./components/OutboundTable";
+import type { OutboundStatus } from "./OutboundTypes";
 
 export default function OutboundPage() {
-  const statusOptions = [
-    // API용 상태 필터 옵션
-    { label: "전체", value: "all" },
-    { label: "완료", value: "done" },
-    { label: "미완료", value: "not-done" },
-  ] as const;
-
-  const [keyword, setKeyword] = useState("");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
-
-  // 검색 조건 (검색 버튼 눌러야 반영)
-  const [applied, setApplied] = useState<AppliedFilters>({
-    status: "all",
+  // 출고 예정 (미완료) 상태
+  const [pendingStatus, setPendingStatus] = useState<
+    Extract<OutboundStatus, "PENDING" | "IN_PROGRESS"> | "ALL"
+  >("ALL");
+  const [pendingKeyword, setPendingKeyword] = useState("");
+  const [pendingStartDate, setPendingStartDate] = useState("");
+  const [pendingEndDate, setPendingEndDate] = useState("");
+  const [appliedPending, setAppliedPending] = useState({
+    status: "ALL" as typeof pendingStatus,
     keyword: "",
-    dateFrom: null,
-    dateTo: null,
-    warehouseCode: "",
+    dateFrom: null as string | null,
+    dateTo: null as string | null,
   });
+  const [pagePending, setPagePending] = useState(1);
+  const [pageSizePending, setPageSizePending] = useState(10);
 
-  // 페이지네이션 상태
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  const { data, isLoading: isFetching } = useQuery({
-    queryKey: [...outboundKeys.records, { applied, page, pageSize }],
+  const { data: notDoneData, isLoading: isPendingLoading } = useQuery({
+    queryKey: [
+      ...outboundKeys.notDoneRecords,
+      { appliedPending, pagePending, pageSizePending },
+    ],
     queryFn: () =>
-      fetchOutboundRecords({
-        status: applied.status,
-        dateFrom: applied.dateFrom,
-        dateTo: applied.dateTo,
-        warehouseCode: applied.warehouseCode || "",
-        page: page - 1,
-        size: pageSize,
+      fetchOutboundNotDoneRecords({
+        dateFrom: appliedPending.dateFrom,
+        dateTo: appliedPending.dateTo,
+        warehouseCode: appliedPending.keyword,
+        page: pagePending - 1,
+        size: pageSizePending,
       }),
+    staleTime: 60 * 1000,
   });
 
-  const records = data?.data ?? [];
-  const meta = data?.meta ?? { total: 0, totalPages: 1 };
+  const pendingRecords = notDoneData?.data ?? [];
+  const pendingMeta = notDoneData?.meta ?? { total: 0, totalPages: 1 };
 
-  const onSearch = () => {
-    setApplied((prev) => ({
-      ...prev,
-      keyword: keyword.trim(),
-      dateFrom: startDate || null,
-      dateTo: endDate || null,
-      warehouseCode: keyword.trim(),
-    }));
-    setPage(1);
+  const onSearchPending = () => {
+    setAppliedPending({
+      status: pendingStatus,
+      keyword: pendingKeyword.trim(),
+      dateFrom: pendingStartDate || null,
+      dateTo: pendingEndDate || null,
+    });
+    setPagePending(1);
   };
 
-  const onReset = () => {
-    setKeyword("");
-    setStartDate("");
-    setEndDate("");
-    setApplied({
-      status: "all",
+  const onResetPending = () => {
+    setPendingStatus("ALL");
+    setPendingKeyword("");
+    setPendingStartDate("");
+    setPendingEndDate("");
+    setAppliedPending({
+      status: "ALL",
       keyword: "",
       dateFrom: null,
       dateTo: null,
-      warehouseCode: "",
     });
-    setPage(1);
+    setPagePending(1);
+  };
+
+  // 출고 완료 상태
+  const [doneStatus, setDoneStatus] = useState<
+    Extract<OutboundStatus, "COMPLETED" | "DELAYED"> | "ALL"
+  >("ALL");
+  const [doneKeyword, setDoneKeyword] = useState("");
+  const [doneStartDate, setDoneStartDate] = useState("");
+  const [doneEndDate, setDoneEndDate] = useState("");
+  const [appliedDone, setAppliedDone] = useState({
+    status: "ALL" as typeof doneStatus,
+    keyword: "",
+    dateFrom: null as string | null,
+    dateTo: null as string | null,
+  });
+  const [pageDone, setPageDone] = useState(1);
+  const [pageSizeDone, setPageSizeDone] = useState(10);
+
+  const { data: doneData, isLoading: isDoneLoading } = useQuery({
+    queryKey: [
+      ...outboundKeys.doneRecords,
+      { appliedDone, pageDone, pageSizeDone },
+    ],
+    queryFn: () =>
+      fetchOutboundDoneRecords({
+        dateFrom: appliedDone.dateFrom,
+        dateTo: appliedDone.dateTo,
+        warehouseCode: appliedDone.keyword,
+        page: pageDone - 1,
+        size: pageSizeDone,
+      }),
+    staleTime: 60 * 1000,
+  });
+
+  const doneRecords = doneData?.data ?? [];
+  const doneMeta = doneData?.meta ?? { total: 0, totalPages: 1 };
+
+  const onSearchDone = () => {
+    setAppliedDone({
+      status: doneStatus,
+      keyword: doneKeyword.trim(),
+      dateFrom: doneStartDate || null,
+      dateTo: doneEndDate || null,
+    });
+    setPageDone(1);
+  };
+
+  const onResetDone = () => {
+    setDoneStatus("ALL");
+    setDoneKeyword("");
+    setDoneStartDate("");
+    setDoneEndDate("");
+    setAppliedDone({
+      status: "ALL",
+      keyword: "",
+      dateFrom: null,
+      dateTo: null,
+    });
+    setPageDone(1);
   };
 
   return (
     <Layout>
       <PageContainer>
+        {/* 출고 예정 섹션 */}
         <SectionCard>
           <SectionHeader>
             <div>
-              <SectionTitle>출고 관리</SectionTitle>
+              <SectionTitle>출고 예정</SectionTitle>
               <SectionCaption>
-                작업 지시별 자재 출고 이력을 추적하고 현황을 확인합니다.
+                대기 및 진행중 상태의 출고 요청을 조회합니다.
               </SectionCaption>
             </div>
           </SectionHeader>
+
           <SectionHeader style={{ justifyContent: "flex-end" }}>
             <FilterGroup>
               <Select
-                value={applied.status}
-                onChange={(e) => {
-                  const value = e.target.value as StatusFilter;
-                  setApplied((prev) => ({ ...prev, status: value }));
-                  setPage(1);
-                }}
+                value={pendingStatus}
+                onChange={(e) =>
+                  setPendingStatus(e.target.value as typeof pendingStatus)
+                }
               >
-                {statusOptions.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
+                <option value="ALL">전체</option>
+                <option value="PENDING">대기</option>
+                <option value="IN_PROGRESS">진행중</option>
               </Select>
-              {/* 날짜 범위 */}
               <DateRange
-                startDate={startDate}
-                endDate={endDate}
-                onStartDateChange={setStartDate}
-                onEndDateChange={setEndDate}
+                startDate={pendingStartDate}
+                endDate={pendingEndDate}
+                onStartDateChange={setPendingStartDate}
+                onEndDateChange={setPendingEndDate}
               />
-
-              {/* 검색어 */}
               <SearchBox
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                onSearch={onSearch}
-                onReset={onReset}
-                placeholder="부품코드 / 부품명 검색 / 창고"
+                keyword={pendingKeyword}
+                onKeywordChange={setPendingKeyword}
+                onSearch={onSearchPending}
+                onReset={onResetPending}
+                placeholder="창고코드 검색"
               />
-
-              <Button variant="icon" onClick={onSearch}>
+              <Button variant="icon" onClick={onSearchPending}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />
               </Button>
-              <Button variant="icon" onClick={onReset}>
+              <Button variant="icon" onClick={onResetPending}>
                 <img src={resetIcon} width={18} height={18} alt="초기화" />
               </Button>
             </FilterGroup>
           </SectionHeader>
 
-          <OutboundTable rows={records} />
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              margin: "8px 0 12px",
-            }}
-          >
-            <div style={{ height: 18 }}>
-              {isFetching && (
-                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-              )}
-            </div>
-          </div>
-
+          <OutboundTable rows={pendingRecords} />
           <Pagination
-            page={page}
-            totalPages={meta.totalPages}
-            totalItems={meta.total}
-            onChange={setPage}
-            isBusy={isFetching}
-            pageSize={pageSize}
+            page={pagePending}
+            totalPages={pendingMeta.totalPages}
+            totalItems={pendingMeta.total}
+            onChange={setPagePending}
+            isBusy={isPendingLoading}
+            pageSize={pageSizePending}
             onChangePageSize={(n) => {
-              setPageSize(n);
-              setPage(1);
+              setPageSizePending(n);
+              setPagePending(1);
+            }}
+            showSummary
+            showPageSize
+            align="center"
+          />
+        </SectionCard>
+
+        {/* 출고 완료 섹션 */}
+        <SectionCard>
+          <SectionHeader>
+            <div>
+              <SectionTitle>출고 완료</SectionTitle>
+              <SectionCaption>
+                완료 및 지연 상태의 출고 요청을 조회합니다.
+              </SectionCaption>
+            </div>
+          </SectionHeader>
+
+          <SectionHeader style={{ justifyContent: "flex-end" }}>
+            <FilterGroup>
+              <Select
+                value={doneStatus}
+                onChange={(e) =>
+                  setDoneStatus(e.target.value as typeof doneStatus)
+                }
+              >
+                <option value="ALL">전체</option>
+                <option value="COMPLETED">완료</option>
+                <option value="DELAYED">지연</option>
+              </Select>
+              <DateRange
+                startDate={doneStartDate}
+                endDate={doneEndDate}
+                onStartDateChange={setDoneStartDate}
+                onEndDateChange={setDoneEndDate}
+              />
+              <SearchBox
+                keyword={doneKeyword}
+                onKeywordChange={setDoneKeyword}
+                onSearch={onSearchDone}
+                onReset={onResetDone}
+                placeholder="창고코드 검색"
+              />
+              <Button variant="icon" onCㅎick={onSearchDone}>
+                <img src={searchIcon} width={18} height={18} alt="검색" />
+              </Button>
+              <Button variant="icon" onClick={onResetDone}>
+                <img src={resetIcon} width={18} height={18} alt="초기화" />
+              </Button>
+            </FilterGroup>
+          </SectionHeader>
+
+          <OutboundTable rows={doneRecords} />
+          <Pagination
+            page={pageDone}
+            totalPages={doneMeta.totalPages}
+            totalItems={doneMeta.total}
+            onChange={setPageDone}
+            isBusy={isDoneLoading}
+            pageSize={pageSizeDone}
+            onChangePageSize={(n) => {
+              setPageSizeDone(n);
+              setPageDone(1);
             }}
             showSummary
             showPageSize

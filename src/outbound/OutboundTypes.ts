@@ -1,16 +1,61 @@
+// 출고 상태 Enum
 export type OutboundStatus =
-  | "PENDING"
-  | "IN_PROGRESS"
-  | "COMPLETED"
-  | "CANCELLED";
+  | "PENDING" // 대기
+  | "IN_PROGRESS" // 진행중
+  | "COMPLETED" // 완료
+  | "DELAYED"; // 지연
+
+// 부품 상태 Enum
 export type OutboundPartStatus = "PENDING" | "READY" | "COMPLETED";
 
+// 출고 상태 한글 변환
+export const OUTBOUND_STATUS_LABELS: Record<OutboundStatus, string> = {
+  PENDING: "대기",
+  IN_PROGRESS: "진행중",
+  COMPLETED: "완료",
+  DELAYED: "지연",
+};
+
+// 출고 상태 색상 매핑
+export const OUTBOUND_STATUS_VARIANTS: Record<
+  OutboundStatus,
+  "info" | "warning" | "success" | "rejected"
+> = {
+  PENDING: "info",
+  IN_PROGRESS: "warning",
+  COMPLETED: "success",
+  DELAYED: "rejected",
+};
+
+// 부품 상태 한글 변환
+export const OUTBOUND_PART_STATUS_LABELS: Record<OutboundPartStatus, string> = {
+  PENDING: "대기",
+  READY: "출고 준비",
+  COMPLETED: "완료",
+};
+
+// 부품 상태 색상 매핑
+export const OUTBOUND_PART_STATUS_VARIANTS: Record<
+  OutboundPartStatus,
+  "info" | "warning" | "success"
+> = {
+  PENDING: "info",
+  READY: "warning",
+  COMPLETED: "success",
+};
+
 export interface OutboundPartItem {
-  lineId: number; // 라인 ID
-  productSerial: string; // 제품 시리얼
-  productName: string; // 제품명
-  pickedQty: number; // 출고 수량
-  status: OutboundPartStatus; // 상태
+  lineId: number;
+  product: {
+    id: number;
+    lot: string;
+    serial: string;
+    name: string;
+    imgUrl: string;
+  };
+  orderedQty: number;
+  pickedQty: number;
+  status: OutboundPartStatus | string;
 }
 
 export interface OutboundRecord {
