@@ -245,7 +245,7 @@ export default function OutboundPage() {
                 onReset={onResetDone}
                 placeholder="창고코드 검색"
               />
-              <Button variant="icon" onCㅎick={onSearchDone}>
+              <Button variant="icon" onClick={onSearchDone}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />
               </Button>
               <Button variant="icon" onClick={onResetDone}>
