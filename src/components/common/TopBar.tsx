@@ -7,34 +7,33 @@ import UserMenu from "./UserMenu";
 
 /* ─ tokens: 절제된 기업 톤 */
 const color = {
-  bg: "#ffffff",
-  text: "#0b1220", // 아주 진한 회색
-  textDim: "#6b7280",
-  primary: "#0f62fe", // 차분한 블루
-  line: "#e6e8ec", // 옅은 라인
-  hoverBg: "rgba(15, 98, 254, 0.06)",
-  focus: "rgba(15, 98, 254, 0.28)",
+  bg: "rgba(255, 255, 255, 0.92)",
+  text: "#15161c",
+  textDim: "#7a7c84",
+  primary: "#0f0f11",
+  line: "rgba(17, 17, 26, 0.08)",
+  hoverBg: "rgba(17, 17, 26, 0.08)",
+  focus: "rgba(17, 17, 26, 0.18)",
 };
 
 const TopBarContainer = styled.header`
   position: sticky;
   top: 0;
   z-index: 60;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   background: ${color.bg};
   border-bottom: 1px solid ${color.line};
+  box-shadow: 0 12px 24px rgba(12, 12, 18, 0.06);
 `;
 
 const Inner = styled.div`
-  min-height: 56px;
+  min-height: 64px;
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 16px;
-  padding: 8px 20px;
-
-  @media (min-width: 1440px) {
-    padding: 8px 28px;
-  }
+  gap: 20px;
+  padding: 12px 28px;
 `;
 
 const LogoArea = styled(Link)`
@@ -47,6 +46,7 @@ const HeaderLogo = styled.img`
   width: 116px;
   height: auto;
   display: block;
+  filter: saturate(0);
 `;
 
 /* 가운데 메뉴: 심플 중앙 정렬 */
@@ -54,13 +54,14 @@ const MenuBar = styled.nav`
   display: flex;
   justify-content: center;
   align-items: center;
+  padding: 4px;
 `;
 
 const MenuGroup = styled.div`
   display: inline-flex;
   align-items: center;
-  gap: 10px; /* 촘촘하지만 읽기 쉬운 간격 */
-  white-space: nowrap; /* 한 줄 유지 */
+  gap: 12px;
+  white-space: nowrap;
 `;
 
 /* 미니멀 탭 */
@@ -68,18 +69,20 @@ const MenuLink = styled(NavLink).attrs({ end: false })`
   position: relative;
   display: inline-flex;
   align-items: center;
-  height: 40px;
-  padding: 0 12px;
+  height: 42px;
+  padding: 0 14px;
   font-weight: 600;
-  font-size: 0.92rem;
+  font-size: 0.88rem;
   color: ${color.text};
   text-decoration: none;
-  border-radius: 8px;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  border-radius: 999px;
+  transition: color 0.18s ease, background-color 0.18s ease,
+    transform 0.18s ease;
 
   &:hover {
     background: ${color.hoverBg};
     color: ${color.primary};
+    transform: translateY(-1px);
   }
 
   /* 활성: 얇은 언더라인만 */
@@ -91,8 +94,8 @@ const MenuLink = styled(NavLink).attrs({ end: false })`
     position: absolute;
     left: 10px;
     right: 10px;
-    bottom: -7px;
-    height: 2px;
+    bottom: -6px;
+    height: 3px;
     border-radius: 999px;
     background: ${color.primary};
   }
@@ -106,27 +109,27 @@ const MenuLink = styled(NavLink).attrs({ end: false })`
 const RightActions = styled.div`
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 `;
 
 const IconButton = styled.button`
-  --size: 34px;
+  --size: 40px;
   display: inline-flex;
   justify-content: center;
   align-items: center;
   width: var(--size);
   height: var(--size);
   border-radius: 99999px;
-  border: 1px solid ${color.line};
-  background: ${color.bg};
+  border: 1px solid rgba(17, 17, 26, 0.1);
+  background: rgba(255, 255, 255, 0.8);
   padding: 0;
   cursor: pointer;
   transition: background-color 0.15s ease, border-color 0.15s ease,
     transform 0.06s ease;
 
   &:hover {
-    background: ${color.hoverBg};
-    border-color: #d9dbe0;
+    background: rgba(17, 17, 26, 0.08);
+    border-color: rgba(17, 17, 26, 0.16);
   }
   &:active {
     transform: translateY(1px);
@@ -150,17 +153,18 @@ const BellImg = styled.img`
 /* 작은 상태 점 (필요 시 숨기기) */
 const BadgeDot = styled.span`
   position: absolute;
-  top: -3px;
-  right: -3px;
-  width: 8px;
-  height: 8px;
-  background: #fa5252;
+  top: -4px;
+  right: -4px;
+  width: 9px;
+  height: 9px;
+  background: ${color.primary};
   border-radius: 999px;
   box-shadow: 0 0 0 2px ${color.bg};
 `;
 
 const TopBar: React.FC = () => {
   const menus = [
+    { id: -1, name: "대시보드", path: "/dashboard" },
     { id: 0, name: "요청관리", path: "/request" },
     { id: 1, name: "자재 소요량 산출 및 계획", path: "/mrp" },
     { id: 2, name: "구매 관리", path: "/purchasing" },
@@ -177,7 +181,7 @@ const TopBar: React.FC = () => {
   return (
     <TopBarContainer>
       <Inner>
-        <LogoArea to="/request" aria-label="GearFirst 홈">
+        <LogoArea to="/dashboard" aria-label="GearFirst 홈">
           <HeaderLogo src={Logo} alt="GearFirst" />
         </LogoArea>
 

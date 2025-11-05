@@ -277,9 +277,9 @@ const SizeSelect = styled.select`
   font-size: 13px;
   color: #111827;
 
-  &:focus-visible {
-    outline: 2px solid #4f46e5;
-    outline-offset: 2px;
+  &:focus {
+    outline: none;
+    border-color: #111;
   }
 `;
 

@@ -7,6 +7,11 @@ import {
   SectionCard,
   SectionHeader,
   SectionTitle,
+  SummaryGrid,
+  SummaryCard,
+  SummaryLabel,
+  SummaryValue,
+  SummaryNote,
 } from "../components/common/PageLayout";
 import type { InboundRecord } from "./InboundTypes";
 import { useQuery } from "@tanstack/react-query";
@@ -93,6 +98,20 @@ export default function InboundPage() {
   const totalDone = dataDone?.meta?.total ?? 0;
   const totalPagesDone = dataDone?.meta?.totalPages ?? 1;
 
+  const completionRate = totalDone + totalNotDone > 0
+    ? Math.round((totalDone / (totalDone + totalNotDone)) * 100)
+    : 0;
+  const backlogQty = recordsNotDone.reduce(
+    (sum, record) => sum + (record.totalQty ?? 0),
+    0
+  );
+  const avgKindsDone = recordsDone.length
+    ? Math.round(
+        recordsDone.reduce((sum, r) => sum + (r.itemKindsNumber ?? 0), 0) /
+          recordsDone.length
+      )
+    : 0;
+
   const onSearch = () => {
     setApplied({
       keyword: keyword.trim(),
@@ -115,6 +134,23 @@ export default function InboundPage() {
   return (
     <Layout>
       <PageContainer>
+        <SummaryGrid>
+          <SummaryCard>
+            <SummaryLabel>입고 예정</SummaryLabel>
+            <SummaryValue>{totalNotDone.toLocaleString()}건</SummaryValue>
+            <SummaryNote>대기 중 수량 {backlogQty.toLocaleString()}ea</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>입고 완료</SummaryLabel>
+            <SummaryValue>{totalDone.toLocaleString()}건</SummaryValue>
+            <SummaryNote>처리율 {completionRate}%</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>평균 품목 종류</SummaryLabel>
+            <SummaryValue>{avgKindsDone.toLocaleString()}개</SummaryValue>
+            <SummaryNote>완료 건 기준</SummaryNote>
+          </SummaryCard>
+        </SummaryGrid>
         {/* 입고 예정 섹션 */}
         <SectionCard>
           <SectionHeader>

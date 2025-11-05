@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate, Outlet } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import InboundPage from "../inbound/InboundPage";
 import OutboundPage from "../outbound/OutboundPage";
 import BOMPage from "../bom/BOMPage";
@@ -8,14 +8,10 @@ import PropertyPage from "../property/PropertyPage";
 import ItemPage from "../items/ItemPage";
 import PurchasingPage from "../purchasing/PurchasingPage";
 import HumanPage from "../human/HumanPage";
+import DashboardPage from "../dashboard/DashboardPage";
 
 import Login from "../auth/pages/Login";
 import AuthCallback from "../auth/pages/AuthCallback";
-
-function RequireAuth() {
-  const token = sessionStorage.getItem("access_token");
-  return token ? <Outlet /> : <Navigate to="/login" replace />;
-}
 
 const AppRoutes = () => {
   return (
@@ -24,7 +20,8 @@ const AppRoutes = () => {
       <Route path="/auth/callback" element={<AuthCallback />} />
 
       {/* <Route element={<RequireAuth />}> */}
-      <Route path="/" element={<Navigate to="/request" replace />} />
+      <Route path="/" element={<Navigate to="/dashboard" replace />} />
+      <Route path="/dashboard" element={<DashboardPage />} />
       <Route path="/mrp" element={<BOMPage />} />
       <Route path="/request" element={<RequestPage />} />
       <Route path="/items" element={<ItemPage />} />

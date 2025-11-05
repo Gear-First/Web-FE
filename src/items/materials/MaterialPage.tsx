@@ -128,7 +128,7 @@ export default function MaterialPage() {
             endDate={endDate}
             onStartDateChange={setStartDate}
             onEndDateChange={setEndDate}
-            width="100px"
+            width="80px"
           />
           <SearchBox
             keyword={keyword}
@@ -136,6 +136,7 @@ export default function MaterialPage() {
             onSearch={onSearch}
             onReset={onReset}
             placeholder="자재코드 / 자재명 검색"
+            width="150px"
           />
         </FilterGroup>
 

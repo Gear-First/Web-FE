@@ -9,6 +9,11 @@ import {
   SectionCaption,
   FilterGroup,
   Select,
+  SummaryGrid,
+  SummaryCard,
+  SummaryLabel,
+  SummaryValue,
+  SummaryNote,
 } from "../components/common/PageLayout";
 import Button from "../components/common/Button";
 import SearchBox from "../components/common/SearchBox";
@@ -92,10 +97,40 @@ export default function HumanPage() {
   const rows = data?.data ?? [];
   const total = data?.meta?.total ?? 0;
   const totalPages = data?.meta?.totalPages ?? 1;
+  const leaderCount = rows.filter((user) => user.rank === "LEADER").length;
+  const totalRegions = regionRes?.data?.length ?? 0;
+  const totalWorkTypes = workTypeRes?.data?.length ?? 0;
+  const regionStatusText = regionError
+    ? "지역 정보를 불러오지 못했습니다"
+    : `${totalRegions}개 지역`;
+  const workTypeStatusText = workTypeError
+    ? "지점 정보를 불러오지 못했습니다"
+    : `${totalWorkTypes}개 지점`;
 
   return (
     <Layout>
       <PageContainer>
+        <SummaryGrid>
+          <SummaryCard>
+            <SummaryLabel>등록 인원</SummaryLabel>
+            <SummaryValue>
+              {isFetching ? "· · ·" : total.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>필터 기준 전체 구성원</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>팀 리더</SummaryLabel>
+            <SummaryValue>{leaderCount.toLocaleString()}명</SummaryValue>
+            <SummaryNote>현재 페이지 필터 결과</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>커버리지</SummaryLabel>
+            <SummaryValue>
+              {regionStatusText} · {workTypeStatusText}
+            </SummaryValue>
+            <SummaryNote>지역 · 지점 마스터</SummaryNote>
+          </SummaryCard>
+        </SummaryGrid>
         <SectionCard>
           <SectionHeader>
             <div>

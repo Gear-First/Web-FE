@@ -83,7 +83,7 @@ export default function DateRange({
   endDate,
   onStartDateChange,
   onEndDateChange,
-  width = "150px",
+  width = "80px",
 }: Props) {
   const start = toDate(startDate);
   const end = toDate(endDate);
@@ -113,8 +113,6 @@ export default function DateRange({
           <div style={{ zIndex: 9999 }}>{p.children}</div>
         )}
       />
-
-      <Separator>~</Separator>
 
       {/* 종료일 */}
       <DatePicker
@@ -178,8 +176,4 @@ const CalendarIcon = styled(CalendarDays)`
   height: 18px;
   color: #9ca3af;
   pointer-events: none;
-`;
-const Separator = styled.span`
-  color: #6b7280;
-  font-size: 0.9rem;
 `;

@@ -2,57 +2,66 @@ import styled from "styled-components";
 
 export const PageContainer = styled.div`
   flex: 1;
-  padding: 2rem;
-  background: #f5f6fa;
+  padding: 2.25rem 10rem;
+  background: #f4f4f5;
   overflow: auto;
 `;
 
 export const SectionCard = styled.section`
-  background: #fff;
-  border-radius: 12px;
-  padding: 1.5rem;
-  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.05);
-  margin-bottom: 1.5rem;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.75rem;
+  border: 1px solid #e4e4e7;
+  box-shadow: 0 20px 40px rgba(15, 15, 23, 0.05);
+  margin-bottom: 1.75rem;
 `;
 
 export const SectionHeader = styled.header`
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1.25rem;
-  gap: 1rem;
+  align-items: flex-end;
+  margin-bottom: 1.35rem;
+  gap: 1.2rem;
 `;
 
 export const SectionTitle = styled.h2`
   margin: 0;
-  font-size: 1.15rem;
+  font-size: 1.25rem;
   font-weight: 600;
-  color: #1f2937;
+  letter-spacing: -0.01em;
+  color: #111111;
 `;
 
 export const SectionCaption = styled.p`
-  margin: 0;
+  margin: 0.35rem 0 0;
   font-size: 0.85rem;
-  color: #6b7280;
+  color: #6c6c72;
 `;
 
 export const FilterGroup = styled.div`
   display: flex;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.35rem;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
   flex-wrap: wrap;
   justify-content: flex-end;
 `;
 
 export const Select = styled.select`
   min-width: 140px;
-  padding: 0.45rem 0.6rem;
-  border-radius: 8px;
-  border: 1px solid #d0d7de;
+  padding: 0.48rem 0.65rem;
+  border-radius: 12px;
+  border: 1px solid #d4d4d8;
   background: #fff;
   font-size: 0.9rem;
-  color: #374151;
+  color: #1f1f24;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    outline: none;
+    border-color: #111111;
+    box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.12);
+  }
 `;
 
 export const Table = styled.table`
@@ -61,21 +70,23 @@ export const Table = styled.table`
 `;
 
 export const Th = styled.th`
-  padding: 0.65rem 0.6rem;
+  padding: 0.72rem 0.6rem;
   text-align: center;
-  background: #f3f5f8;
-  border-bottom: 1px solid #e5e7eb;
-  font-size: 0.82rem;
+  background: #f8f8f9;
+  border-bottom: 1px solid #e4e4e7;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: #4b5563;
+  color: #3a3a40;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 `;
 
 export const Td = styled.td`
-  padding: 0.65rem 0.6rem;
+  padding: 0.72rem 0.6rem;
   text-align: center;
-  border-bottom: 1px solid #f0f0f0;
-  font-size: 0.85rem;
-  color: #1f2937;
+  border-bottom: 1px solid #ededf0;
+  font-size: 0.86rem;
+  color: #1a1a1e;
 `;
 
 type StatusVariant =
@@ -115,29 +126,50 @@ export const StatusBadge = styled.span<{ $variant?: StatusVariant }>`
 
 export const SummaryGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 1rem;
-  margin-bottom: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1.1rem;
+  margin-bottom: 1.75rem;
 `;
 
 export const SummaryCard = styled.div<{ $accent?: string }>`
-  background: #fff;
-  border-radius: 12px;
-  padding: 1rem 1.2rem;
-  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.06);
-  border-left: 4px solid ${({ $accent = "#2563eb" }) => $accent};
+  position: relative;
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid #e4e4e7;
+  box-shadow: 0 18px 32px rgba(15, 15, 23, 0.04);
+  overflow: hidden;
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid ${({ $accent = "#0f0f11" }) => $accent};
+    opacity: 0.1;
+    pointer-events: none;
+  }
 `;
 
 export const SummaryLabel = styled.div`
-  font-size: 0.8rem;
-  color: #6b7280;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #6c6c72;
 `;
 
 export const SummaryValue = styled.div`
-  font-size: 1.35rem;
+  font-size: 1.6rem;
   font-weight: 700;
-  color: #111827;
-  margin-top: 0.35rem;
+  color: #111111;
+  margin-top: 0.4rem;
+  letter-spacing: -0.01em;
+`;
+
+export const SummaryNote = styled.p`
+  margin: 0.45rem 0 0;
+  font-size: 0.75rem;
+  color: #6c6c72;
 `;
 
 export const Legend = styled.div`

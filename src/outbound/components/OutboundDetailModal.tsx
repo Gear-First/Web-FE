@@ -1,9 +1,5 @@
 import { useState, useEffect } from "react";
-import type {
-  OutboundRecord,
-  OutboundStatus,
-  OutboundPartStatus,
-} from "../OutboundTypes";
+import type { OutboundRecord } from "../OutboundTypes";
 import { StatusBadge, Td, Th } from "../../components/common/PageLayout";
 import {
   Overlay,

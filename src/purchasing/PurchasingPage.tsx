@@ -6,6 +6,11 @@ import {
   SectionHeader,
   SectionTitle,
   FilterGroup,
+  SummaryGrid,
+  SummaryCard,
+  SummaryLabel,
+  SummaryValue,
+  SummaryNote,
 } from "../components/common/PageLayout";
 import SearchBox from "../components/common/SearchBox";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -95,6 +100,18 @@ export default function PurchasingPage() {
   const totalPagesSelected = selectedCompaniesData?.meta?.totalPages ?? 1;
   const isFetchingSelected = fetchSelectedStatus === "fetching";
 
+  const avgPrice = allCompanies.length
+    ? Math.round(
+        allCompanies.reduce(
+          (sum, record) => sum + Number(record.purchasingPrice ?? 0),
+          0
+        ) / allCompanies.length
+      )
+    : 0;
+  const coverageRate = totalAll > 0
+    ? Math.round((totalSelected / totalAll) * 100)
+    : 0;
+
   const onSearchSelected = () => {
     setAppliedKeywordSelected(keywordSelected.trim());
     setPageSelected(1);
@@ -108,6 +125,30 @@ export default function PurchasingPage() {
   return (
     <Layout>
       <PageContainer>
+        <SummaryGrid>
+          <SummaryCard>
+            <SummaryLabel>등록된 업체</SummaryLabel>
+            <SummaryValue>
+              {isFetchingAll ? "· · ·" : totalAll.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>전체 공급 네트워크 규모</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>선정 업체</SummaryLabel>
+            <SummaryValue>
+              {isFetchingSelected ? "· · ·" : totalSelected.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>선정 비율 {coverageRate}%</SummaryNote>
+          </SummaryCard>
+          <SummaryCard>
+            <SummaryLabel>평균 단가</SummaryLabel>
+            <SummaryValue>
+              ₩
+              {isFetchingAll ? "· · ·" : avgPrice.toLocaleString()}
+            </SummaryValue>
+            <SummaryNote>조회된 업체 기준</SummaryNote>
+          </SummaryCard>
+        </SummaryGrid>
         {/* 등록된 업체 섹션 */}
         <SectionCard>
           <SectionHeader>

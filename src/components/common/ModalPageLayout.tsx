@@ -4,10 +4,12 @@ import styled, { css } from "styled-components";
 export const Overlay = styled.div`
   position: fixed;
   inset: 0;
-  background: rgba(17, 24, 39, 0.3);
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(8, 9, 12, 0.52);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   z-index: 2000;
 `;
 interface ModalContainerProps {
@@ -19,13 +21,15 @@ interface ModalContainerProps {
 
 /* 모달 컨테이너 */
 export const ModalContainer = styled.div<ModalContainerProps>`
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-  animation: fadeIn 0.3s ease-out;
   position: relative;
+  display: flex;
+  flex-direction: column;
+  background: linear-gradient(155deg, #ffffff 0%, #f6f6f8 100%);
+  border-radius: 26px;
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  box-shadow: 0 36px 70px rgba(10, 10, 15, 0.16);
   overflow: hidden;
-  border: 1px solid #e5e7eb;
+  animation: modalFade 0.25s ease-out;
 
   ${({ width }) =>
     width &&
@@ -43,16 +47,19 @@ export const ModalContainer = styled.div<ModalContainerProps>`
       height: ${height};
     `}
   ${({ padding }) =>
-    padding &&
-    css`
-      padding: ${padding};
-    `}
+    padding
+      ? css`
+          padding: ${padding};
+        `
+      : css`
+          padding: 0;
+        `}
 
   /* 기본값 */
   ${({ width }) =>
     !width &&
     css`
-      width: 1000px;
+      width: 920px;
     `}
   ${({ maxWidth }) =>
     !maxWidth &&
@@ -60,10 +67,10 @@ export const ModalContainer = styled.div<ModalContainerProps>`
       max-width: 95%;
     `}
 
-  @keyframes fadeIn {
+  @keyframes modalFade {
     from {
       opacity: 0;
-      transform: translateY(-12px);
+      transform: translateY(12px);
     }
     to {
       opacity: 1;
@@ -74,9 +81,8 @@ export const ModalContainer = styled.div<ModalContainerProps>`
 
 /* 모달 상단 헤더 */
 export const Header = styled.header`
-  background: #f3f5f8;
-  padding: 0.75rem 1.5rem;
-  border-bottom: 1px solid #e5e7eb;
+  padding: 1.55rem 2.1rem 1.1rem;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -86,48 +92,56 @@ export const Header = styled.header`
 export const HeaderLeft = styled.header`
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 1.2rem;
 `;
 
 /* 모달 제목 */
 export const Title = styled.h3`
-  font-size: 1.2rem;
+  margin: 0;
+  font-size: 1.35rem;
   font-weight: 700;
-  color: #111827;
+  letter-spacing: -0.01em;
+  color: #0f0f11;
   margin: 0;
 `;
 
 /* 닫기 버튼 (X) */
 export const CloseButton = styled.button`
+  --size: 38px;
   border: none;
   background: transparent;
-  font-size: 1.4rem;
-  color: #6b7280;
+  width: var(--size);
+  height: var(--size);
+  border-radius: 50%;
+  font-size: 1.1rem;
+  color: #1f1f24;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: transform 0.18s ease, background-color 0.18s ease,
+    color 0.18s ease;
 
   &:hover {
-    color: #111827;
-    transform: scale(1.2);
+    background: rgba(17, 17, 17, 0.06);
+    color: #0f0f11;
+    transform: translateY(-1px);
   }
 `;
 
 /* 각 섹션 */
 export const Section = styled.section`
-  padding: 1.5rem 1.8rem;
+  padding: 1.6rem 2.1rem;
   &:not(:last-child) {
-    border-bottom: 1px solid #f0f0f0;
+    border-bottom: 1px solid rgba(17, 17, 17, 0.05);
   }
 `;
 
 /* 섹션 제목 */
 export const SectionTitle = styled.h4`
-  font-size: 1rem;
-  font-weight: 600;
-  color: #374151;
   margin: 0 0 1rem;
-  border-left: 4px solid #2563eb;
-  padding-left: 0.5rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: #787881;
 `;
 
 type DetailGridProps = { $cols?: number };
@@ -143,39 +157,41 @@ export const DetailGrid = styled.div<DetailGridProps>`
 export const DetailItem = styled.div`
   display: flex;
   flex-direction: column;
+  gap: 0.35rem;
 `;
 
 /* 항목 이름 (예: 담당자, 부품코드 등) */
 export const Label = styled.span`
-  font-size: 0.78rem;
-  color: #6b7280;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #90909a;
 `;
 
 /* 항목 값 */
 export const Value = styled.span`
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #1f2937;
-  margin-top: 2px;
+  font-size: 0.98rem;
+  font-weight: 600;
+  color: #111113;
 `;
 
 /* 부품 리스트 */
 export const PartList = styled.div`
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  background: #fafafa;
-  padding: 0.5rem;
-  margin-top: 8px;
+  border: 1px solid rgba(17, 17, 17, 0.06);
+  border-radius: 14px;
+  background: #f7f7f9;
+  padding: 0.75rem;
   max-height: 64px;
   overflow-y: scroll;
 `;
 
 /* 비고 영역 (텍스트가 길 경우 내부 스크롤) */
 export const RemarkSection = styled(Section)`
-  max-height: 120px; /* 원하는 높이로 조절 */
+  max-height: 160px;
   overflow-y: auto;
-  padding: 0.75rem;
-  border: 1px solid #d9d9d9;
+  padding: 1.1rem 1.6rem;
+  border: 1px solid rgba(17, 17, 17, 0.05);
+  border-radius: 18px;
 `;
 
 /* 비고 입력 래퍼 */
@@ -187,49 +203,75 @@ export const TextareaWrapper = styled.div`
 /* 비고 입력 텍스트창 */
 export const StyledTextarea = styled.textarea`
   width: 100%;
-  height: 60px;
-  border: 1px solid #d9d9d9;
-  padding: 0.75rem;
+  min-height: 72px;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 14px;
+  padding: 0.85rem 1rem;
   resize: none;
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-family: inherit;
   box-sizing: border-box;
+  background: #ffffff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(17, 17, 17, 0.32);
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+  }
 `;
 
 export const Footer = styled.div`
-  padding: 14px 20px;
+  padding: 1.4rem 2.1rem 1.8rem;
   display: flex;
-  justify-content: center;
-  gap: 8px;
+  justify-content: flex-end;
+  gap: 0.75rem;
 `;
 
 /* 버튼 */
 export const Button = styled.button<{ color?: string }>`
-  background-color: ${({ color }) => color || "#ccc"};
-  color: white;
   border: none;
-  border-radius: 6px;
-  padding: 6px 12px;
-  font-size: 0.9rem;
+  border-radius: 999px;
+  padding: 0.65rem 1.5rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: ${({ color }) => color || "#0f0f11"};
+  color: ${({ color }) => {
+    if (!color) return "#ffffff";
+    const normalized = color.toLowerCase();
+    return ["black", "#0f0f11", "#111111", "#000", "#000000"].includes(
+      normalized
+    )
+      ? "#ffffff"
+      : "#0f0f11";
+  }};
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
+
   &:hover {
-    opacity: 0.9;
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(15, 15, 23, 0.18);
   }
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
+    box-shadow: none;
   }
 `;
 
 /* 입력창 */
 export const Input = styled.input`
-  padding: 10px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  font-size: 14px;
+  padding: 0.75rem 0.95rem;
+  border: 1px solid rgba(17, 17, 17, 0.08);
+  border-radius: 14px;
+  font-size: 0.9rem;
   outline: none;
+  background: #ffffff;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
   &:focus {
-    border-color: #111827;
+    border-color: rgba(17, 17, 17, 0.32);
+    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
   }
 `;
