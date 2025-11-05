@@ -1,26 +1,27 @@
 import { useState } from "react";
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
-import type { OutboundRecord, OutboundStatus } from "../OutboundTypes";
+import type { OutboundRecord } from "../OutboundTypes";
 import OutboundDetailModal from "../components/OutboundDetailModal";
-
-const statusVariant: Record<OutboundStatus, "warning" | "info" | "success"> = {
-  대기: "warning",
-  진행중: "info",
-  완료: "success",
-};
+import {
+  OUTBOUND_STATUS_LABELS,
+  OUTBOUND_STATUS_VARIANTS,
+} from "../OutboundTypes";
+import { fmtDate } from "../../utils/string";
 
 export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
   const [selectedRecord, setSelectedRecord] = useState<OutboundRecord | null>(
     null
   );
   const [isModalOpen, setIsModalOpen] = useState(false);
+
   return (
     <>
       <Table>
         <thead>
           <tr>
             <Th>출고 번호</Th>
-            <Th>부품</Th>
+            <Th>대리점</Th>
+            <Th>창고</Th>
             <Th>출고 수량</Th>
             <Th>접수 일시</Th>
             <Th>출고 일시</Th>
@@ -30,23 +31,22 @@ export default function OutboundTable({ rows }: { rows: OutboundRecord[] }) {
         <tbody>
           {rows.map((r) => (
             <tr
-              key={r.outboundId}
+              key={r.noteId}
               style={{ cursor: "pointer" }}
               onClick={() => {
                 setSelectedRecord(r);
                 setIsModalOpen(true);
               }}
             >
-              <Td>{r.outboundId}</Td>
-              <Td>{r.partItems[0]?.partName || "-"}</Td>
+              <Td>{r.shippingNo}</Td>
+              <Td>{r.branchName}</Td>
+              <Td>{r.warehouseCode}</Td>
+              <Td>{r.totalQty.toLocaleString() || "-"}</Td>
+              <Td>{fmtDate(r.requestedAt)}</Td>
+              <Td>{fmtDate(r.shippedAt ?? "")}</Td>
               <Td>
-                {r.partItems[0]?.outboundQuantity.toLocaleString() || "-"}
-              </Td>
-              <Td>{r.receiptDate}</Td>
-              <Td>{r.issuedDate}</Td>
-              <Td>
-                <StatusBadge $variant={statusVariant[r.status]}>
-                  {r.status}
+                <StatusBadge $variant={OUTBOUND_STATUS_VARIANTS[r.status]}>
+                  {OUTBOUND_STATUS_LABELS[r.status]}
                 </StatusBadge>
               </Td>
             </tr>
