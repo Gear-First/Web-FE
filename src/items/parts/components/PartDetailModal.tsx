@@ -4,6 +4,7 @@ import {
   CloseButton,
   DetailGrid,
   DetailItem,
+  Footer,
   Header,
   HeaderLeft,
   Label,
@@ -138,16 +139,14 @@ const PartDetailModal = ({
         </Section>
 
         {/* 액션 */}
-        <Section
-          style={{ display: "flex", justifyContent: "center", gap: "0.75rem" }}
-        >
+        <Footer>
           <Button onClick={() => onEdit?.(record)} title="수정">
             수정
           </Button>
           <Button color="danger" onClick={handleDelete} title="삭제">
             삭제
           </Button>
-        </Section>
+        </Footer>
       </ModalContainer>
     </Overlay>
   );

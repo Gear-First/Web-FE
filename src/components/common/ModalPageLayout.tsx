@@ -159,6 +159,13 @@ export const StyledTextarea = styled.textarea`
   box-sizing: border-box;
 `;
 
+export const Footer = styled.div`
+  padding: 14px 20px;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+`;
+
 /* 버튼 */
 export const Button = styled.button<{ color?: string }>`
   background-color: ${({ color }) => color || "#ccc"};
@@ -185,7 +192,7 @@ export const Input = styled.input`
   border-radius: 8px;
   font-size: 14px;
   outline: none;
-  width: 80%;
+  /* width: 80%; */
   &:focus {
     border-color: #111827;
   }

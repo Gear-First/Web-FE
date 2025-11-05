@@ -13,6 +13,7 @@ import {
   DetailItem,
   Label,
   Value,
+  Footer,
 } from "../../../components/common/ModalPageLayout";
 import Button from "../../../components/common/Button";
 import { fetchCategoryDetail, categoryKeys } from "../CategoryApi";
@@ -35,7 +36,6 @@ const CategoryDetailModal = ({
   onDelete,
   disableOverlayClose = false,
 }: Props) => {
-  // ✅ 훅은 항상 호출되도록 최상단에서 선언
   const id = record?.id ?? "";
 
   const {
@@ -57,7 +57,6 @@ const CategoryDetailModal = ({
     return () => window.removeEventListener("keydown", h);
   }, [isOpen, onClose]);
 
-  // ✅ 훅 호출 이후에 조건부 렌더링
   if (!isOpen || !record) return null;
 
   const fmt = (v?: string | null) => (v ? v : "-");
@@ -128,9 +127,7 @@ const CategoryDetailModal = ({
         </Section>
 
         {(onEdit || onDelete) && (
-          <Section
-            style={{ display: "flex", justifyContent: "center", gap: 12 }}
-          >
+          <Footer>
             {onEdit && (
               <Button onClick={handleEdit} disabled={!detail}>
                 수정
@@ -141,7 +138,7 @@ const CategoryDetailModal = ({
                 삭제
               </Button>
             )}
-          </Section>
+          </Footer>
         )}
       </ModalContainer>
     </Overlay>

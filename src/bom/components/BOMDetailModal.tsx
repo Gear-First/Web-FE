@@ -6,6 +6,7 @@ import {
   CloseButton,
   DetailGrid,
   DetailItem,
+  Footer,
   Header,
   HeaderLeft,
   Label,
@@ -257,9 +258,7 @@ export default function BOMDetailModal({
           )}
         </Section>
 
-        <Section
-          style={{ display: "flex", justifyContent: "center", gap: "0.75rem" }}
-        >
+        <Footer>
           <Button
             onClick={() => onEdit?.({ ...record!, materials: mats })}
             title="수정"
@@ -269,7 +268,7 @@ export default function BOMDetailModal({
           <Button color="danger" onClick={handleDelete} title="삭제">
             삭제
           </Button>
-        </Section>
+        </Footer>
       </ModalContainer>
     </Overlay>
   );

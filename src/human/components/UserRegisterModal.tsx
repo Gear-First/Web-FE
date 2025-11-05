@@ -9,78 +9,21 @@ import type {
 } from "../HumanTypes";
 import type { Rank } from "../HumanTypes";
 import { useRegions, useWorkTypes } from "./queries";
+import {
+  CloseButton,
+  DetailGrid,
+  DetailItem,
+  Footer,
+  Header,
+  Input,
+  Label,
+  ModalContainer,
+  Overlay,
+  Section,
+  Title,
+} from "../../components/common/ModalPageLayout";
+import { Select } from "../../components/common/PageLayout";
 
-const Overlay = styled.div`
-  position: fixed;
-  inset: 0;
-  background: rgba(17, 24, 39, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-`;
-const Modal = styled.div`
-  width: 560px;
-  max-width: 95%;
-  background: #fff;
-  border-radius: 16px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.18);
-  overflow: hidden;
-`;
-const Header = styled.div`
-  padding: 16px 20px;
-  border-bottom: 1px solid #eef2f7;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: 700;
-  font-size: 1.05rem;
-`;
-const Body = styled.div`
-  padding: 20px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 14px 16px;
-  @media (max-width: 640px) {
-    grid-template-columns: 1fr;
-  }
-`;
-const Footer = styled.div`
-  padding: 14px 20px;
-  border-top: 1px solid #eef2f7;
-  display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-`;
-const Field = styled.label`
-  min-width: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  font-size: 0.9rem;
-  color: #111827;
-`;
-const Input = styled.input`
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-size: 0.95rem;
-  &:focus {
-    outline: none;
-    border-color: #111;
-  }
-`;
-const Select = styled.select`
-  padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #cbd5e1;
-  font-size: 0.95rem;
-  &:focus {
-    outline: none;
-    border-color: #111;
-  }
-`;
 const ErrorBox = styled.div`
   grid-column: 1 / -1;
   background: #fef2f2;
@@ -226,108 +169,102 @@ export default function UserRegisterModal({
 
   return (
     <Overlay onClick={onClose}>
-      <Modal onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        style={{ width: "40%" }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <Header>
-          <span>{isEdit ? "사용자 수정" : "회원가입"}</span>
-          <button
-            onClick={onClose}
-            aria-label="close"
-            style={{
-              background: "none",
-              border: "none",
-              fontSize: 18,
-              cursor: "pointer",
-            }}
-          >
-            ✕
-          </button>
+          <Title>{isEdit ? "사용자 수정" : "회원가입"}</Title>
+          <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
 
         <form onSubmit={handleSubmit}>
-          <Body>
-            <Field>
-              이름
-              <Input
-                value={form.name}
-                onChange={(e) => update("name", e.target.value)}
-                placeholder="홍길동"
-                required
-              />
-            </Field>
+          <Section>
+            <DetailGrid $cols={2}>
+              <DetailItem>
+                <Label>이름</Label>
+                <Input
+                  value={form.name}
+                  onChange={(e) => update("name", e.target.value)}
+                  placeholder="홍길동"
+                  required
+                />
+              </DetailItem>
 
-            <Field>
-              회원직급
-              <Select
-                value={form.rank}
-                onChange={(e) =>
-                  update("rank", e.target.value as "EMPLOYEE" | "LEADER")
-                }
-              >
-                {DEFAULT_RANKS.map((r) => (
-                  <option key={r.rankId} value={r.rankName}>
-                    {r.rankName === "EMPLOYEE"
-                      ? "사원 (EMPLOYEE)"
-                      : "팀장 (LEADER)"}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+              <DetailItem>
+                <Label> 회원직급</Label>
+                <Select
+                  value={form.rank}
+                  onChange={(e) =>
+                    update("rank", e.target.value as "EMPLOYEE" | "LEADER")
+                  }
+                >
+                  {DEFAULT_RANKS.map((r) => (
+                    <option key={r.rankId} value={r.rankName}>
+                      {r.rankName === "EMPLOYEE"
+                        ? "사원 (EMPLOYEE)"
+                        : "팀장 (LEADER)"}
+                    </option>
+                  ))}
+                </Select>
+              </DetailItem>
 
-            <Field>
-              이메일
-              <Input
-                type="email"
-                value={form.email}
-                onChange={(e) => update("email", e.target.value)}
-                placeholder="user@gearfirst.com"
-                required
-              />
-            </Field>
+              <DetailItem>
+                <Label>이메일</Label>
+                <Input
+                  type="email"
+                  value={form.email}
+                  onChange={(e) => update("email", e.target.value)}
+                  placeholder="user@gearfirst.com"
+                  required
+                />
+              </DetailItem>
 
-            <Field>
-              연락처
-              <Input
-                value={form.phoneNum}
-                onChange={(e) => update("phoneNum", e.target.value)}
-                placeholder="010-1234-5678"
-                required
-              />
-            </Field>
+              <DetailItem>
+                <Label>연락처</Label>
+                <Input
+                  value={form.phoneNum}
+                  onChange={(e) => update("phoneNum", e.target.value)}
+                  placeholder="010-1234-5678"
+                  required
+                />
+              </DetailItem>
 
-            <Field>
-              지역
-              <Select
-                value={String(form.regionId || "")}
-                onChange={(e) => update("regionId", Number(e.target.value))}
-              >
-                {!regions.length && <option value="">지역 로딩 중…</option>}
-                {!!regions.length && <option value="">지역 선택</option>}
-                {regions.map((r) => (
-                  <option key={r.regionId} value={r.regionId}>
-                    {r.regionName}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+              <DetailItem>
+                <Label>지역</Label>
+                <Select
+                  value={String(form.regionId || "")}
+                  onChange={(e) => update("regionId", Number(e.target.value))}
+                >
+                  {!regions.length && <option value="">지역 로딩 중…</option>}
+                  {!!regions.length && <option value="">지역 선택</option>}
+                  {regions.map((r) => (
+                    <option key={r.regionId} value={r.regionId}>
+                      {r.regionName}
+                    </option>
+                  ))}
+                </Select>
+              </DetailItem>
 
-            <Field>
-              지점
-              <Select
-                value={String(form.workTypeId || "")}
-                onChange={(e) => update("workTypeId", Number(e.target.value))}
-              >
-                {!workTypes.length && <option value="">지점 로딩 중…</option>}
-                {!!workTypes.length && <option value="">지점 선택</option>}
-                {workTypes.map((w) => (
-                  <option key={w.workTypeId} value={w.workTypeId}>
-                    {w.workTypeName}
-                  </option>
-                ))}
-              </Select>
-            </Field>
+              <DetailItem>
+                <Label>지점</Label>
+                <Select
+                  value={String(form.workTypeId || "")}
+                  onChange={(e) => update("workTypeId", Number(e.target.value))}
+                >
+                  {!workTypes.length && <option value="">지점 로딩 중…</option>}
+                  {!!workTypes.length && <option value="">지점 선택</option>}
+                  {workTypes.map((w) => (
+                    <option key={w.workTypeId} value={w.workTypeId}>
+                      {w.workTypeName}
+                    </option>
+                  ))}
+                </Select>
+              </DetailItem>
 
-            {error && <ErrorBox>{error}</ErrorBox>}
-          </Body>
+              {error && <ErrorBox>{error}</ErrorBox>}
+            </DetailGrid>
+          </Section>
 
           <Footer>
             <Button type="button" onClick={onClose}>
@@ -344,7 +281,7 @@ export default function UserRegisterModal({
             </Button>
           </Footer>
         </form>
-      </Modal>
+      </ModalContainer>
     </Overlay>
   );
 }
