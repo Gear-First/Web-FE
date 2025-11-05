@@ -52,7 +52,7 @@ export interface PendingOrderResponse {
   };
 }
 
-// 승인/반려 목록
+// 승인 목록
 export interface ProcessedOrderItem {
   orderId: number;
   orderNumber: string;
@@ -70,6 +70,32 @@ export interface ProcessedOrderResponse {
   message: string;
   data: {
     content: ProcessedOrderItem[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+  };
+}
+
+// 반려 목록
+export interface CancelOrderItem {
+  orderId: number;
+  orderNumber: string;
+  orderStatus: string;
+  branchCode: string;
+  engineerName: string;
+  engineerRole: string;
+  requestDate: string;
+  processedDate: string;
+}
+
+export interface CancelOrderResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: {
+    content: CancelOrderItem[];
     pageNumber: number;
     pageSize: number;
     totalElements: number;

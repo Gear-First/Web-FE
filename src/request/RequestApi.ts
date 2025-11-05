@@ -2,14 +2,15 @@ import axios from "axios";
 import type {
   PendingOrderResponse,
   ProcessedOrderResponse,
+  CancelOrderResponse,
   OrderDetailResponse,
 } from "./RequestTypes";
 
 // React Query 키
 export const requestKeys = {
   pendingOrders: ["request", "pending-orders"] as const,
-  approvedOrders: ["request", "approved-orders"] as const,
-  rejectedOrders: ["request", "rejected-orders"] as const,
+  processedOrders: ["request", "processed-orders"] as const,
+  cancelOrders: ["request", "cancel-orders"] as const,
   orderDetail: (id: number) => ["request", "order-detail", id] as const,
 };
 
@@ -58,7 +59,7 @@ export async function fetchPendingOrders(params: {
   page: number;
   size: number;
   sort?: string;
-  partName?: string;
+  search?: string;
   startDate?: string;
   endDate?: string;
 }): Promise<PendingOrderResponse> {
@@ -66,17 +67,35 @@ export async function fetchPendingOrders(params: {
   return res.data;
 }
 
-// 승인/반려 목록 조회
+// 승인 목록 조회
 export async function fetchProcessedOrders(params: {
   page: number;
   size: number;
   sort?: string;
-  partName?: string;
+  search?: string;
   startDate?: string;
   endDate?: string;
   status?: string;
 }): Promise<ProcessedOrderResponse> {
-  const res = await api.get("/purchase-orders/head/orders/other", { params });
+  const res = await api.get("/purchase-orders/head/orders/processed", {
+    params,
+  });
+  return res.data;
+}
+
+// 승인/반려 목록 조회
+export async function fetchCancelOrders(params: {
+  page: number;
+  size: number;
+  sort?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
+  status?: string;
+}): Promise<CancelOrderResponse> {
+  const res = await api.get("/purchase-orders/head/orders/cancel", {
+    params,
+  });
   return res.data;
 }
 

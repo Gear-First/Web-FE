@@ -134,7 +134,7 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                     {detail.lines?.map((line) => (
                       <tr key={line.lineId}>
                         <Td>{line.product?.name ?? "-"}</Td>
-                        <Td>{line.product?.serial ?? "-"}</Td>
+                        <Td>{line.product?.code ?? "-"}</Td>
                         <Td>{line.pickedQty?.toLocaleString() ?? "-"}</Td>
                         <Td>
                           <StatusBadge
