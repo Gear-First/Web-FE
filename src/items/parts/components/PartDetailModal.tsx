@@ -4,6 +4,7 @@ import {
   CloseButton,
   DetailGrid,
   DetailItem,
+  Footer,
   Header,
   HeaderLeft,
   Label,
@@ -72,11 +73,7 @@ const PartDetailModal = ({
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
-      <ModalContainer
-        onClick={(e) => e.stopPropagation()}
-        role="dialog"
-        aria-labelledby="part-detail-title"
-      >
+      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
             <Title id="part-detail-title">부품 상세 정보</Title>
@@ -138,16 +135,14 @@ const PartDetailModal = ({
         </Section>
 
         {/* 액션 */}
-        <Section
-          style={{ display: "flex", justifyContent: "center", gap: "0.75rem" }}
-        >
+        <Footer>
           <Button onClick={() => onEdit?.(record)} title="수정">
             수정
           </Button>
           <Button color="danger" onClick={handleDelete} title="삭제">
             삭제
           </Button>
-        </Section>
+        </Footer>
       </ModalContainer>
     </Overlay>
   );

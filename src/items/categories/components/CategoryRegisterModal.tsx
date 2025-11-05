@@ -3,6 +3,7 @@ import {
   CloseButton,
   DetailGrid,
   DetailItem,
+  Footer,
   Header,
   HeaderLeft,
   Input,
@@ -138,7 +139,7 @@ export default function CategoryRegisterModal({
     <Overlay
       onClick={disableOverlayClose || isSubmitting ? undefined : onClose}
     >
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
             <Title>
@@ -192,14 +193,14 @@ export default function CategoryRegisterModal({
           </DetailGrid>
         </Section>
 
-        <Section style={{ display: "flex", justifyContent: "center", gap: 12 }}>
+        <Footer>
           <Button onClick={handleSubmit} disabled={!canSubmit}>
             {isSubmitting ? "처리중…" : mode === "create" ? "등록" : "수정"}
           </Button>
           <Button onClick={onClose} disabled={isSubmitting}>
             취소
           </Button>
-        </Section>
+        </Footer>
       </ModalContainer>
     </Overlay>
   );

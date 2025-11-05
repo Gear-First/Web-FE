@@ -3,6 +3,7 @@ import {
   CloseButton,
   DetailGrid,
   DetailItem,
+  Footer,
   Header,
   HeaderLeft,
   Input,
@@ -14,7 +15,6 @@ import {
   Title,
 } from "../../../components/common/ModalPageLayout";
 import Button from "../../../components/common/Button";
-import styled from "styled-components";
 import { Select } from "../../../components/common/PageLayout";
 
 import type { PartFormModel, ServerPartCategory } from "../PartTypes";
@@ -98,7 +98,7 @@ const PartRegisterModal = ({
 
   return (
     <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
             <Title>{mode === "edit" ? "부품 수정" : "부품 등록"}</Title>
@@ -111,7 +111,7 @@ const PartRegisterModal = ({
         {/* 부품 정보 */}
         <Section>
           <SectionTitle>부품 정보</SectionTitle>
-          <DetailGrid>
+          <DetailGrid $cols={2}>
             <DetailItem>
               <Label>부품 코드</Label>
               <Input
@@ -133,7 +133,6 @@ const PartRegisterModal = ({
             <DetailItem>
               <Label>부품 카테고리</Label>
               <Select
-                style={{ width: "50%" }}
                 value={categoryId}
                 onChange={(e) =>
                   setCategoryId(
@@ -168,7 +167,6 @@ const PartRegisterModal = ({
             <DetailItem>
               <Label>상태</Label>
               <Select
-                style={{ width: "50%" }}
                 value={String(enabled)}
                 onChange={(e) => setEnabled(e.target.value === "true")}
                 disabled={mode !== "edit"}
@@ -181,27 +179,17 @@ const PartRegisterModal = ({
           </DetailGrid>
         </Section>
 
-        {/* 액션 */}
-        <Section>
-          <Actions>
-            <Button color="gray" onClick={onClose}>
-              취소
-            </Button>
-            <Button onClick={handleSubmit}>
-              {mode === "edit" ? "수정 저장" : "등록"}
-            </Button>
-          </Actions>
-        </Section>
+        <Footer>
+          <Button color="gray" onClick={onClose}>
+            취소
+          </Button>
+          <Button onClick={handleSubmit}>
+            {mode === "edit" ? "수정 저장" : "등록"}
+          </Button>
+        </Footer>
       </ModalContainer>
     </Overlay>
   );
 };
 
 export default PartRegisterModal;
-
-// 하단 액션
-const Actions = styled.div`
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-`;

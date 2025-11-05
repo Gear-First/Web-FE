@@ -2,6 +2,7 @@ import { styled } from "styled-components";
 import { Th, Td } from "../../components/common/PageLayout";
 import { TableScroll, StickyTable } from "../../components/common/ScrollTable";
 import type { ReactNode } from "react";
+import Button from "../../components/common/Button";
 import { Input } from "../../components/common/ModalPageLayout";
 
 export type MaterialRow = {
@@ -24,7 +25,6 @@ type Props = {
   compact?: boolean;
   verticalLines?: boolean;
   sticky?: boolean;
-
   renderSearchButton?: (row: MaterialRow) => ReactNode;
 };
 
@@ -34,11 +34,11 @@ export default function MaterialsTable({
   onRemove,
   maxHeight = 220,
   verticalLines = true,
-  renderSearchButton,
 }: Props) {
   return (
     <TableScroll $maxHeight={maxHeight}>
       <StickyTable
+        $colWidths={["30%", "30%", "10%", "10%"]}
         $stickyTop={0}
         $headerBg="#fafbfc"
         $zebra
@@ -46,20 +46,16 @@ export default function MaterialsTable({
       >
         <thead>
           <tr>
-            <Th style={{ width: 140 }}>자재코드</Th>
+            <Th>자재코드</Th>
             <Th>자재명</Th>
-            <Th style={{ width: 120 }}>수량</Th>
-            {renderSearchButton && <Th style={{ width: 120 }}>검색</Th>}
-            <Th style={{ width: 90 }}>삭제</Th>
+            <Th>수량</Th>
+            <Th>삭제</Th>
           </tr>
         </thead>
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <Td
-                colSpan={renderSearchButton ? 5 : 4}
-                style={{ textAlign: "center", color: "#6b7280" }}
-              >
+              <Td colSpan={4} style={{ textAlign: "center", color: "#6b7280" }}>
                 자재 행이 없습니다.
               </Td>
             </tr>
@@ -67,25 +63,19 @@ export default function MaterialsTable({
             rows.map((row) => (
               <tr key={row.id}>
                 <Td>
-                  <Input
-                    value={row.materialCode}
-                    onChange={(e) =>
-                      onChange(row.id, "materialCode", e.target.value)
-                    }
-                    readOnly
-                  />
+                  <CellValue data-empty={!row.materialCode}>
+                    {row.materialCode || "자재를 선택해주세요"}
+                  </CellValue>
                 </Td>
+
                 <Td>
-                  <Input
-                    value={row.materialName}
-                    onChange={(e) =>
-                      onChange(row.id, "materialName", e.target.value)
-                    }
-                    readOnly
-                  />
+                  <CellValue data-empty={!row.materialName}>
+                    {row.materialName || "자재를 선택해주세요"}
+                  </CellValue>
                 </Td>
+
                 <Td>
-                  <Input
+                  <QtyInput
                     type="number"
                     min={1}
                     value={row.materialQty}
@@ -99,12 +89,10 @@ export default function MaterialsTable({
                   />
                 </Td>
 
-                {renderSearchButton && <Td>{renderSearchButton(row)}</Td>}
-
                 <Td>
-                  <DeleteBtn type="button" onClick={() => onRemove(row.id)}>
+                  <Button color="danger" onClick={() => onRemove(row.id)}>
                     삭제
-                  </DeleteBtn>
+                  </Button>
                 </Td>
               </tr>
             ))
@@ -115,18 +103,27 @@ export default function MaterialsTable({
   );
 }
 
-/* ---------- styled ---------- */
+const CellValue = styled.div`
+  height: 36px;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: #111827;
 
-const DeleteBtn = styled.button`
-  border: 1px solid #ef4444;
-  color: #ef4444;
-  background: #fff;
-  padding: 6px 10px;
-  border-radius: 8px;
-  font-size: 0.85rem;
-  cursor: pointer;
+  &[data-empty="true"] {
+    color: #9ca3af;
+  }
+`;
 
-  &:hover {
-    background: #fee2e2;
+const QtyInput = styled(Input)`
+  width: 100%;
+  box-sizing: border-box;
+  border: none;
+  outline: none;
+
+  &:focus {
+    border-color: #cbd5e1;
   }
 `;
