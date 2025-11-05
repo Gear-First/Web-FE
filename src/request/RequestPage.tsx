@@ -22,6 +22,7 @@ import searchIcon from "../assets/search.svg";
 import {
   fetchPendingOrders,
   fetchProcessedOrders,
+  fetchCancelOrders,
   rejectOrder,
 } from "./RequestApi";
 import type {
@@ -56,7 +57,7 @@ export default function RequestPage() {
 
       // 목록 새로고침
       queryClient.invalidateQueries({ queryKey: ["pending-orders"] });
-      queryClient.invalidateQueries({ queryKey: ["rejected-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["cancel-orders"] });
     } catch (err: any) {
       alert(err.response?.data?.message || "반려 요청 실패");
     }
@@ -86,7 +87,7 @@ export default function RequestPage() {
         page: pagePending - 1,
         size: pageSizePending,
         sort: "",
-        partName: appliedPendingKeyword || undefined,
+        search: appliedPendingKeyword || undefined,
         startDate: appliedStartDatePending || undefined,
         endDate: appliedEndDatePending || undefined,
       }),
@@ -112,103 +113,105 @@ export default function RequestPage() {
     setPagePending(1);
   };
 
-  // 승인/진행중 (APPROVED, SHIPPED, COMPLETED)
-  const [keywordApproved, setKeywordApproved] = useState("");
-  const [appliedApprovedKeyword, setAppliedApprovedKeyword] = useState("");
-  const [startDateApproved, setStartDateApproved] = useState("");
-  const [endDateApproved, setEndDateApproved] = useState("");
-  const [appliedStartDateApproved, setAppliedStartDateApproved] = useState("");
-  const [appliedEndDateApproved, setAppliedEndDateApproved] = useState("");
-  const [pageApproved, setPageApproved] = useState(1);
-  const [pageSizeApproved, setPageSizeApproved] = useState(10);
+  // 승인/진행중/완료 (APPROVED, SHIPPED, COMPLETED)
+  const [keywordProcessed, setKeywordProcessed] = useState("");
+  const [appliedProcessedKeyword, setAppliedProcessedKeyword] = useState("");
+  const [startDateProcessed, setStartDateProcessed] = useState("");
+  const [endDateProcessed, setEndDateProcessed] = useState("");
+  const [appliedStartDateProcessed, setAppliedStartDateProcessed] =
+    useState("");
+  const [appliedEndDateProcessed, setAppliedEndDateProcessed] = useState("");
+  const [pageProcessed, setPageProcessed] = useState(1);
+  const [pageSizeProcessed, setPageSizeProcessed] = useState(10);
 
-  const { data: approvedData, fetchStatus: approvedFetchStatus } = useQuery({
+  const { data: processedData, fetchStatus: processedFetchStatus } = useQuery({
     queryKey: [
-      "approved-orders",
-      pageApproved,
-      pageSizeApproved,
-      appliedApprovedKeyword,
-      appliedStartDateApproved,
-      appliedEndDateApproved,
+      "processed-orders",
+      pageProcessed,
+      pageSizeProcessed,
+      appliedProcessedKeyword,
+      appliedStartDateProcessed,
+      appliedEndDateProcessed,
     ],
     queryFn: () =>
       fetchProcessedOrders({
-        page: pageApproved - 1,
-        size: pageSizeApproved,
+        page: pageProcessed - 1,
+        size: pageSizeProcessed,
         sort: "",
-        partName: appliedApprovedKeyword || undefined,
-        startDate: appliedStartDateApproved || undefined,
-        endDate: appliedEndDateApproved || undefined,
+        search: appliedProcessedKeyword || undefined,
+        startDate: appliedStartDateProcessed || undefined,
+        endDate: appliedEndDateProcessed || undefined,
       }),
     staleTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
 
-  const onSearchApproved = () => {
-    setAppliedApprovedKeyword(keywordApproved.trim());
-    setAppliedStartDateApproved(startDateApproved);
-    setAppliedEndDateApproved(endDateApproved);
-    setPageApproved(1);
+  const onSearchProcessed = () => {
+    setAppliedProcessedKeyword(keywordProcessed.trim());
+    setAppliedStartDateProcessed(startDateProcessed);
+    setAppliedEndDateProcessed(endDateProcessed);
+    setPageProcessed(1);
   };
 
-  const onResetApproved = () => {
-    setKeywordApproved("");
-    setAppliedApprovedKeyword("");
-    setStartDateApproved("");
-    setEndDateApproved("");
-    setAppliedStartDateApproved("");
-    setAppliedEndDateApproved("");
-    setPageApproved(1);
+  const onResetProcessed = () => {
+    setKeywordProcessed("");
+    setAppliedProcessedKeyword("");
+    setStartDateProcessed("");
+    setEndDateProcessed("");
+    setAppliedStartDateProcessed("");
+    setAppliedEndDateProcessed("");
+    setPageProcessed(1);
   };
 
   // 반려/취소 (REJECTED, CANCELLED)
-  const [keywordRejected, setKeywordRejected] = useState("");
-  const [appliedRejectedKeyword, setAppliedRejectedKeyword] = useState("");
-  const [startDateRejected, setStartDateRejected] = useState("");
-  const [endDateRejected, setEndDateRejected] = useState("");
-  const [appliedStartDateRejected, setAppliedStartDateRejected] = useState("");
-  const [appliedEndDateRejected, setAppliedEndDateRejected] = useState("");
-  const [pageRejected, setPageRejected] = useState(1);
-  const [pageSizeRejected, setPageSizeRejected] = useState(10);
+  const [keywordCancel, setKeywordCancel] = useState("");
+  const [appliedCancelKeyword, setAppliedCancelKeyword] = useState("");
+  const [startDateCancel, setStartDateCancel] = useState("");
+  const [endDateCancel, setEndDateCancel] = useState("");
+  const [appliedStartDateCancel, setAppliedStartDateCancel] = useState("");
+  const [appliedEndDateCancel, setAppliedEndDateCancel] = useState("");
+  const [pageCancel, setPageCancel] = useState(1);
+  const [pageSizeCancel, setPageSizeCancel] = useState(10);
+
   const [status, setStatus] = useState("");
 
-  const { data: rejectedData, fetchStatus: rejectedFetchStatus } = useQuery({
+  const { data: cancelData, fetchStatus: cancelFetchStatus } = useQuery({
     queryKey: [
-      "rejected-orders",
-      pageRejected,
-      pageSizeRejected,
-      appliedRejectedKeyword,
-      appliedStartDateRejected,
-      appliedEndDateRejected,
+      "cancel-orders",
+      pageCancel,
+      pageSizeCancel,
+      appliedCancelKeyword,
+      appliedStartDateCancel,
+      appliedEndDateCancel,
     ],
     queryFn: () =>
-      fetchProcessedOrders({
-        page: pageRejected - 1,
-        size: pageSizeRejected,
+      fetchCancelOrders({
+        page: pageCancel - 1,
+        size: pageSizeCancel,
         sort: "",
-        partName: appliedRejectedKeyword || undefined,
-        startDate: appliedStartDateRejected || undefined,
-        endDate: appliedEndDateRejected || undefined,
+        search: appliedCancelKeyword || undefined,
+        startDate: appliedStartDateCancel || undefined,
+        endDate: appliedEndDateCancel || undefined,
       }),
     staleTime: 5 * 60 * 1000,
     placeholderData: (prev) => prev,
   });
 
-  const onSearchRejected = () => {
-    setAppliedRejectedKeyword(keywordRejected.trim());
-    setAppliedStartDateRejected(startDateRejected);
-    setAppliedEndDateRejected(endDateRejected);
-    setPageRejected(1);
+  const onSearchCancel = () => {
+    setAppliedCancelKeyword(keywordCancel.trim());
+    setAppliedStartDateCancel(startDateCancel);
+    setAppliedEndDateCancel(endDateCancel);
+    setPageCancel(1);
   };
 
-  const onResetRejected = () => {
-    setKeywordRejected("");
-    setAppliedRejectedKeyword("");
-    setStartDateRejected("");
-    setEndDateRejected("");
-    setAppliedStartDateRejected("");
-    setAppliedEndDateRejected("");
-    setPageRejected(1);
+  const onResetCancel = () => {
+    setKeywordCancel("");
+    setAppliedCancelKeyword("");
+    setStartDateCancel("");
+    setEndDateCancel("");
+    setAppliedStartDateCancel("");
+    setAppliedEndDateCancel("");
+    setPageCancel(1);
   };
 
   // 모달 열기
@@ -316,41 +319,41 @@ export default function RequestPage() {
                 <option value="COMPLETED">납품 완료</option>
               </Select>
               <DateRange
-                startDate={startDateApproved}
-                endDate={endDateApproved}
-                onStartDateChange={setStartDateApproved}
-                onEndDateChange={setEndDateApproved}
+                startDate={startDateProcessed}
+                endDate={endDateProcessed}
+                onStartDateChange={setStartDateProcessed}
+                onEndDateChange={setEndDateProcessed}
               />
               <SearchBox
-                keyword={keywordApproved}
-                onKeywordChange={setKeywordApproved}
-                onSearch={onSearchApproved}
-                onReset={onResetApproved}
+                keyword={keywordProcessed}
+                onKeywordChange={setKeywordProcessed}
+                onSearch={onSearchProcessed}
+                onReset={onResetProcessed}
                 placeholder="발주번호 / 대리점 검색"
               />
-              <Button variant="icon" onClick={onSearchApproved}>
+              <Button variant="icon" onClick={onSearchProcessed}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />
               </Button>
-              <Button variant="icon" onClick={onResetApproved}>
+              <Button variant="icon" onClick={onResetProcessed}>
                 <img src={resetIcon} width={18} height={18} alt="초기화" />
               </Button>
             </FilterGroup>
           </SectionHeader>
           <RequestTable
-            rows={approvedData?.data?.content ?? []}
+            rows={processedData?.data?.content ?? []}
             onRowClick={(rec) => handleOpen(rec, "request")}
           />
 
           <Pagination
-            page={pageApproved}
-            totalPages={approvedData?.data?.totalPages ?? 1}
-            onChange={setPageApproved}
-            isBusy={approvedFetchStatus === "fetching"}
-            totalItems={approvedData?.data?.totalElements ?? 0}
-            pageSize={pageSizeApproved}
+            page={pageProcessed}
+            totalPages={processedData?.data?.totalPages ?? 1}
+            onChange={setPageProcessed}
+            isBusy={processedFetchStatus === "fetching"}
+            totalItems={processedData?.data?.totalElements ?? 0}
+            pageSize={pageSizeProcessed}
             onChangePageSize={(n) => {
-              setPageSizeApproved(n);
-              setPageApproved(1);
+              setPageSizeProcessed(n);
+              setPageProcessed(1);
             }}
             showSummary
             showPageSize
@@ -381,41 +384,41 @@ export default function RequestPage() {
                 <option value="CANCELLED">취소</option>
               </Select>
               <DateRange
-                startDate={startDateRejected}
-                endDate={endDateRejected}
+                startDate={startDateCancel}
+                endDate={endDateCancel}
                 onStartDateChange={setStartDatePending}
                 onEndDateChange={setEndDatePending}
               />
               <SearchBox
-                keyword={keywordRejected}
-                onKeywordChange={setKeywordRejected}
-                onSearch={onSearchRejected}
-                onReset={onResetRejected}
+                keyword={keywordCancel}
+                onKeywordChange={setKeywordCancel}
+                onSearch={onSearchCancel}
+                onReset={onResetCancel}
                 placeholder="발주번호 / 대리점 검색"
               />
-              <Button variant="icon" onClick={onSearchRejected}>
+              <Button variant="icon" onClick={onSearchCancel}>
                 <img src={searchIcon} width={18} height={18} alt="검색" />
               </Button>
-              <Button variant="icon" onClick={onResetRejected}>
+              <Button variant="icon" onClick={onResetCancel}>
                 <img src={resetIcon} width={18} height={18} alt="초기화" />
               </Button>
             </FilterGroup>
           </SectionHeader>
           <RequestTable
-            rows={rejectedData?.data?.content ?? []}
+            rows={cancelData?.data?.content ?? []}
             onRowClick={(rec) => handleOpen(rec, "request")}
           />
 
           <Pagination
-            page={pageRejected}
-            totalPages={rejectedData?.data?.totalPages ?? 1}
-            onChange={setPageRejected}
-            isBusy={rejectedFetchStatus === "fetching"}
-            totalItems={rejectedData?.data?.totalElements ?? 0}
-            pageSize={pageSizeRejected}
+            page={pageCancel}
+            totalPages={cancelData?.data?.totalPages ?? 1}
+            onChange={setPageCancel}
+            isBusy={cancelFetchStatus === "fetching"}
+            totalItems={cancelData?.data?.totalElements ?? 0}
+            pageSize={pageSizeCancel}
             onChangePageSize={(n) => {
-              setPageSizeRejected(n);
-              setPageRejected(1);
+              setPageSizeCancel(n);
+              setPageCancel(1);
             }}
             showSummary
             showPageSize

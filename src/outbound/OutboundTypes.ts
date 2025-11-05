@@ -49,7 +49,7 @@ export interface OutboundPartItem {
   product: {
     id: number;
     lot: string;
-    serial: string;
+    code: string;
     name: string;
     imgUrl: string;
   };
