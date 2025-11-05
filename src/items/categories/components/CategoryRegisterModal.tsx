@@ -139,7 +139,7 @@ export default function CategoryRegisterModal({
     <Overlay
       onClick={disableOverlayClose || isSubmitting ? undefined : onClose}
     >
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
             <Title>

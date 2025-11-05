@@ -56,7 +56,11 @@ const MaterialDetailModal = ({
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()} role="dialog">
+      <ModalContainer
+        width="40%"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+      >
         <Header>
           <HeaderLeft>
             <Title>자재 상세 정보</Title>

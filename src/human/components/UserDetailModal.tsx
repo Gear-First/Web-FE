@@ -54,10 +54,7 @@ export default function UserDetailModal({
   return (
     <>
       <Overlay onClick={handleOverlayClick}>
-        <ModalContainer
-          style={{ width: "40%" }}
-          onClick={(e) => e.stopPropagation()}
-        >
+        <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
           <Header>
             <Title>사용자 상세</Title>
             <CloseButton onClick={onClose}>✕</CloseButton>

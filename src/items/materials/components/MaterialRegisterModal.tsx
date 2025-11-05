@@ -64,7 +64,7 @@ const MaterialRegisterModal = ({
 
   return (
     <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
         <Header>
           <HeaderLeft>
             <Title>{mode === "edit" ? "자재 수정" : "자재 등록"}</Title>
