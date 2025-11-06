@@ -26,11 +26,11 @@ export type Rank = {
 };
 
 export type CreateUserDTO = {
-  name: string;
   email: string;
+  password: string;
+  name: string;
   phoneNum: string;
-  rank: string;
   regionId: number;
+  rank: string;
   workTypeId: number;
-  userId: number;
 };

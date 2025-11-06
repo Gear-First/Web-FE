@@ -1,10 +1,12 @@
 import {
+  AUTH_ENDPOINTS,
   USER_BASE_PATH,
   type ApiPage,
   type ApiResponse,
   type ListResponse,
 } from "../api";
 import type { CreateUserDTO, Region, UserRecord, WorkType } from "./HumanTypes";
+import { fetchWithAuth } from "../auth/api/fetchWithAuth";
 
 export type UserListParams = {
   q?: string;
@@ -110,29 +112,98 @@ export async function fetchUsers(
 
 // 유저 생성
 export async function createUser(dto: CreateUserDTO): Promise<UserRecord> {
-  const res = await fetch(`${USER_BASE_PATH}/createUser`, {
+  // 공개 회원가입 엔드포인트 (인증 헤더 없이 호출)
+  const res = await fetch(`${AUTH_ENDPOINTS.SIGN_UP}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
     body: JSON.stringify(dto),
   });
-  if (!res.ok) throw new Error(`유저 생성 실패 (${res.status})`);
 
-  const json: ApiResponse<UserRecord> = await res.json();
-  if (!json.success) throw new Error(json.message || "유저 생성 실패");
+  const raw = await res.text();
+  let parsed: ApiResponse<UserRecord | string | null> | null = null;
 
-  return json.data;
+  if (raw) {
+    try {
+      parsed = JSON.parse(raw) as ApiResponse<UserRecord>;
+    } catch {
+      parsed = null;
+    }
+  }
+
+  if (!res.ok) {
+    const message =
+      parsed?.message || raw || `유저 생성 실패 (${res.status})`;
+    throw new Error(message);
+  }
+
+  if (!parsed) {
+    throw new Error("유저 생성 실패: 응답을 해석할 수 없습니다.");
+  }
+
+  if (!parsed.success) {
+    throw new Error(parsed.message || "유저 생성 실패");
+  }
+  return normalizeUserResponse(parsed.data, dto);
 }
 
 // 유저 수정
 export async function updateUser(dto: CreateUserDTO): Promise<UserRecord> {
-  const res = await fetch(`${USER_BASE_PATH}/updateUser`, {
+  const res = await fetchWithAuth(`${USER_BASE_PATH}/updateUser`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
     body: JSON.stringify(dto),
   });
-  if (!res.ok) throw new Error(`유저 수정 실패 (${res.status})`);
 
-  const json: ApiResponse<UserRecord> = await res.json();
-  if (!json.success) throw new Error(json.message || "유저 수정 실패");
-  return json.data;
+  const raw = await res.text();
+  let parsed: ApiResponse<UserRecord | string | null> | null = null;
+
+  if (raw) {
+    try {
+      parsed = JSON.parse(raw) as ApiResponse<UserRecord>;
+    } catch {
+      parsed = null;
+    }
+  }
+
+  if (!res.ok) {
+    const message =
+      parsed?.message || raw || `유저 수정 실패 (${res.status})`;
+    throw new Error(message);
+  }
+
+  if (!parsed) {
+    throw new Error("유저 수정 실패: 응답을 해석할 수 없습니다.");
+  }
+
+  if (!parsed.success) {
+    throw new Error(parsed.message || "유저 수정 실패");
+  }
+
+  return normalizeUserResponse(parsed.data, dto);
+}
+
+function normalizeUserResponse(
+  data: UserRecord | string | null | undefined,
+  fallback: CreateUserDTO
+): UserRecord {
+  if (data && typeof data === "object") {
+    return data as UserRecord;
+  }
+  return {
+    id: 0,
+    name: fallback.name,
+    regionId: fallback.regionId,
+    region: "",
+    workTypeId: fallback.workTypeId,
+    workType: "",
+    rank: fallback.rank,
+    email: fallback.email,
+    phoneNum: fallback.phoneNum,
+  };
 }
