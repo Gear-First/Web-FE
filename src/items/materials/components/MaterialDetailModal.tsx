@@ -103,7 +103,7 @@ const MaterialDetailModal = ({
 
         {/* 액션 */}
         <Footer>
-          <Button onClick={() => onEdit?.(record)} title="수정">
+          <Button color="black" onClick={() => onEdit?.(record)} title="수정">
             수정
           </Button>
           <Button color="danger" onClick={handleDelete} title="삭제">

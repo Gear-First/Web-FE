@@ -260,6 +260,7 @@ export default function BOMDetailModal({
 
         <Footer>
           <Button
+            color="black"
             onClick={() => onEdit?.({ ...record!, materials: mats })}
             title="수정"
           >

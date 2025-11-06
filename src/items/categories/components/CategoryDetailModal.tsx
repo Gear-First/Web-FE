@@ -129,7 +129,7 @@ const CategoryDetailModal = ({
         {(onEdit || onDelete) && (
           <Footer>
             {onEdit && (
-              <Button onClick={handleEdit} disabled={!detail}>
+              <Button color="black" onClick={handleEdit} disabled={!detail}>
                 수정
               </Button>
             )}

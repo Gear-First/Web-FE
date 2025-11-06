@@ -276,7 +276,7 @@ export default function UserRegisterModal({
           </Section>
 
           <Footer>
-            <Button type="button" onClick={onClose}>
+            <Button type="button" onClick={onClose} color="gray">
               취소
             </Button>
             <Button type="submit" color="black" disabled={!canSubmit || busy}>

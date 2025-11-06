@@ -42,7 +42,6 @@ export default function UserMenu({ displayName = "박우진님", email }: Props)
   return (
     <Wrapper ref={menuRef}>
       <Trigger
-        color="gray"
         size="md"
         aria-haspopup="menu"
         aria-expanded={open}

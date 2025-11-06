@@ -101,16 +101,21 @@ export default function UserDetailModal({
           </Section>
 
           <Footer>
-            {onDelete && <Button onClick={() => onDelete(record)}>삭제</Button>}
+            {onDelete && (
+              <Button color="danger" onClick={() => onDelete(record)}>
+                삭제
+              </Button>
+            )}
             <Button
               type="button"
+              color="black"
               onClick={() => {
                 setOpenEdit(true);
               }}
             >
               수정
             </Button>
-            <Button type="button" onClick={onClose} color="black">
+            <Button type="button" onClick={onClose} color="gray">
               닫기
             </Button>
           </Footer>

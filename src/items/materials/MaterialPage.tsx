@@ -136,6 +136,7 @@ export default function MaterialPage() {
             onSearch={onSearch}
             onReset={onReset}
             placeholder="자재코드 / 자재명 검색"
+            width="150px"
           />
         </FilterGroup>
 

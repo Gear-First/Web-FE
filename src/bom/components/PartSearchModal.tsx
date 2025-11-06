@@ -15,6 +15,7 @@ import Pagination from "../../components/common/Pagination";
 import styled from "styled-components";
 import type { PartRecord } from "../../items/parts/PartTypes";
 import { usePartSearch } from "../../items/parts/hooks/usePartSearch";
+import SearchBox from "../../components/common/SearchBox";
 
 interface Props {
   isOpen: boolean;
@@ -41,7 +42,6 @@ const PartSearchModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      setHasSearched(true);
       setParams({ q: undefined, page: 1, pageSize });
     } else {
       setKeyword("");
@@ -72,12 +72,6 @@ const PartSearchModal = ({
     setHasSearched(true);
   };
 
-  const onReset = () => {
-    setKeyword("");
-    setParams({ q: undefined, page: 1, pageSize });
-    setHasSearched(false);
-  };
-
   const onChangePage = (next: number) => {
     setParams((prev) => ({
       ...prev,
@@ -101,22 +95,16 @@ const PartSearchModal = ({
 
         <Section>
           <SectionTitle>검색 조건</SectionTitle>
-          <SearchRow>
-            <SearchInput
-              placeholder="부품 코드 / 부품명"
-              value={keyword}
-              onChange={(e) => setKeyword(e.target.value)}
-            />
-            <Button size="sm" onClick={onSearch}>
-              검색
-            </Button>
-            <Button color="gray" size="sm" onClick={onReset}>
-              초기화
-            </Button>
-          </SearchRow>
+          <SearchBox
+            placeholder="부품 코드 / 부품명"
+            keyword={keyword}
+            onSearch={onSearch}
+            onKeywordChange={setKeyword}
+            width="100%"
+          />
           <HelperText>
-            검색 버튼을 눌러 목록을 불러옵니다. (현재 페이지 {params.page}/
-            {Math.max(1, totalPages)})
+            검색어 입력 후 Enter를 눌러 목록을 불러옵니다. (현재 페이지{" "}
+            {params.page}/{Math.max(1, totalPages)})
           </HelperText>
           {error && <ErrorText>{error.message}</ErrorText>}
         </Section>
@@ -147,6 +135,7 @@ const PartSearchModal = ({
                     <Td>{row.category?.name ?? "-"}</Td>
                     <Td>
                       <Button
+                        color="black"
                         size="sm"
                         onClick={() => {
                           handleSelect(row);
@@ -182,21 +171,6 @@ const PartSearchModal = ({
 };
 
 export default PartSearchModal;
-
-const SearchRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  min-width: 0;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-`;
 
 const HelperText = styled.p`
   margin: 8px 0 0;
