@@ -103,7 +103,8 @@ export default function PurchasingPage() {
   const avgPrice = allCompanies.length
     ? Math.round(
         allCompanies.reduce(
-          (sum, record) => sum + Number(record.purchasingPrice ?? 0),
+          (sum: number, record: PurchasingRecord) =>
+            sum + Number(record.purchasingPrice ?? 0),
           0
         ) / allCompanies.length
       )
