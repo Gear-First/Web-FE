@@ -76,13 +76,15 @@ const colorStyles: Record<ButtonColor, ReturnType<typeof css>> = {
     }
   `,
   gray: css`
-    background: #f3f4f6;
+    background: #e5e7eb;
     color: #111827;
+
     &:hover {
-      background: #e5e7eb;
-    }
-    &:active {
       background: #d1d5db;
+    }
+
+    &:active {
+      background: #9ca3af;
     }
   `,
   danger: css`

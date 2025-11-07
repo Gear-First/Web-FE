@@ -32,6 +32,7 @@ export const BASE_URL = "http://34.120.215.23";
 export const WAREHOUSE_BASE_PATH = `${BASE_URL}/warehouse/api/v1`;
 export const INVENTORY_BASE_PATH = `${BASE_URL}/inventory/api/v1`;
 export const USER_BASE_PATH = `${BASE_URL}/user/api/v1`;
+export const AUTH_BASE_PATH = `${BASE_URL}/auth/api/v1`;
 
 export const WAREHOUSE_ENDPOINTS = {
   PARTS_LIST: `${WAREHOUSE_BASE_PATH}/parts`,
@@ -42,4 +43,9 @@ export const WAREHOUSE_ENDPOINTS = {
 export const INVENTORY_ENDPOINTS = {
   MATERIALS_LIST: `${INVENTORY_BASE_PATH}`,
   BOM_LIST: `${INVENTORY_BASE_PATH}`,
+};
+
+export const AUTH_ENDPOINTS = {
+  SIGN_UP: `${AUTH_BASE_PATH}/auth/signup`,
+  CHANGE_PASSWORD: `${AUTH_BASE_PATH}/auth/change-password`,
 };

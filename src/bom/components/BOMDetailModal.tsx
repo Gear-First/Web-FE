@@ -260,12 +260,13 @@ export default function BOMDetailModal({
 
         <Footer>
           <Button
+            color="black"
             onClick={() => onEdit?.({ ...record!, materials: mats })}
             title="수정"
           >
             수정
           </Button>
-          <Button color="danger" onClick={handleDelete} title="삭제">
+          <Button color="gray" onClick={handleDelete} title="삭제">
             삭제
           </Button>
         </Footer>

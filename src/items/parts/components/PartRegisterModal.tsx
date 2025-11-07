@@ -183,7 +183,7 @@ const PartRegisterModal = ({
           <Button color="gray" onClick={onClose}>
             취소
           </Button>
-          <Button onClick={handleSubmit}>
+          <Button color="black" onClick={handleSubmit}>
             {mode === "edit" ? "수정 저장" : "등록"}
           </Button>
         </Footer>

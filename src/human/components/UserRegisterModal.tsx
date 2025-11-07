@@ -59,7 +59,6 @@ export default function UserRegisterModal({
   initial,
   onCreate,
   onUpdate,
-  currentUserId = 0,
 }: Props) {
   const isEdit = mode === "edit";
 
@@ -70,13 +69,13 @@ export default function UserRegisterModal({
   const workTypes: WorkType[] = workTypeRes?.data ?? [];
 
   const [form, setForm] = useState<CreateUserDTO>({
-    name: "",
     email: "",
+    password: "",
+    name: "",
     phoneNum: "",
     rank: "EMPLOYEE",
-    regionId: 0,
-    workTypeId: 0,
-    userId: currentUserId,
+    regionId: 1,
+    workTypeId: 1,
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -102,13 +101,13 @@ export default function UserRegisterModal({
       fallbackWorkTypeId;
 
     setForm({
-      name: initial?.name ?? "",
       email: initial?.email ?? "",
+      password: "",
+      name: initial?.name ?? "",
       phoneNum: initial?.phoneNum ?? "",
       rank: KO_TO_KEY(initial?.rank) as "EMPLOYEE" | "LEADER",
       regionId,
       workTypeId,
-      userId: currentUserId,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, initial?.id]);
@@ -133,8 +132,9 @@ export default function UserRegisterModal({
     if (!form.phoneNum.trim()) return false;
     if (!form.regionId || !form.workTypeId) return false;
     if (!form.rank) return false;
+    if (!isEdit && !form.password.trim()) return false;
     return true;
-  }, [form]);
+  }, [form, isEdit]);
 
   if (!isOpen) return null;
 
@@ -218,6 +218,18 @@ export default function UserRegisterModal({
               </DetailItem>
 
               <DetailItem>
+                <Label>비밀번호</Label>
+                <Input
+                  type="password"
+                  value={form.password}
+                  onChange={(e) => update("password", e.target.value)}
+                  placeholder="영문/숫자 조합 8자 이상"
+                  autoComplete="new-password"
+                  required={!isEdit}
+                />
+              </DetailItem>
+
+              <DetailItem>
                 <Label>연락처</Label>
                 <Input
                   value={form.phoneNum}
@@ -264,7 +276,7 @@ export default function UserRegisterModal({
           </Section>
 
           <Footer>
-            <Button type="button" onClick={onClose}>
+            <Button type="button" onClick={onClose} color="gray">
               취소
             </Button>
             <Button type="submit" color="black" disabled={!canSubmit || busy}>

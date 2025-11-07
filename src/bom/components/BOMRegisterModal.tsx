@@ -20,6 +20,7 @@ import PartSearchModal from "./PartSearchModal";
 import MaterialSearchModal from "./MaterialSearchModal";
 import type { PartRecord } from "../../items/parts/PartTypes";
 import type { MaterialRecord } from "../../items/materials/MaterialTypes";
+import resetIcon from "../../assets/reset.svg";
 
 export type BOMDTO = {
   bomId?: string;
@@ -330,7 +331,7 @@ const BOMRegisterModal = ({
               <DetailItem>
                 <Label>부품 선택</Label>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <Button onClick={() => setPartSearchOpen(true)}>
+                  <Button color="black" onClick={() => setPartSearchOpen(true)}>
                     부품 검색
                   </Button>
                   <span style={{ color: "#6b7280", fontSize: 12 }}>
@@ -371,6 +372,7 @@ const BOMRegisterModal = ({
               <SectionTitle>자재 목록</SectionTitle>
               <div style={{ display: "flex", gap: 8 }}>
                 <Button
+                  color="black"
                   onClick={() => {
                     setMaterialSearchRowId(null);
                     setMaterialSearchOpen(true);
@@ -379,11 +381,12 @@ const BOMRegisterModal = ({
                   자재 검색
                 </Button>
                 <Button
+                  variant="icon"
                   onClick={() => {
                     removeAllMaterials();
                   }}
                 >
-                  초기화
+                  <img src={resetIcon} width={18} height={18} alt="초기화" />
                 </Button>
               </div>
             </HeaderRow>
@@ -403,7 +406,7 @@ const BOMRegisterModal = ({
             <Button color="gray" onClick={onClose}>
               취소
             </Button>
-            <Button onClick={handleSubmit}>
+            <Button color="black" onClick={handleSubmit}>
               {mode === "edit" ? "수정 저장" : "등록"}
             </Button>
           </Footer>

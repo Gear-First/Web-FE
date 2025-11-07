@@ -199,26 +199,22 @@ export default function DashboardPage() {
       {
         label: "04",
         value:
-          (processedOrders.data ?? 0) * 0.7 +
-          (outboundRecords.data ?? 0) * 1.2,
+          (processedOrders.data ?? 0) * 0.7 + (outboundRecords.data ?? 0) * 1.2,
       },
       {
         label: "05",
         value:
-          (pendingOrders.data ?? 0) * 0.8 +
-          (companyRecords.data ?? 0) * 1.5,
+          (pendingOrders.data ?? 0) * 0.8 + (companyRecords.data ?? 0) * 1.5,
       },
       {
         label: "06",
         value:
-          (inboundRecords.data ?? 0) * 1.2 +
-          (inventoryParts.data ?? 0) * 0.4,
+          (inboundRecords.data ?? 0) * 1.2 + (inventoryParts.data ?? 0) * 0.4,
       },
       {
         label: "07",
         value:
-          (outboundRecords.data ?? 0) * 1.3 +
-          (humanRecords.data ?? 0) * 0.5,
+          (outboundRecords.data ?? 0) * 1.3 + (humanRecords.data ?? 0) * 0.5,
       },
       {
         label: "08",
@@ -258,7 +254,8 @@ export default function DashboardPage() {
         secondary: processedOrders.isLoading
           ? "승인 데이터를 불러오는 중"
           : `이번 주 처리 ${formatNumber(processedOrders.data)}건`,
-        status: processedOrders.data && processedOrders.data > 0 ? "ok" : "muted",
+        status:
+          processedOrders.data && processedOrders.data > 0 ? "ok" : "muted",
         loading: pendingOrders.isLoading || processedOrders.isLoading,
         error:
           pendingOrders.isError || processedOrders.isError
@@ -326,12 +323,9 @@ export default function DashboardPage() {
             : formatNumber(inventoryParts.data),
           label: "창고별 품목",
         },
-        secondary:
-          propertyRecords.isLoading
-            ? "자산 가치를 계산 중입니다"
-            : `표본 자산 ₩${formatNumber(
-                propertyRecords.data?.assetValue ?? 0
-              )}`,
+        secondary: propertyRecords.isLoading
+          ? "자산 가치를 계산 중입니다"
+          : `표본 자산 ₩${formatNumber(propertyRecords.data?.assetValue ?? 0)}`,
         status:
           inventoryParts.data && inventoryParts.data > 0 ? "ok" : "warning",
         loading: inventoryParts.isLoading || propertyRecords.isLoading,
@@ -350,12 +344,9 @@ export default function DashboardPage() {
             : formatNumber(propertyRecords.data?.total),
           label: "자산 항목",
         },
-        secondary:
-          propertyRecords.isLoading
-            ? undefined
-            : `총액 ₩${formatNumber(
-                propertyRecords.data?.assetValue ?? 0
-              )}`,
+        secondary: propertyRecords.isLoading
+          ? undefined
+          : `총액 ₩${formatNumber(propertyRecords.data?.assetValue ?? 0)}`,
         status:
           propertyRecords.data && propertyRecords.data.total > 0
             ? "ok"
@@ -460,8 +451,8 @@ export default function DashboardPage() {
         <HeroCard>
           <HeroTitle>GearFirst 운영 현황</HeroTitle>
           <HeroSubtitle>
-            오늘 처리해야 할 물류·조달·인력 워크로드를 빠르게 확인하세요.
-            실시간 주요 지표를 요약했습니다.
+            오늘 처리해야 할 물류·조달·인력 워크로드를 빠르게 확인하세요. 실시간
+            주요 지표를 요약했습니다.
           </HeroSubtitle>
 
           <HeroSummary>
@@ -508,12 +499,30 @@ export default function DashboardPage() {
                   margin={{ top: 14, right: 24, left: 4, bottom: 0 }}
                 >
                   <defs>
-                    <linearGradient id="dashboardTrendFill" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#111111" stopOpacity={0.32} />
-                      <stop offset="100%" stopColor="#111111" stopOpacity={0.04} />
+                    <linearGradient
+                      id="dashboardTrendFill"
+                      x1="0"
+                      y1="0"
+                      x2="0"
+                      y2="1"
+                    >
+                      <stop
+                        offset="0%"
+                        stopColor="#111111"
+                        stopOpacity={0.32}
+                      />
+                      <stop
+                        offset="100%"
+                        stopColor="#111111"
+                        stopOpacity={0.04}
+                      />
                     </linearGradient>
                   </defs>
-                  <CartesianGrid vertical={false} stroke="#e4e4e7" strokeDasharray="3 6" />
+                  <CartesianGrid
+                    vertical={false}
+                    stroke="#e4e4e7"
+                    strokeDasharray="3 6"
+                  />
                   <XAxis
                     dataKey="label"
                     tickLine={false}
@@ -528,7 +537,11 @@ export default function DashboardPage() {
                     width={40}
                   />
                   <Tooltip
-                    cursor={{ stroke: "#111111", strokeWidth: 0.6, opacity: 0.4 }}
+                    cursor={{
+                      stroke: "#111111",
+                      strokeWidth: 0.6,
+                      opacity: 0.4,
+                    }}
                     contentStyle={{
                       borderRadius: 12,
                       border: "1px solid #e4e4e7",
@@ -538,7 +551,10 @@ export default function DashboardPage() {
                       fontSize: "0.78rem",
                     }}
                     labelStyle={{ color: "#6c6c72", marginBottom: 4 }}
-                    formatter={(value: number) => [`${formatNumber(value)}건`, "처리량"]}
+                    formatter={(value: number) => [
+                      `${formatNumber(value)}건`,
+                      "처리량",
+                    ]}
                   />
                   <Area
                     type="monotone"
@@ -554,7 +570,12 @@ export default function DashboardPage() {
                     stroke="#000000"
                     strokeWidth={1.4}
                     dot={false}
-                    activeDot={{ r: 5, fill: "#ffffff", stroke: "#000000", strokeWidth: 1.4 }}
+                    activeDot={{
+                      r: 5,
+                      fill: "#ffffff",
+                      stroke: "#000000",
+                      strokeWidth: 1.4,
+                    }}
                   />
                 </AreaChart>
               </ResponsiveContainer>
@@ -603,7 +624,9 @@ export default function DashboardPage() {
             <InsightCard>
               <InsightLabel>운영 네트워크</InsightLabel>
               <InsightValue>
-                {formatNumber((companyRecords.data ?? 0) + (humanRecords.data ?? 0))}
+                {formatNumber(
+                  (companyRecords.data ?? 0) + (humanRecords.data ?? 0)
+                )}
               </InsightValue>
               <InsightDelta $tone="neutral">
                 협력사 {formatNumber(companyRecords.data)}곳 · 인력{" "}
@@ -660,7 +683,9 @@ export default function DashboardPage() {
                 </CardHeader>
                 <CardValue>{card.primary.value}</CardValue>
                 <CardLabel>{card.primary.label}</CardLabel>
-                {card.secondary && <CardSecondary>{card.secondary}</CardSecondary>}
+                {card.secondary && (
+                  <CardSecondary>{card.secondary}</CardSecondary>
+                )}
                 <CardFooter>바로가기 →</CardFooter>
               </MenuCard>
             );
@@ -842,7 +867,9 @@ const InsightValue = styled.span`
   color: #0f0f11;
 `;
 
-const InsightDelta = styled.span<{ $tone: "positive" | "neutral" | "negative" }>`
+const InsightDelta = styled.span<{
+  $tone: "positive" | "neutral" | "negative";
+}>`
   font-size: 0.82rem;
   color: ${({ $tone }) =>
     $tone === "positive"
@@ -896,7 +923,10 @@ const MenuGrid = styled.div`
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 `;
 
-const MenuCard = styled(Link)<{ $status: "ok" | "warning" | "muted"; $isError: boolean }>`
+const MenuCard = styled(Link)<{
+  $status: "ok" | "warning" | "muted";
+  $isError: boolean;
+}>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -980,7 +1010,9 @@ const CardFooter = styled.div`
   color: #0f0f11;
 `;
 
-const StatusChip = styled.span<{ $tone: "accent" | "warning" | "danger" | "muted" }>`
+const StatusChip = styled.span<{
+  $tone: "accent" | "warning" | "danger" | "muted";
+}>`
   display: inline-flex;
   align-items: center;
   justify-content: center;

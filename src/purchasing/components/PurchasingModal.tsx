@@ -193,7 +193,7 @@ export default function PurchasingModal({
             >
               {!readOnly && (
                 <Button
-                  color="gray"
+                  color="black"
                   size="sm"
                   onClick={() => setSearchModalOpen(true)}
                   style={{

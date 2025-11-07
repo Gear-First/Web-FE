@@ -194,10 +194,10 @@ export default function CategoryRegisterModal({
         </Section>
 
         <Footer>
-          <Button onClick={handleSubmit} disabled={!canSubmit}>
+          <Button color="black" onClick={handleSubmit} disabled={!canSubmit}>
             {isSubmitting ? "처리중…" : mode === "create" ? "등록" : "수정"}
           </Button>
-          <Button onClick={onClose} disabled={isSubmitting}>
+          <Button color="gray" onClick={onClose} disabled={isSubmitting}>
             취소
           </Button>
         </Footer>
