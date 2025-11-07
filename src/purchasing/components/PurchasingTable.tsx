@@ -1,21 +1,28 @@
 import { Table, Th, Td } from "../../components/common/PageLayout";
 import type { PurchasingRecord } from "../PurchasingTypes";
 
+interface Props {
+  rows: PurchasingRecord[];
+  showContractDate?: boolean;
+  showOrderCount?: boolean;
+  onRowClick?: (record: PurchasingRecord) => void;
+  selectedIds?: string[];
+  onToggleSelect?: (id: string) => void;
+}
+
 export default function PurchasingTable({
   rows,
   showContractDate = false,
   showOrderCount = false,
   onRowClick,
-}: {
-  rows: PurchasingRecord[];
-  showContractDate?: boolean;
-  showOrderCount?: boolean;
-  onRowClick?: (record: PurchasingRecord) => void;
-}) {
+  selectedIds = [],
+  onToggleSelect,
+}: Props) {
   return (
     <Table>
       <thead>
         <tr>
+          <Th style={{ width: 36 }}></Th>
           <Th>등록번호</Th>
           <Th>업체명</Th>
           <Th>자재명</Th>
@@ -29,37 +36,56 @@ export default function PurchasingTable({
       </thead>
       <tbody>
         {rows.length > 0 ? (
-          rows.map((r) => (
-            <tr
-              key={r.purchasingId}
-              style={{ cursor: "pointer" }}
-              onClick={() => onRowClick?.(r)}
-            >
-              <Td>{r.purchasingId}</Td>
-              <Td>{r.company}</Td>
-              <Td>{r.materialName}</Td>
-              <Td>{r.purchasingPrice.toLocaleString()}</Td>
-              <Td>
-                {Math.ceil(
-                  r.requiredQuantityPerPeriod / (r.requiredPeriodInDays || 1)
-                )}
-                /1일
-              </Td>
-              <Td>{r.surveyDate}</Td>
-              <Td>{r.expiryDate}</Td>
-              {showOrderCount && <Td>{r.orderCnt ?? 0}</Td>}
-              {showContractDate && (
-                <Td>
-                  {r.createdAt
-                    ? new Date(r.createdAt).toISOString().split("T")[0]
-                    : "-"}
+          rows.map((r) => {
+            const isChecked = selectedIds.includes(r.purchasingId);
+            return (
+              <tr
+                key={r.purchasingId}
+                style={{ cursor: "pointer" }}
+                onClick={() => onRowClick?.(r)}
+              >
+                <Td
+                  onClick={(e) => e.stopPropagation()} // 행 클릭과 구분
+                  style={{ textAlign: "center" }}
+                >
+                  <input
+                    type="checkbox"
+                    checked={isChecked}
+                    onChange={() => onToggleSelect?.(r.purchasingId)}
+                    style={{
+                      accentColor: "#111111",
+                      width: "16px",
+                      height: "16px",
+                      cursor: "pointer",
+                    }}
+                  />
                 </Td>
-              )}
-            </tr>
-          ))
+                <Td>{r.purchasingId}</Td>
+                <Td>{r.company}</Td>
+                <Td>{r.materialName}</Td>
+                <Td>{r.purchasingPrice.toLocaleString()}</Td>
+                <Td>
+                  {Math.ceil(
+                    r.requiredQuantityPerPeriod / (r.requiredPeriodInDays || 1)
+                  )}
+                  /1일
+                </Td>
+                <Td>{r.surveyDate}</Td>
+                <Td>{r.expiryDate}</Td>
+                {showOrderCount && <Td>{r.orderCnt ?? 0}</Td>}
+                {showContractDate && (
+                  <Td>
+                    {r.createdAt
+                      ? new Date(r.createdAt).toISOString().split("T")[0]
+                      : "-"}
+                  </Td>
+                )}
+              </tr>
+            );
+          })
         ) : (
           <tr>
-            <Td colSpan={8} style={{ textAlign: "center", color: "#9ca3af" }}>
+            <Td colSpan={9} style={{ textAlign: "center", color: "#9ca3af" }}>
               등록된 업체가 없습니다.
             </Td>
           </tr>
