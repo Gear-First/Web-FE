@@ -16,12 +16,10 @@ const api = axios.create({
 
 //
 export async function fetchPartRecords(params: {
-  warehouseCode?: string; // 창고코드
-  partKeyword?: string; // 부품코드/부품명
-  supplierName?: string; // 공급업체
+  q?: string; // 창고코드, 부품코드/부품명, 공급업체
   page?: number;
   size?: number;
 }): Promise<PartResponse> {
-  const res = await api.get("/inventory/onhand", { params });
+  const res = await api.get("/inventory/on-hand", { params });
   return res.data;
 }
