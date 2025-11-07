@@ -32,9 +32,7 @@ export default function PartPage() {
     queryKey: ["part-records", page, pageSize, appliedKeyword],
     queryFn: () =>
       fetchPartRecords({
-        warehouseCode: appliedKeyword,
-        partKeyword: "",
-        supplierName: "",
+        q: appliedKeyword,
         page: page - 1,
         size: pageSize,
       }),
@@ -108,7 +106,7 @@ export default function PartPage() {
               onKeywordChange={setKeyword}
               onSearch={onSearch}
               onReset={onReset}
-              placeholder="부품코드 / 부품명 검색"
+              placeholder="창고 / 대리점 / 부품코드 / 부품명 검색"
             />
           </FilterGroup>
 
