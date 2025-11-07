@@ -90,7 +90,7 @@ export default function MaterialsTable({
                 </Td>
 
                 <Td>
-                  <Button color="danger" onClick={() => onRemove(row.id)}>
+                  <Button color="gray" onClick={() => onRemove(row.id)}>
                     삭제
                   </Button>
                 </Td>

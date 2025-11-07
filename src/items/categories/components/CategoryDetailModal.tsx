@@ -134,7 +134,7 @@ const CategoryDetailModal = ({
               </Button>
             )}
             {onDelete && (
-              <Button color="danger" onClick={handleDelete}>
+              <Button color="gray" onClick={handleDelete}>
                 삭제
               </Button>
             )}

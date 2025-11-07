@@ -266,7 +266,7 @@ export default function BOMDetailModal({
           >
             수정
           </Button>
-          <Button color="danger" onClick={handleDelete} title="삭제">
+          <Button color="gray" onClick={handleDelete} title="삭제">
             삭제
           </Button>
         </Footer>
