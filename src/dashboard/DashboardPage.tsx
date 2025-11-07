@@ -119,13 +119,16 @@ export default function DashboardPage() {
     queryFn: () =>
       fetchPropertyRecords({
         page: 1,
-        pageSize: 10,
+        size: 10,
       }),
     select: (res) => {
-      const total = res.meta?.total ?? 0;
-      const assetValue = (res.data ?? []).reduce((acc, item) => {
-        return acc + item.partPrice * item.partQuantity;
-      }, 0);
+      const payload = res.data ?? { items: [] };
+      const items = payload.items ?? [];
+      const total = payload.total ?? items.length;
+      const assetValue = items.reduce(
+        (acc, item) => acc + (item.partPrice ?? 0) * (item.partQuantity ?? 0),
+        0
+      );
       return { total, assetValue };
     },
     staleTime: 5 * 60 * 1000,

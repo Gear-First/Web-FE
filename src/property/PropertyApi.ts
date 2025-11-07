@@ -15,11 +15,33 @@ const api = axios.create({
   timeout: 10000, // 10초 제한
 });
 
-export async function fetchPropertyRecords(params: {
-  q?: string; // 창고코드, 부품코드/부품명, 공급업체
+export type PropertyQueryParams = {
+  q?: string;
+  keyword?: string;
+  warehouseCode?: string;
   page?: number;
   size?: number;
-}): Promise<PropertyResponse> {
-  const res = await api.get("/inventory/on-hand", { params });
+  pageSize?: number;
+};
+
+export async function fetchPropertyRecords(
+  params: PropertyQueryParams
+): Promise<PropertyResponse> {
+  const requestParams: Record<string, string | number | undefined> = {
+    ...params,
+  };
+
+  if (requestParams.keyword && !requestParams.q) {
+    requestParams.q = requestParams.keyword;
+  }
+
+  if (requestParams.pageSize != null) {
+    requestParams.size = requestParams.pageSize;
+  }
+
+  delete requestParams.keyword;
+  delete requestParams.pageSize;
+
+  const res = await api.get("/inventory/on-hand", { params: requestParams });
   return res.data;
 }

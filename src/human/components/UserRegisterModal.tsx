@@ -69,9 +69,9 @@ export default function UserRegisterModal({
   const workTypes: WorkType[] = workTypeRes?.data ?? [];
 
   const [form, setForm] = useState<CreateUserDTO>({
-    email: "",
-    password: "",
     name: "",
+    personalEmail: "",
+    email: "",
     phoneNum: "",
     rank: "EMPLOYEE",
     regionId: 1,
@@ -101,9 +101,9 @@ export default function UserRegisterModal({
       fallbackWorkTypeId;
 
     setForm({
-      email: initial?.email ?? "",
-      password: "",
       name: initial?.name ?? "",
+      personalEmail: initial?.email ?? "",
+      email: initial?.email ?? "",
       phoneNum: initial?.phoneNum ?? "",
       rank: KO_TO_KEY(initial?.rank) as "EMPLOYEE" | "LEADER",
       regionId,
@@ -128,13 +128,13 @@ export default function UserRegisterModal({
 
   const canSubmit = useMemo(() => {
     if (!form.name.trim()) return false;
+    if (!form.personalEmail.trim()) return false;
     if (!form.email.trim()) return false;
     if (!form.phoneNum.trim()) return false;
     if (!form.regionId || !form.workTypeId) return false;
     if (!form.rank) return false;
-    if (!isEdit && !form.password.trim()) return false;
     return true;
-  }, [form, isEdit]);
+  }, [form]);
 
   if (!isOpen) return null;
 
@@ -207,6 +207,17 @@ export default function UserRegisterModal({
               </DetailItem>
 
               <DetailItem>
+                <Label>개인 이메일</Label>
+                <Input
+                  type="email"
+                  value={form.personalEmail}
+                  onChange={(e) => update("personalEmail", e.target.value)}
+                  placeholder="personal@example.com"
+                  required
+                />
+              </DetailItem>
+
+              <DetailItem>
                 <Label>이메일</Label>
                 <Input
                   type="email"
@@ -214,18 +225,6 @@ export default function UserRegisterModal({
                   onChange={(e) => update("email", e.target.value)}
                   placeholder="user@gearfirst.com"
                   required
-                />
-              </DetailItem>
-
-              <DetailItem>
-                <Label>비밀번호</Label>
-                <Input
-                  type="password"
-                  value={form.password}
-                  onChange={(e) => update("password", e.target.value)}
-                  placeholder="영문/숫자 조합 8자 이상"
-                  autoComplete="new-password"
-                  required={!isEdit}
                 />
               </DetailItem>
 

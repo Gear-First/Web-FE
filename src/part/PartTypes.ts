@@ -5,6 +5,7 @@ export interface PartRecord {
   part: PartItem; // 부품
   onHandQty: number; // 수량 (가용 재고)
   updatedAt: string; // 마지막 수정일
+  lastUpdatedAt?: string;
   lowStock: boolean; // 상태
   safetyStockQty: number; // 안전 재고
   supplierName: string; // 대리점

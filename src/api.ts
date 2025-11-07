@@ -46,6 +46,6 @@ export const INVENTORY_ENDPOINTS = {
 };
 
 export const AUTH_ENDPOINTS = {
-  SIGN_UP: `${AUTH_BASE_PATH}/auth/signup`,
+  SIGN_UP: `${USER_BASE_PATH}/registerUser`,
   CHANGE_PASSWORD: `${AUTH_BASE_PATH}/auth/change-password`,
 };

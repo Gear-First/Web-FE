@@ -16,6 +16,7 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import PropertyTable from "./components/PropertyTable";
 import { fetchPropertyRecords } from "./PropertyApi";
+import type { PropertyResponse } from "./PropertyTypes";
 import SearchBox from "../components/common/SearchBox";
 import Button from "../components/common/Button";
 import resetIcon from "../assets/reset.svg";
@@ -28,7 +29,7 @@ export default function PropertyPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
 
-  const { data: propertyData, fetchStatus: fetchStatus } = useQuery({
+  const { data: propertyData, fetchStatus } = useQuery<PropertyResponse>({
     queryKey: ["property-records", page, pageSize, appliedKeyword],
     queryFn: () =>
       fetchPropertyRecords({
@@ -54,13 +55,18 @@ export default function PropertyPage() {
   const totalItems = propertyData?.data.total ?? 0;
 
   const assetValue = items.reduce(
-    (sum, item) => sum + (item.price ?? 0) * (item.onHandQty ?? 0),
+    (sum, item) =>
+      sum +
+      (item.price ?? item.partPrice ?? 0) * (item.onHandQty ?? item.partQuantity ?? 0),
     0
   );
   const avgUnit =
     items.length > 0
       ? Math.round(
-          items.reduce((sum, i) => sum + (i.price ?? 0), 0) / items.length
+          items.reduce(
+            (sum, i) => sum + (i.price ?? i.partPrice ?? 0),
+            0
+          ) / items.length
         )
       : 0;
 

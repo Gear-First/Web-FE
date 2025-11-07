@@ -22,12 +22,12 @@ export default function PropertyTable({ rows }: { rows: PropertyRecord[] }) {
               return (
                 <tr key={i}>
                   <Td>{r.warehouseCode}</Td>
-                  <Td>{r.part.code}</Td>
-                  <Td>{r.part.name}</Td>
-                  <Td>{r.onHandQty}</Td>
+                  <Td>{r.part?.code ?? r.partCode ?? "-"}</Td>
+                  <Td>{r.part?.name ?? r.partName ?? "-"}</Td>
+                  <Td>{r.onHandQty ?? r.partQuantity ?? 0}</Td>
                   <Td>{r.supplierName}</Td>
-                  <Td>{r.price.toLocaleString()}</Td>
-                  <Td>{r.priceTotal.toLocaleString()}</Td>
+                  <Td>{(r.price ?? r.partPrice ?? 0).toLocaleString()}</Td>
+                  <Td>{(r.priceTotal ?? 0).toLocaleString()}</Td>
                 </tr>
               );
             })

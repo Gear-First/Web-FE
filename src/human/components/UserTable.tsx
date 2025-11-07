@@ -5,6 +5,7 @@ import { useState } from "react";
 import UserDetailModal from "./UserDetailModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateUser, userKeys } from "../HumanApi";
+import { getRankMeta } from "../utils/rank";
 
 const EmptyRow = styled.tr`
   td {
@@ -61,11 +62,14 @@ export default function UserTable({ rows }: { rows?: UserRecord[] }) {
                 <Td>{u.email}</Td>
                 <Td>{u.phoneNum}</Td>
                 <Td>
-                  <StatusBadge
-                    $variant={u.rank === "LEADER" ? "success" : "info"}
-                  >
-                    {u.rank === "LEADER" ? "팀장" : "사원"}
-                  </StatusBadge>
+                  {(() => {
+                    const meta = getRankMeta(u.rank);
+                    return (
+                      <StatusBadge $variant={meta.variant}>
+                        {meta.label}
+                      </StatusBadge>
+                    );
+                  })()}
                 </Td>
                 <Td>{u.region}</Td>
                 <Td>{u.workType}</Td>

@@ -203,6 +203,7 @@ function normalizeUserResponse(
     workTypeId: fallback.workTypeId,
     workType: "",
     rank: fallback.rank,
+    personalEmail: fallback.personalEmail,
     email: fallback.email,
     phoneNum: fallback.phoneNum,
   };

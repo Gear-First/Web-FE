@@ -9,6 +9,7 @@ import type {
   WorkType,
 } from "../HumanTypes";
 import UserRegisterModal from "./UserRegisterModal";
+import { getRankMeta } from "../utils/rank";
 import {
   CloseButton,
   DetailGrid,
@@ -70,11 +71,14 @@ export default function UserDetailModal({
               <DetailItem>
                 <Label>직급</Label>
                 <Value>
-                  <StatusBadge
-                    $variant={record.rank === "LEADER" ? "success" : "info"}
-                  >
-                    {record.rank === "LEADER" ? "팀장" : "사원"}
-                  </StatusBadge>
+                  {(() => {
+                    const meta = getRankMeta(record.rank);
+                    return (
+                      <StatusBadge $variant={meta.variant}>
+                        {meta.label}
+                      </StatusBadge>
+                    );
+                  })()}
                 </Value>
               </DetailItem>
 

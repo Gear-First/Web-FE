@@ -1,17 +1,24 @@
 export interface PropertyRecord {
-  warehouseCode: string; // 창고번호
-  part: PropertyItem; // 부품
-  onHandQty: number; // 수량 (가용 재고)
-  updatedAt: string; // 마지막 수정일
-  supplierName: string; // 대리점
-  price: number; // 단가
-  priceTotal: number; // 총 금액
+  id?: number | string;
+  warehouseCode: string;
+  warehouseId?: string;
+  supplierName?: string;
+  onHandQty?: number;
+  partQuantity?: number;
+  partPrice?: number;
+  price?: number;
+  priceTotal?: number;
+  updatedAt?: string;
+  lastUpdatedAt?: string;
+  partCode?: string;
+  partName?: string;
+  part?: PropertyItem;
 }
 
 export interface PropertyItem {
-  id: number; // 부품 ID
-  code: string; // 부품 코드
-  name: string; // 부품명
+  id: number;
+  code: string;
+  name: string;
 }
 
 export interface PropertyResponse {

@@ -11,6 +11,7 @@ import type {
   PartItem as InventoryPartItem,
 } from "../../part/PartTypes";
 import { fetchPropertyRecords } from "../../property/PropertyApi";
+import type { PropertyRecord } from "../../property/PropertyTypes";
 import { fetchInboundNotDoneRecords } from "../../inbound/InboundApi";
 import { fetchOutboundNotDoneRecords } from "../../outbound/OutboundApi";
 import { fetchUsers } from "../../human/HumanApi";
@@ -114,24 +115,32 @@ export function useDashboardData() {
     queryFn: () =>
       fetchPropertyRecords({
         page: 1,
-        pageSize: 100, // 더 많은 데이터 필요 (창고 분포 계산용)
+        size: 100,
       }),
     select: (res) => {
-      const items = res.data ?? [];
-      const total = res.meta?.total ?? 0;
+      const payload = res.data ?? { items: [] };
+      const items = payload.items ?? [];
+      const total = payload.total ?? items.length;
 
-      const sorted = [...items].sort(
-        (a, b) => b.partPrice * b.partQuantity - a.partPrice * a.partQuantity
-      );
+      const valueOf = (entry: PropertyRecord) =>
+        (entry.partPrice ?? 0) * (entry.partQuantity ?? 0);
+
+      const sorted = [...items].sort((a, b) => valueOf(b) - valueOf(a));
       const assetValue = items.reduce(
-        (acc, item) => acc + item.partPrice * item.partQuantity,
+        (acc, item) => acc + (item.partPrice ?? 0) * (item.partQuantity ?? 0),
         0
       );
-      const totalQty = items.reduce((acc, item) => acc + item.partQuantity, 0);
+      const totalQty = items.reduce(
+        (acc, item) => acc + (item.partQuantity ?? 0),
+        0
+      );
 
       const top10Value = sorted
         .slice(0, 10)
-        .reduce((acc, i) => acc + i.partPrice * i.partQuantity, 0);
+        .reduce(
+          (acc, i) => acc + (i.partPrice ?? 0) * (i.partQuantity ?? 0),
+          0
+        );
       const top10Share = assetValue
         ? Math.round((top10Value / assetValue) * 100)
         : 0;
@@ -142,7 +151,7 @@ export function useDashboardData() {
         b = 0,
         c = 0;
       sorted.forEach((i) => {
-        const v = i.partPrice * i.partQuantity;
+        const v = (i.partPrice ?? 0) * (i.partQuantity ?? 0);
         const ratio = assetValue ? v / assetValue : 0;
         cum += ratio;
         if (cum <= 0.8) a++;
@@ -156,14 +165,16 @@ export function useDashboardData() {
         { value: number; assetValue: number }
       >();
       items.forEach((item) => {
-        const warehouseId = item.warehouseId;
+        const warehouseId = item.warehouseId ?? item.warehouseCode ?? "UNKNOWN";
         const existing = warehouseMap.get(warehouseId) || {
           value: 0,
           assetValue: 0,
         };
         warehouseMap.set(warehouseId, {
-          value: existing.value + item.partQuantity,
-          assetValue: existing.assetValue + item.partPrice * item.partQuantity,
+          value: existing.value + (item.partQuantity ?? 0),
+          assetValue:
+            existing.assetValue +
+            (item.partPrice ?? 0) * (item.partQuantity ?? 0),
         });
       });
 
@@ -233,7 +244,9 @@ export function useDashboardData() {
       // 비활성 재고 계산
       let inactiveCount = 0;
       items.forEach((item: InventoryPartRecord) => {
-        const lastUpdated = new Date(item.lastUpdatedAt);
+        const dateString = item.lastUpdatedAt ?? item.updatedAt;
+        if (!dateString) return;
+        const lastUpdated = new Date(dateString);
         if (lastUpdated < ninetyDaysAgo) {
           inactiveCount++;
         }
@@ -372,7 +385,9 @@ export function useDashboardData() {
 
       let inactiveCount = 0;
       items.forEach((item: InventoryPartRecord) => {
-        const lastUpdated = new Date(item.lastUpdatedAt);
+        const dateString = item.lastUpdatedAt ?? item.updatedAt;
+        if (!dateString) return;
+        const lastUpdated = new Date(dateString);
         if (lastUpdated < ninetyDaysAgo) {
           inactiveCount++;
         }

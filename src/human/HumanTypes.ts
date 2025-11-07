@@ -7,6 +7,7 @@ export type UserRecord = {
   workType: string;
   rank: string;
   email: string;
+  personalEmail?: string;
   phoneNum: string;
 };
 
@@ -26,11 +27,11 @@ export type Rank = {
 };
 
 export type CreateUserDTO = {
-  email: string;
-  password: string;
   name: string;
+  personalEmail: string;
+  email: string;
   phoneNum: string;
-  regionId: number;
   rank: string;
+  regionId: number;
   workTypeId: number;
 };
