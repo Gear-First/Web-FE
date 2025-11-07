@@ -1,4 +1,6 @@
 import Layout from "../components/common/Layout";
+import PurchasingCompareModal from "./components/PurchasingCompareModal";
+
 import {
   PageContainer,
   SectionCaption,
@@ -106,13 +108,11 @@ export default function PurchasingPage() {
           (sum: number, record: PurchasingRecord) =>
             sum + Number(record.purchasingPrice ?? 0),
           0
-        ) /
-        allCompanies.length
+        ) / allCompanies.length
       )
     : 0;
-  const coverageRate = totalAll > 0
-    ? Math.round((totalSelected / totalAll) * 100)
-    : 0;
+  const coverageRate =
+    totalAll > 0 ? Math.round((totalSelected / totalAll) * 100) : 0;
 
   const onSearchSelected = () => {
     setAppliedKeywordSelected(keywordSelected.trim());
@@ -123,6 +123,24 @@ export default function PurchasingPage() {
     setAppliedKeywordSelected("");
     setPageSelected(1);
   };
+
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isCompareOpen, setIsCompareOpen] = useState(false);
+
+  const handleToggleSelect = (id: string) => {
+    setSelectedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((v) => v !== id);
+      if (prev.length >= 3) {
+        alert("최대 3개까지만 선택할 수 있습니다.");
+        return prev;
+      }
+      return [...prev, id];
+    });
+  };
+
+  const selectedForCompare = allCompanies.filter((r: PurchasingRecord) =>
+    selectedIds.includes(r.purchasingId)
+  );
 
   return (
     <Layout>
@@ -145,8 +163,7 @@ export default function PurchasingPage() {
           <SummaryCard>
             <SummaryLabel>평균 단가</SummaryLabel>
             <SummaryValue>
-              ₩
-              {isFetchingAll ? "· · ·" : avgPrice.toLocaleString()}
+              ₩{isFetchingAll ? "· · ·" : avgPrice.toLocaleString()}
             </SummaryValue>
             <SummaryNote>조회된 업체 기준</SummaryNote>
           </SummaryCard>
@@ -158,16 +175,25 @@ export default function PurchasingPage() {
               <SectionTitle>등록된 업체</SectionTitle>
               <SectionCaption>조회된 전체 목록</SectionCaption>
             </div>
-            <Button
-              color="black"
-              onClick={() => {
-                setModalMode("register");
-                setSelectedRecord(null);
-                setIsModalOpen(true);
-              }}
-            >
-              업체 등록
-            </Button>
+            <div style={{ display: "flex", gap: 8 }}>
+              <Button
+                color="gray"
+                disabled={selectedIds.length < 2 || selectedIds.length > 3}
+                onClick={() => setIsCompareOpen(true)}
+              >
+                비교하기
+              </Button>
+              <Button
+                color="black"
+                onClick={() => {
+                  setModalMode("register");
+                  setSelectedRecord(null);
+                  setIsModalOpen(true);
+                }}
+              >
+                업체 등록
+              </Button>
+            </div>
           </SectionHeader>
 
           <FilterGroup>
@@ -186,6 +212,8 @@ export default function PurchasingPage() {
           {/* 로딩중에도 테이블 유지 */}
           <PurchasingTable
             rows={allCompanies}
+            selectedIds={selectedIds}
+            onToggleSelect={handleToggleSelect}
             showContractDate={false}
             showOrderCount={false}
             onRowClick={(r) => {
@@ -332,6 +360,11 @@ export default function PurchasingPage() {
             showSummary
             showPageSize
             align="center"
+          />
+          <PurchasingCompareModal
+            isOpen={isCompareOpen}
+            onClose={() => setIsCompareOpen(false)}
+            records={selectedForCompare}
           />
         </SectionCard>
       </PageContainer>
