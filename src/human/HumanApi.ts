@@ -5,7 +5,13 @@ import {
   type ApiResponse,
   type ListResponse,
 } from "../api";
-import type { CreateUserDTO, Region, UserRecord, WorkType } from "./HumanTypes";
+import type {
+  CreateUserDTO,
+  Region,
+  UpdateUserDTO,
+  UserRecord,
+  WorkType,
+} from "./HumanTypes";
 import { fetchWithAuth } from "../auth/api/fetchWithAuth";
 
 export type UserListParams = {
@@ -150,14 +156,28 @@ export async function createUser(dto: CreateUserDTO): Promise<UserRecord> {
 }
 
 // 유저 수정
-export async function updateUser(dto: CreateUserDTO): Promise<UserRecord> {
+export async function updateUser(dto: UpdateUserDTO): Promise<UserRecord> {
+  if (!dto.userId) {
+    throw new Error("유저 수정 실패: userId가 필요합니다.");
+  }
+
+  const payload = {
+    userId: dto.userId,
+    name: dto.name,
+    email: dto.email,
+    phoneNum: dto.phoneNum,
+    rank: dto.rank,
+    regionId: dto.regionId,
+    workTypeId: dto.workTypeId,
+  };
+
   const res = await fetchWithAuth(`${USER_BASE_PATH}/updateUser`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
     },
-    body: JSON.stringify(dto),
+    body: JSON.stringify(payload),
   });
 
   const raw = await res.text();
@@ -188,15 +208,44 @@ export async function updateUser(dto: CreateUserDTO): Promise<UserRecord> {
   return normalizeUserResponse(parsed.data, dto);
 }
 
+export async function deleteUser(email: string): Promise<void> {
+  const trimmed = email.trim();
+  if (!trimmed) {
+    throw new Error("삭제할 사용자 이메일이 필요합니다.");
+  }
+
+  const qs = new URLSearchParams({ email: trimmed });
+  const res = await fetchWithAuth(`${USER_BASE_PATH}/deleteUser?${qs}`, {
+    method: "DELETE",
+    headers: { Accept: "application/json" },
+  });
+
+  if (res.ok) return;
+
+  let message: string | null = null;
+  try {
+    const json = (await res.json()) as ApiResponse<unknown>;
+    message = json.message ?? null;
+  } catch {
+    message = await res.text();
+  }
+
+  throw new Error(message || `회원 삭제 실패 (${res.status})`);
+}
+
 function normalizeUserResponse(
   data: UserRecord | string | null | undefined,
-  fallback: CreateUserDTO
+  fallback: CreateUserDTO | UpdateUserDTO
 ): UserRecord {
   if (data && typeof data === "object") {
     return data as UserRecord;
   }
+  const fallbackId =
+    typeof (fallback as UpdateUserDTO).userId === "number"
+      ? (fallback as UpdateUserDTO).userId
+      : 0;
   return {
-    id: 0,
+    id: fallbackId,
     name: fallback.name,
     regionId: fallback.regionId,
     region: "",

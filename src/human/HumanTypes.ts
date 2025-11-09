@@ -31,7 +31,11 @@ export type CreateUserDTO = {
   personalEmail: string;
   email: string;
   phoneNum: string;
-  rank: string;
+  rank: "EMPLOYEE" | "LEADER";
   regionId: number;
   workTypeId: number;
+};
+
+export type UpdateUserDTO = CreateUserDTO & {
+  userId: number;
 };
