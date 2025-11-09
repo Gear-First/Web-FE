@@ -6,7 +6,6 @@ import type {
   OrderDetailResponse,
 } from "./RequestTypes";
 
-// React Query 키
 export const requestKeys = {
   pendingOrders: ["request", "pending-orders"] as const,
   processedOrders: ["request", "processed-orders"] as const,
@@ -16,43 +15,36 @@ export const requestKeys = {
 
 // axios 인스턴스 생성
 const api = axios.create({
-  baseURL: "http://34.120.215.23/order/api/v1", // 백엔드 API 주소
+  baseURL: "http://34.120.215.23/order/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
   timeout: 10000, // 10초 제한
 });
 
-// 요청 로그
-// api.interceptors.request.use(
-//   (config) => {
-//     console.log(
-//       "[Request]",
-//       config.method?.toUpperCase(),
-//       config.url,
-//       config.data || config.params
-//     );
-//     return config;
-//   },
-//   (error) => Promise.reject(error)
-// );
+api.interceptors.request.use(
+  (config) => {
+    const token = sessionStorage.getItem("access_token");
 
-// // 응답 로그
-// api.interceptors.response.use(
-//   (response) => response,
-//   (error) => {
-//     if (error.response) {
-//       console.error(
-//         "[Response Error]",
-//         error.response.status,
-//         error.response.data
-//       );
-//     } else {
-//       console.error("[Network Error]", error.message);
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+    if (token) {
+      // Authorization 헤더 추가
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.warn("[API] 401 Unauthorized 발생:", error.response.data);
+    }
+    return Promise.reject(error);
+  }
+);
 
 // 미승인 목록 조회
 export async function fetchPendingOrders(params: {

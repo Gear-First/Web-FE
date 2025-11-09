@@ -36,6 +36,7 @@ export const AUTH_BASE_PATH = `${BASE_URL}/auth/api/v1`;
 
 export const WAREHOUSE_ENDPOINTS = {
   PARTS_LIST: `${WAREHOUSE_BASE_PATH}/parts`,
+  PARTS_INTEGRATED: `${WAREHOUSE_BASE_PATH}/parts/integrated`,
   PART_CATEGORIES: `${WAREHOUSE_BASE_PATH}/parts/categories`,
   INBOUND_LIST: `${WAREHOUSE_BASE_PATH}/receiving`,
 };
