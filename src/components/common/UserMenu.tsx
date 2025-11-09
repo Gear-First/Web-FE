@@ -5,11 +5,11 @@ import { logout } from "../../auth/api/logout";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
-  displayName?: string; // 기본 "박우진님"
+  displayName?: string; // 기본 로그인 사용자
   email?: string;
 };
 
-export default function UserMenu({ displayName = "박우진님", email }: Props) {
+export default function UserMenu({ displayName = "사용자", email }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
