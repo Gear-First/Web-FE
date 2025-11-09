@@ -1,4 +1,5 @@
 import type { TokenResponse } from "../types/auth";
+import { syncUserProfileFromToken } from "../utils/userProfile";
 
 const AUTH_SERVER =
   import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
@@ -37,6 +38,7 @@ export async function refreshAccessToken(): Promise<string | null> {
 
   if (data.access_token) {
     sessionStorage.setItem("access_token", data.access_token);
+    syncUserProfileFromToken(data.access_token);
   }
   if (data.refresh_token) {
     localStorage.setItem("refresh_token", data.refresh_token);
