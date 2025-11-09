@@ -106,9 +106,7 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
               <Td>{r.partName}</Td>
               <Td>{r.category.name}</Td>
               <Td>
-                {r.carModelNames.length > 0
-                  ? r.carModelNames.join(", ")
-                  : "—"}
+                {r.carModelNames.length > 0 ? r.carModelNames.join(", ") : "—"}
               </Td>
               <Td>
                 {typeof r.safetyStockQty === "number"
@@ -146,6 +144,7 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
             partCode: rec.partCode,
             partName: rec.partName,
             partPrice: rec.price ?? 0,
+            safetyQty: rec.safetyStockQty ?? 0,
             categoryId: rec.category.id,
             enabled: rec.enabled ?? true,
           });

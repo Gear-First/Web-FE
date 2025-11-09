@@ -51,6 +51,7 @@ export interface PartFormModel {
   partName: string;
   partPrice: number;
   categoryId: number | string;
+  safetyQty: number;
   imageUrl?: string;
   enabled?: boolean; // 수정에서만 사용
 }
@@ -60,6 +61,7 @@ export interface PartCreateDTO {
   code: string;
   name: string;
   price: number;
+  safetyStockQty: number;
   categoryId: number | string;
   imageUrl?: string;
 }
@@ -73,6 +75,7 @@ function normalizePartForm(form: PartFormModel) {
     code: form.partCode.trim(),
     name: form.partName.trim(),
     price: Number(form.partPrice),
+    safetyQty: Number(form.safetyQty),
     categoryId:
       typeof form.categoryId === "string"
         ? form.categoryId.trim()
@@ -89,6 +92,7 @@ export function toPartCreateDTO(form: PartFormModel): PartCreateDTO {
     code: n.code,
     name: n.name,
     price: n.price,
+    safetyStockQty: n.safetyQty,
     // 문자열/숫자 모두 허용(서버 스펙에 맞게)
     categoryId: n.categoryId,
   };
@@ -103,6 +107,7 @@ export function toPartUpdateDTO(form: PartFormModel): PartUpdateDTO {
   if (n.code) patch.code = n.code;
   if (n.name) patch.name = n.name;
   if (!Number.isNaN(n.price)) patch.price = n.price;
+  if (!Number.isNaN(n.safetyQty)) patch.safetyStockQty = n.safetyQty;
   if (n.categoryId !== undefined) patch.categoryId = n.categoryId;
   if (n.imageUrl !== undefined) patch.imageUrl = n.imageUrl;
   if (n.enabled !== undefined) patch.enabled = n.enabled;

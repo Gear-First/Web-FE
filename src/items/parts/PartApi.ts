@@ -81,8 +81,7 @@ function buildQuery(params?: PartListParams) {
     qs.set("carModelId", String(params.carModelId));
   if (params.carModelName?.trim())
     qs.set("carModelName", params.carModelName.trim());
-  if (params.enabled !== undefined)
-    qs.set("enabled", String(params.enabled));
+  if (params.enabled !== undefined) qs.set("enabled", String(params.enabled));
 
   let sortApplied = false;
   if (params.sort) {
@@ -125,20 +124,20 @@ export async function fetchPartRecords(
   if (!json.success) throw new Error(json.message || "부품 목록 조회 실패");
 
   const page = json.data ?? {};
-  const items =
-    (Array.isArray(page.items) && page.items.length > 0
+  const items = (
+    Array.isArray(page.items) && page.items.length > 0
       ? page.items
       : Array.isArray(page.content)
       ? page.content
-      : []) as ServerPartListItem[];
+      : []
+  ) as ServerPartListItem[];
   const rows = items.map((item) => mapServerToPartRecord(item));
   const totalPages =
     (page.size ?? 0) > 0
       ? Math.max(
           1,
           Math.ceil(
-            (page.total ?? page.totalElements ?? rows.length) /
-              (page.size ?? 1)
+            (page.total ?? page.totalElements ?? rows.length) / (page.size ?? 1)
           )
         )
       : 1;
@@ -171,6 +170,7 @@ export async function createPart(payload: PartCreateDTO): Promise<PartRecord> {
     partCode: payload.code,
     partName: payload.name,
     partPrice: payload.price,
+    safetyQty: payload.safetyStockQty,
     categoryId: payload.categoryId,
     imageUrl: payload.imageUrl,
   });
@@ -195,6 +195,7 @@ export async function updatePart(
     partCode: patch.code ?? "",
     partName: patch.name ?? "",
     partPrice: patch.price as number,
+    safetyQty: patch.safetyStockQty as number,
     categoryId: patch.categoryId as number,
     imageUrl: patch.imageUrl,
     enabled: patch.enabled,
