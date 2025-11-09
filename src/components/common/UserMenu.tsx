@@ -12,6 +12,7 @@ import {
   getUserProfile,
   subscribeToUserProfile,
 } from "../../auth/store/userStore";
+import { useNavigate } from "react-router-dom";
 
 type Props = {
   displayName?: string; // 기본 "박우진님"
@@ -29,6 +30,7 @@ export default function UserMenu({ displayName = "박우진님", email }: Props)
 
   const effectiveName = profile?.name ?? displayName;
   const effectiveEmail = profile?.email ?? email;
+  const navigate = useNavigate();
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -50,6 +52,11 @@ export default function UserMenu({ displayName = "박우진님", email }: Props)
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
   }, [close]);
+
+  const handleProfile = () => {
+    close(); // 메뉴 닫기
+    navigate("/profile"); // 프로필 페이지로 이동
+  };
 
   const handleLogout = async () => {
     if (confirm("로그아웃하시겠습니까?")) await logout();
@@ -92,7 +99,15 @@ export default function UserMenu({ displayName = "박우진님", email }: Props)
           <MenuItem
             variant="default"
             size="md"
-            color="danger"
+            onClick={handleProfile}
+            role="menuitem"
+          >
+            마이 프로필
+          </MenuItem>
+          <MenuItem
+            $danger
+            variant="default"
+            size="md"
             onClick={handleLogout}
             role="menuitem"
           >
@@ -219,12 +234,13 @@ const Divider = styled.hr`
   margin: 6px 0;
 `;
 
-const MenuItem = styled(Button)`
+const MenuItem = styled(Button)<{ $danger?: boolean }>`
   width: 100%;
   justify-content: flex-start;
   border-radius: 10px;
   background: transparent;
-  color: #374151;
+
+  color: ${({ $danger }) => ($danger ? "#dc2626" : "#374151")};
   padding: 10px 12px;
 
   &:hover {
