@@ -76,14 +76,37 @@ function decodeBase64Url(segment: string): string {
     "="
   );
 
-  if (
-    typeof window !== "undefined" &&
-    typeof window.atob === "function"
-  ) {
-    return window.atob(padded);
-  }
+  const decodeBinary = () => {
+    if (typeof window !== "undefined" && typeof window.atob === "function") {
+      return window.atob(padded);
+    }
+    const globalBuffer = (globalThis as Record<string, unknown>)
+      .Buffer as
+      | undefined
+      | {
+          from(data: string, encoding: string): {
+            toString(encoding: string): string;
+          };
+        };
+    if (globalBuffer) {
+      return globalBuffer.from(padded, "base64").toString("binary");
+    }
+    return "";
+  };
 
-  return "";
+  const binary = decodeBinary();
+  if (!binary) return "";
+
+  try {
+    let percentEncoded = "";
+    for (let i = 0; i < binary.length; i += 1) {
+      const code = binary.charCodeAt(i);
+      percentEncoded += `%${code.toString(16).padStart(2, "0")}`;
+    }
+    return decodeURIComponent(percentEncoded);
+  } catch {
+    return binary;
+  }
 }
 
 function stringValue(value: unknown): string | undefined {

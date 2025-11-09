@@ -29,7 +29,6 @@ export default function UserMenu({ displayName = "사용자", email }: Props) {
   );
 
   const effectiveName = profile?.name ?? displayName;
-  const effectiveEmail = profile?.email ?? email;
   const navigate = useNavigate();
 
   const close = useCallback(() => setOpen(false), []);
@@ -92,7 +91,6 @@ export default function UserMenu({ displayName = "사용자", email }: Props) {
             <HeaderAvatar>{initials}</HeaderAvatar>
             <HeaderInfo>
               <strong>{effectiveName}</strong>
-              {effectiveEmail ? <small>{effectiveEmail}</small> : null}
             </HeaderInfo>
           </MenuHeader>
           <Divider />
