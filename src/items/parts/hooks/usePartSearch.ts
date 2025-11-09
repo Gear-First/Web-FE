@@ -14,8 +14,11 @@ function buildPartQueryKey(params: Params) {
   return [
     ...partKeys.records,
     params.q ?? "",
-    params.searchBy ?? "auto",
     params.categoryId ?? "",
+    params.categoryName ?? "",
+    params.carModelId ?? "",
+    params.carModelName ?? "",
+    params.enabled === undefined ? "all" : String(params.enabled),
     params.page ?? 1,
     params.pageSize ?? 10,
     params.sort ? JSON.stringify(params.sort) : "",
