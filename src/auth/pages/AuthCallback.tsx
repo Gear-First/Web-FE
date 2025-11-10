@@ -70,7 +70,7 @@ function AuthCallback(): JSX.Element {
 
         setMessage("로그인 성공! 🎉");
         setTimeout(() => {
-          navigate("/mrp", { replace: true });
+          navigate("/dashboard", { replace: true });
         }, 800);
       } catch (e) {
         console.error(e);

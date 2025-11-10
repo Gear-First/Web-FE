@@ -9,11 +9,13 @@ import ItemPage from "../items/ItemPage";
 import PurchasingPage from "../purchasing/PurchasingPage";
 import HumanPage from "../human/HumanPage";
 import DashboardPage from "../dashboard/DashboardPage";
+import RequireAuth from "./RequireAuth";
+import RequireOrgType from "./guards/RequireOrgType";
+import UserProfilePage from "../user/UserProfilePage";
+import CarModelPage from "../carModel/CarModelPage";
 
 import Login from "../auth/pages/Login";
 import AuthCallback from "../auth/pages/AuthCallback";
-import RequireAuth from "./RequireAuth";
-import CarModelPage from "../carModel/CarModelPage";
 
 const AppRoutes = () => {
   return (
@@ -24,16 +26,94 @@ const AppRoutes = () => {
       <Route element={<RequireAuth />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={<DashboardPage />} />
-        <Route path="/car-models" element={<CarModelPage />} />
-        <Route path="/mrp" element={<BOMPage />} />
-        <Route path="/request" element={<RequestPage />} />
-        <Route path="/items" element={<ItemPage />} />
-        <Route path="/part" element={<PartPage />} />
-        <Route path="/property" element={<PropertyPage />} />
-        <Route path="/inbound" element={<InboundPage />} />
-        <Route path="/outbound" element={<OutboundPage />} />
-        <Route path="/purchasing" element={<PurchasingPage />} />
-        <Route path="/human" element={<HumanPage />} />
+        <Route
+          path="/mrp"
+          element={
+            <RequireOrgType required="본사">
+              <BOMPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/request"
+          element={
+            <RequireOrgType required="본사">
+              <RequestPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/items"
+          element={
+            <RequireOrgType required="본사">
+              <ItemPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/part"
+          element={
+            <RequireOrgType required="본사">
+              <PartPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/car-models"
+          element={
+            <RequireOrgType required="본사">
+              <CarModelPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/property"
+          element={
+            <RequireOrgType required="본사">
+              <PropertyPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/inbound"
+          element={
+            <RequireOrgType required="본사">
+              <InboundPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/outbound"
+          element={
+            <RequireOrgType required="본사">
+              <OutboundPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/purchasing"
+          element={
+            <RequireOrgType required="본사">
+              <PurchasingPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/human"
+          element={
+            <RequireOrgType required="본사">
+              <HumanPage />
+            </RequireOrgType>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireOrgType required="본사">
+              <UserProfilePage />
+            </RequireOrgType>
+          }
+        />
       </Route>
 
       <Route path="*" element={<Navigate to="/" replace />} />
