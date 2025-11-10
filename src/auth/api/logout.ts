@@ -1,11 +1,10 @@
 import { clearUserProfile } from "../store/userStore";
 
 const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER;
+
 export async function logout(): Promise<void> {
-  sessionStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  clearUserProfile();
   const accessToken = sessionStorage.getItem("access_token");
+
   try {
     await fetch(`${AUTH_SERVER}/logout`, {
       method: "POST",
