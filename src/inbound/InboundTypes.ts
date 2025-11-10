@@ -47,7 +47,7 @@ export interface InboundRecord {
 export interface InboundDetailProduct {
   id: number;
   lot: string;
-  serial: string;
+  code: string;
   name: string;
   imgUrl?: string | null;
 }

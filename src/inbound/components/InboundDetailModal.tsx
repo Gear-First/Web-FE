@@ -187,7 +187,7 @@ const InboundDetailModal = ({
                   lines.map((l) => (
                     <tr key={l.lineId}>
                       <Td>{l.product.name}</Td>
-                      <Td>{l.product.serial}</Td>
+                      <Td>{l.product.code}</Td>
                       <Td>{l.product.lot}</Td>
                       <Td>{fmtNum(l.orderedQty)}</Td>
                       <Td>

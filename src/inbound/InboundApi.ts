@@ -85,9 +85,11 @@ function sanitizeDate(value?: string | null): string | undefined {
   return match ? match[1] : undefined;
 }
 
-function buildDateFilters(
-  params?: InboundListParams
-): { date?: string; dateFrom?: string; dateTo?: string } {
+function buildDateFilters(params?: InboundListParams): {
+  date?: string;
+  dateFrom?: string;
+  dateTo?: string;
+} {
   if (!params) return {};
 
   const hasRange = Boolean(params.dateFrom || params.dateTo);
@@ -190,7 +192,7 @@ type ServerInboundDetail = {
     product: {
       id: number;
       lot: string;
-      serial: string;
+      code: string;
       name: string;
       imgUrl: string | null;
     };
@@ -242,7 +244,7 @@ export function toInboundDetailRecord(
       product: {
         id: l.product.id,
         lot: l.product.lot,
-        serial: l.product.serial,
+        code: l.product.code,
         name: l.product.name,
         imgUrl: l.product.imgUrl ?? null,
       },
