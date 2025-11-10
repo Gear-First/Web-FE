@@ -10,13 +10,20 @@ export default function OrderTable({
   rows: PendingOrderItem[];
   onRowClick: (row: PendingOrderItem) => void;
 }) {
+  const getBranchType = (code: string) => {
+    if (code.includes("대리점")) return "대리점";
+    else if (code.includes("창고")) return "창고";
+  };
+  const branchType =
+    rows.length > 0 ? getBranchType(rows[0].branchCode) : "대리점";
+
   return (
     <>
       <Table>
         <thead>
           <tr>
             <Th>발주 번호</Th>
-            <Th>대리점</Th>
+            <Th>{branchType === "대리점" ? "대리점" : "창고"}</Th>
             <Th>담당자</Th>
             <Th>요청 일시</Th>
           </tr>

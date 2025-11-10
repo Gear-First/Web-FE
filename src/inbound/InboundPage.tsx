@@ -111,9 +111,10 @@ export default function InboundPage() {
   const totalDone = dataDone?.meta?.total ?? 0;
   const totalPagesDone = dataDone?.meta?.totalPages ?? 1;
 
-  const completionRate = totalDone + totalNotDone > 0
-    ? Math.round((totalDone / (totalDone + totalNotDone)) * 100)
-    : 0;
+  const completionRate =
+    totalDone + totalNotDone > 0
+      ? Math.round((totalDone / (totalDone + totalNotDone)) * 100)
+      : 0;
   const backlogQty = recordsNotDone.reduce(
     (sum, record) => sum + (record.totalQty ?? 0),
     0
@@ -166,7 +167,9 @@ export default function InboundPage() {
           <SummaryCard>
             <SummaryLabel>입고 예정</SummaryLabel>
             <SummaryValue>{totalNotDone.toLocaleString()}건</SummaryValue>
-            <SummaryNote>대기 중 수량 {backlogQty.toLocaleString()}ea</SummaryNote>
+            <SummaryNote>
+              대기 중 수량 {backlogQty.toLocaleString()}ea
+            </SummaryNote>
           </SummaryCard>
           <SummaryCard>
             <SummaryLabel>입고 완료</SummaryLabel>
@@ -209,7 +212,7 @@ export default function InboundPage() {
             />
           </FilterGroup>
 
-          <InboundTable rows={recordsNotDone} />
+          <InboundTable rows={recordsNotDone} variant="pending" />
 
           <div
             style={{
@@ -277,7 +280,7 @@ export default function InboundPage() {
             />
           </FilterGroup>
 
-          <InboundTable rows={recordsDone} />
+          <InboundTable rows={recordsDone} variant="done" />
 
           <div
             style={{
