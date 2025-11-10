@@ -3,15 +3,10 @@ import { useNavigate } from "react-router-dom";
 import type { TokenResponse } from "../types/auth";
 import { syncUserProfileFromToken } from "../utils/userProfile";
 
-const AUTH_SERVER =
-  import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
-const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
-const DEFAULT_REDIRECT_URI =
-  typeof window !== "undefined"
-    ? `${window.location.origin}/auth/callback`
-    : "https:/gearfirst-fe.vercel.app/auth/callback";
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI ?? DEFAULT_REDIRECT_URI;
-const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET ?? "secret";
+const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER;
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI;
+const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
 
 function AuthCallback(): JSX.Element {
   const [message, setMessage] = useState<string>("로그인 중입니다...");
@@ -74,7 +69,6 @@ function AuthCallback(): JSX.Element {
         setMessage("로그인 성공! 🎉");
         setTimeout(() => {
           navigate("/mrp", { replace: true });
-          // 또는 window.location.replace("http://localhost:5173/mrp");
         }, 800);
       } catch (e) {
         console.error(e);
