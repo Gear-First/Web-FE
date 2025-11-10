@@ -53,9 +53,9 @@ export default function OutboundPage() {
       fetchOutboundNotDoneRecords({
         dateFrom: appliedPending.dateFrom,
         dateTo: appliedPending.dateTo,
-        warehouseCode: appliedPending.keyword,
-        page: pagePending - 1,
-        size: pageSizePending,
+        q: appliedPending.keyword || undefined,
+        page: pagePending,
+        pageSize: pageSizePending,
       }),
     staleTime: 60 * 1000,
   });
@@ -112,9 +112,9 @@ export default function OutboundPage() {
       fetchOutboundDoneRecords({
         dateFrom: appliedDone.dateFrom,
         dateTo: appliedDone.dateTo,
-        warehouseCode: appliedDone.keyword,
-        page: pageDone - 1,
-        size: pageSizeDone,
+        q: appliedDone.keyword || undefined,
+        page: pageDone,
+        pageSize: pageSizeDone,
       }),
     staleTime: 60 * 1000,
   });
@@ -214,7 +214,7 @@ export default function OutboundPage() {
               onKeywordChange={setPendingKeyword}
               onSearch={onSearchPending}
               onReset={onResetPending}
-              placeholder="창고코드 검색"
+              placeholder="출고번호 / 대리점 / 창고 검색"
             />
           </FilterGroup>
 
@@ -262,7 +262,7 @@ export default function OutboundPage() {
               onKeywordChange={setDoneKeyword}
               onSearch={onSearchDone}
               onReset={onResetDone}
-              placeholder="창고코드 검색"
+              placeholder="출고번호 / 대리점 / 창고 검색"
             />
           </FilterGroup>
 
