@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import styled from "styled-components";
-import Logo from "../../assets/logo_gearfirst.svg";
+import Logo from "../../assets/gearfirst_logo.svg";
 import UserMenu from "./UserMenu";
 import { readCurrentUserFromToken } from "../../auth/utils/currentUser";
 import { NotificationList } from "../../notification/components/NotificationList";
@@ -47,7 +47,6 @@ const HeaderLogo = styled.img`
   width: 116px;
   height: auto;
   display: block;
-  filter: saturate(0);
 `;
 
 /* 가운데 메뉴: 심플 중앙 정렬 */
@@ -133,7 +132,7 @@ const TopBar: React.FC = () => {
   const menus = [
     { id: -1, name: "대시보드", path: "/dashboard" },
     { id: 0, name: "요청관리", path: "/request" },
-    { id: 1, name: "자재 소요량 산출 및 계획", path: "/mrp" },
+    { id: 1, name: "BOM 관리", path: "/mrp" },
     { id: 2, name: "구매 관리", path: "/purchasing" },
     { id: 4, name: "품목 관리", path: "/items" },
     { id: 5, name: "재고 관리", path: "/part" },

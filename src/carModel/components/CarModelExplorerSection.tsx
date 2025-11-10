@@ -204,8 +204,22 @@ export default function CarModelExplorerSection() {
         <ExplorerGrid>
           <Pane>
             <PaneHeader>
-              <PaneTitle>차량 모델 목록</PaneTitle>
-              <FilterGroup>
+              <div
+                style={{
+                  width: "100%",
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
+                <PaneTitle>차량 모델 목록</PaneTitle>
+                <Button
+                  color="black"
+                  onClick={() => setIsCarModelRegisterModalOpen(true)}
+                >
+                  차량 모델 등록
+                </Button>
+              </div>
+              <FilterGroup style={{ margin: "0" }}>
                 <Button variant="icon" onClick={onReset} aria-label="초기화">
                   <img src={resetIcon} width={18} height={18} alt="초기화" />
                 </Button>
@@ -231,14 +245,6 @@ export default function CarModelExplorerSection() {
                   placeholder="모델명 검색"
                   width="150px"
                 />
-              </FilterGroup>
-              <FilterGroup>
-                <Button
-                  color="black"
-                  onClick={() => setIsCarModelRegisterModalOpen(true)}
-                >
-                  차량 모델 등록
-                </Button>
               </FilterGroup>
             </PaneHeader>
 
