@@ -112,17 +112,13 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
             <Section>
               <SectionTitle>부품 정보</SectionTitle>
               <TableScroll $maxHeight={200}>
-                <StickyTable
-                  $stickyTop={0}
-                  $headerBg="#fafbfc"
-                  $zebra
-                  $colWidths={["20%", "20%", "15%", "15%"]}
-                >
+                <StickyTable $stickyTop={0} $headerBg="#fafbfc" $zebra>
                   <thead>
                     <tr>
                       <Th>부품명</Th>
-                      <Th>시리얼코드</Th>
-                      <Th>수량</Th>
+                      <Th>부품코드</Th>
+                      <Th>LOT</Th>
+                      <Th>주문수량</Th>
                       <Th>상태</Th>
                     </tr>
                   </thead>
@@ -131,7 +127,8 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                       <tr key={line.lineId}>
                         <Td>{line.product?.name ?? "-"}</Td>
                         <Td>{line.product?.code ?? "-"}</Td>
-                        <Td>{line.pickedQty?.toLocaleString() ?? "-"}</Td>
+                        <Td>{line.product?.lot ?? "-"}</Td>
+                        <Td>{line.orderedQty?.toLocaleString() ?? "-"}</Td>
                         <Td>
                           <StatusBadge
                             $variant={

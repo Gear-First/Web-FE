@@ -6,7 +6,6 @@ import {
   SectionTitle,
   SectionCaption,
   FilterGroup,
-  Select,
   SummaryGrid,
   SummaryCard,
   SummaryLabel,
@@ -125,9 +124,10 @@ export default function OutboundPage() {
 
   const pendingTotal = pendingMeta.total ?? 0;
   const doneTotal = doneMeta.total ?? 0;
-  const completionRate = pendingTotal + doneTotal > 0
-    ? Math.round((doneTotal / (pendingTotal + doneTotal)) * 100)
-    : 0;
+  const completionRate =
+    pendingTotal + doneTotal > 0
+      ? Math.round((doneTotal / (pendingTotal + doneTotal)) * 100)
+      : 0;
   const backlogQty = pendingRecords.reduce(
     (sum, record) => sum + (record.totalQty ?? 0),
     0
@@ -203,16 +203,6 @@ export default function OutboundPage() {
             <Button variant="icon" onClick={onResetPending}>
               <img src={resetIcon} width={18} height={18} alt="초기화" />
             </Button>
-            <Select
-              value={pendingStatus}
-              onChange={(e) =>
-                setPendingStatus(e.target.value as typeof pendingStatus)
-              }
-            >
-              <option value="ALL">전체</option>
-              <option value="PENDING">대기</option>
-              <option value="IN_PROGRESS">진행중</option>
-            </Select>
             <DateRange
               startDate={pendingStartDate}
               endDate={pendingEndDate}
@@ -228,7 +218,7 @@ export default function OutboundPage() {
             />
           </FilterGroup>
 
-          <OutboundTable rows={pendingRecords} />
+          <OutboundTable rows={pendingRecords} variant="pending" />
           <Pagination
             page={pagePending}
             totalPages={pendingMeta.totalPages}
@@ -261,16 +251,6 @@ export default function OutboundPage() {
             <Button variant="icon" onClick={onResetDone}>
               <img src={resetIcon} width={18} height={18} alt="초기화" />
             </Button>
-            <Select
-              value={doneStatus}
-              onChange={(e) =>
-                setDoneStatus(e.target.value as typeof doneStatus)
-              }
-            >
-              <option value="ALL">전체</option>
-              <option value="COMPLETED">완료</option>
-              <option value="DELAYED">지연</option>
-            </Select>
             <DateRange
               startDate={doneStartDate}
               endDate={doneEndDate}
@@ -286,7 +266,7 @@ export default function OutboundPage() {
             />
           </FilterGroup>
 
-          <OutboundTable rows={doneRecords} />
+          <OutboundTable rows={doneRecords} variant="done" />
           <Pagination
             page={pageDone}
             totalPages={doneMeta.totalPages}

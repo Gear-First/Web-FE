@@ -6,7 +6,7 @@ export type OutboundStatus =
   | "DELAYED"; // 지연
 
 // 부품 상태 Enum
-export type OutboundPartStatus = "PENDING" | "READY" | "COMPLETED";
+export type OutboundPartStatus = "PENDING" | "READY" | "COMPLETED" | "SHORTAGE";
 
 // 출고 상태 한글 변환
 export const OUTBOUND_STATUS_LABELS: Record<OutboundStatus, string> = {
@@ -21,8 +21,8 @@ export const OUTBOUND_STATUS_VARIANTS: Record<
   OutboundStatus,
   "info" | "warning" | "success" | "rejected"
 > = {
-  PENDING: "info",
-  IN_PROGRESS: "warning",
+  PENDING: "warning",
+  IN_PROGRESS: "info",
   COMPLETED: "success",
   DELAYED: "rejected",
 };
@@ -31,16 +31,18 @@ export const OUTBOUND_STATUS_VARIANTS: Record<
 export const OUTBOUND_PART_STATUS_LABELS: Record<OutboundPartStatus, string> = {
   PENDING: "대기",
   READY: "출고 준비",
+  SHORTAGE: "재고 부족",
   COMPLETED: "완료",
 };
 
 // 부품 상태 색상 매핑
 export const OUTBOUND_PART_STATUS_VARIANTS: Record<
   OutboundPartStatus,
-  "info" | "warning" | "success"
+  "info" | "warning" | "success" | "rejected"
 > = {
-  PENDING: "info",
-  READY: "warning",
+  PENDING: "warning",
+  READY: "info",
+  SHORTAGE: "rejected",
   COMPLETED: "success",
 };
 

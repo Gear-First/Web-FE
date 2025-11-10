@@ -440,3 +440,11 @@ export function useDashboardData() {
     allInventoryData,
   };
 }
+
+export async function fetchPods(namespace: string = "default") {
+  const res = await fetch(`/notification/k8s/pods/list?namespace=${namespace}`);
+  if (!res.ok) {
+    throw new Error("Failed to fetch pods");
+  }
+  return res.json();
+}

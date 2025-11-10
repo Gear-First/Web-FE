@@ -12,6 +12,13 @@ export type InboundDetailStatusRaw =
   | "PENDING"
   | (string & {});
 
+export const InboundStatusLabelMap: Record<string, string> = {
+  PENDING: "대기",
+  IN_PROGRESS: "진행중",
+  COMPLETED_OK: "완료",
+  COMPLETED_ISSUE: "재입고 대기",
+};
+
 // 상세 라인 상태(서버 원문)
 export type InboundLineStatusRaw =
   | "ACCEPTED"
@@ -152,7 +159,7 @@ export const inboundStatusVariantMap: Record<
   PENDING: "pending", // 회색 or 기본색
   IN_PROGRESS: "pending", // 파랑 계열로 표현 가능
   COMPLETED_OK: "accepted", // 초록색
-  COMPLETED_ISSUE: "accepted", // 주황/빨강 계열
+  COMPLETED_ISSUE: "rejected", // 주황/빨강 계열
   DEFAULT: "pending",
 };
 

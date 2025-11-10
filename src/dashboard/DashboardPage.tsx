@@ -36,6 +36,7 @@ import { fetchInboundNotDoneRecords } from "../inbound/InboundApi";
 import { fetchOutboundNotDoneRecords } from "../outbound/OutboundApi";
 import { fetchUsers } from "../human/HumanApi";
 import { fetchPartRecords as fetchItemPartRecords } from "../items/parts/PartApi";
+import { fetchPods } from "./hooks/useDashboardData";
 
 const numberFormatter = new Intl.NumberFormat("ko-KR");
 
@@ -178,6 +179,15 @@ export default function DashboardPage() {
     staleTime: 5 * 60 * 1000,
   });
 
+  const {
+    data: pods,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ["dashboard", "pods"],
+    queryFn: () => fetchPods("default"),
+    staleTime: 30 * 1000,
+  });
   const openWorkload = useMemo(() => {
     const pending = pendingOrders.data ?? 0;
     const inbound = inboundRecords.data ?? 0;
@@ -694,6 +704,29 @@ export default function DashboardPage() {
             );
           })}
         </MenuGrid>
+        {isLoading ? (
+          <PodSection>
+            <PodTitle>Pod 모니터링</PodTitle>
+            <p>데이터 로딩 중...</p>
+          </PodSection>
+        ) : error ? (
+          <PodSection>
+            <PodTitle>Pod 모니터링</PodTitle>
+            <p>Pod 데이터를 불러올 수 없습니다.</p>
+          </PodSection>
+        ) : (
+          <PodSection>
+            <PodTitle>Pod 모니터링</PodTitle>
+            <PodList>
+              {pods?.map((pod: any) => (
+                <PodItem key={pod.name}>
+                  <PodName>{pod.name}</PodName>
+                  <PodStatus $phase={pod.phase} />
+                </PodItem>
+              ))}
+            </PodList>
+          </PodSection>
+        )}
       </PageContainer>
     </Layout>
   );
@@ -1055,4 +1088,61 @@ const StatusChip = styled.span<{
         `;
     }
   }}
+`;
+
+const PodSection = styled.section`
+  margin-top: 2.4rem;
+  padding: 1.6rem;
+  background: #ffffff;
+  border: 1px solid #e4e4e7;
+  border-radius: 18px;
+  box-shadow: 0 20px 42px rgba(15, 15, 23, 0.05);
+`;
+
+const PodTitle = styled.h3`
+  font-size: 1.05rem;
+  font-weight: 600;
+  color: #0f0f11;
+  margin-bottom: 1.2rem;
+`;
+
+const PodList = styled.ul`
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.6rem;
+`;
+
+const PodItem = styled.li`
+  position: relative;
+  padding: 0.75rem 1rem;
+  border-radius: 12px;
+  border: 1px solid #e4e4e7;
+  background: #fafafa;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const PodName = styled.span`
+  font-size: 0.85rem;
+  color: #111111;
+  word-break: break-all;
+`;
+
+const PodStatus = styled.span<{ $phase: string }>`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  ${({ $phase }) =>
+    $phase === "Running"
+      ? css`
+          background-color: #16a34a; /* 초록불 */
+          box-shadow: 0 0 6px #16a34a66;
+        `
+      : css`
+          background-color: #dc2626; /* 빨강불 */
+          box-shadow: 0 0 6px #dc262666;
+        `}
 `;

@@ -1,10 +1,19 @@
 import { useState } from "react";
 import { StatusBadge, Table, Td, Th } from "../../components/common/PageLayout";
-import { getInboundStatusVariant, type InboundRecord } from "../InboundTypes";
+import {
+  getInboundStatusVariant,
+  InboundStatusLabelMap,
+  type InboundRecord,
+} from "../InboundTypes";
 import InboundDetailModal from "./InboundDetailModal";
 import { fmtDate } from "../../utils/string";
 
-export default function InboundTable({ rows }: { rows?: InboundRecord[] }) {
+interface InboundTableProps {
+  rows: InboundRecord[];
+  variant: "pending" | "done"; // 출고예정 / 출고완료 구분
+}
+
+export default function InboundTable({ rows, variant }: InboundTableProps) {
   const [selectedRecord, setSelectedRecord] = useState<InboundRecord | null>(
     null
   );
@@ -27,7 +36,7 @@ export default function InboundTable({ rows }: { rows?: InboundRecord[] }) {
             <Th>품목수</Th>
             <Th>총수량</Th>
             <Th>요청일시</Th>
-            <Th>완료일시</Th>
+            {variant === "done" && <Th>완료일시</Th>}
             <Th>창고</Th>
             <Th>상태</Th>
           </tr>
@@ -54,14 +63,18 @@ export default function InboundTable({ rows }: { rows?: InboundRecord[] }) {
                 <Td>{fmtNum(r.itemKindsNumber)}</Td>
                 <Td>{fmtNum(r.totalQty)}</Td>
                 <Td>{fmtDate(r.requestedAt)}</Td>
-                <Td>{fmtDate(r.completedAt)}</Td>
+                {variant === "done" && <Td>{fmtDate(r.completedAt)}</Td>}
                 <Td>{fmt(r.warehouseCode)}</Td>
                 <Td>
                   <StatusBadge
                     $variant={getInboundStatusVariant(r.statusRaw)}
                     title={r.statusRaw || undefined}
                   >
-                    {r.statusRaw}
+                    {
+                      InboundStatusLabelMap[
+                        (r.statusRaw ?? "").trim().toUpperCase()
+                      ]
+                    }
                   </StatusBadge>
                 </Td>
               </tr>
