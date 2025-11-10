@@ -15,6 +15,6 @@ export async function logout(): Promise<void> {
   } catch {
     // 서버 요청 실패해도 클라이언트 상태는 이미 정리됨
   } finally {
-    window.location.href = `http://localhost:5173/login`;
+    window.location.href = `https://gearfirst-fe.vercel.app/login`;
   }
 }
