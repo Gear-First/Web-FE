@@ -1,6 +1,5 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
-import type { IncomingMessage, ClientRequest } from "http";
 
 export default defineConfig({
   plugins: [react()],
@@ -14,12 +13,13 @@ export default defineConfig({
         ws: true,
         followRedirects: true,
         configure: (proxy, options) => {
-          proxy.on(
-            "proxyReq",
-            (_proxyReq: ClientRequest, req: IncomingMessage) => {
-              console.log(`[Proxy] ${req.url} -> ${options.target}`);
-            }
-          );
+          const server = proxy as unknown as {
+            on: (event: string, listener: (...args: unknown[]) => void) => void;
+          };
+          server.on("proxyReq", (...args: unknown[]) => {
+            const req = args[1] as { url?: string } | undefined;
+            console.log(`[Proxy] ${req?.url ?? ""} -> ${options.target}`);
+          });
         },
       },
     },
