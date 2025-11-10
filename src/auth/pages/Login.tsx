@@ -3,7 +3,7 @@ import {
   generateCodeChallenge,
   generateState,
 } from "../utils/pkce";
-import { type JSX } from "react";
+import { type JSX, useEffect } from "react";
 import { resolveRedirectUri } from "../utils/redirectUri";
 
 const AUTH_SERVER =
@@ -34,10 +34,13 @@ function Login(): JSX.Element {
     window.location.href = `${AUTH_SERVER}/oauth2/authorize?${params}`;
   };
 
+  useEffect(() => {
+    void handleLogin();
+  }, []);
+
   return (
     <div style={{ textAlign: "center", marginTop: "100px" }}>
-      <h1>GearFirst 로그인 테스트</h1>
-      <button onClick={handleLogin}>로그인하기</button>
+      <h1>GearFirst 로그인 페이지로 이동 중...</h1>
     </div>
   );
 }
