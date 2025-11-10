@@ -25,7 +25,15 @@ const AppRoutes = () => {
 
       <Route element={<RequireAuth />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
-        <Route path="/dashboard" element={<DashboardPage />} />
+
+        <Route
+          path="/dashboard"
+          element={
+            <RequireOrgType required="본사">
+              <DashboardPage />
+            </RequireOrgType>
+          }
+        />
         <Route
           path="/mrp"
           element={
