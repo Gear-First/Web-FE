@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import styled from "styled-components";
-import BellIcon from "../../assets/BellIcon.png";
 import Logo from "../../assets/logo_gearfirst.svg";
 import UserMenu from "./UserMenu";
+import { readCurrentUserFromToken } from "../../auth/utils/currentUser";
+import { NotificationList } from "../../notification/components/NotificationList";
 
 /* ─ tokens: 절제된 기업 톤 */
 const color = {
@@ -112,57 +113,23 @@ const RightActions = styled.div`
   gap: 12px;
 `;
 
-const IconButton = styled.button`
-  --size: 40px;
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  width: var(--size);
-  height: var(--size);
-  border-radius: 99999px;
-  border: 1px solid rgba(17, 17, 26, 0.1);
-  background: rgba(255, 255, 255, 0.8);
-  padding: 0;
-  cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease,
-    transform 0.06s ease;
-
-  &:hover {
-    background: rgba(17, 17, 26, 0.08);
-    border-color: rgba(17, 17, 26, 0.16);
-  }
-  &:active {
-    transform: translateY(1px);
-  }
-  &:focus-visible {
-    outline: 3px solid ${color.focus};
-    outline-offset: 2px;
-  }
-`;
-
-const BellWrap = styled.div`
-  position: relative;
-`;
-const BellImg = styled.img`
-  width: 18px;
-  height: 18px;
-  display: block;
-  opacity: 0.9;
-`;
-
-/* 작은 상태 점 (필요 시 숨기기) */
-const BadgeDot = styled.span`
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  width: 9px;
-  height: 9px;
-  background: ${color.primary};
-  border-radius: 999px;
-  box-shadow: 0 0 0 2px ${color.bg};
-`;
-
 const TopBar: React.FC = () => {
+  const [profile, setProfile] = useState(readCurrentUserFromToken());
+
+  useEffect(() => {
+    const syncProfile = () => {
+      setProfile(readCurrentUserFromToken());
+    };
+
+    window.addEventListener("storage", syncProfile);
+    window.addEventListener("focus", syncProfile);
+
+    return () => {
+      window.removeEventListener("storage", syncProfile);
+      window.removeEventListener("focus", syncProfile);
+    };
+  }, []);
+
   const menus = [
     { id: -1, name: "대시보드", path: "/dashboard" },
     { id: 0, name: "요청관리", path: "/request" },
@@ -170,13 +137,12 @@ const TopBar: React.FC = () => {
     { id: 2, name: "구매 관리", path: "/purchasing" },
     { id: 4, name: "품목 관리", path: "/items" },
     { id: 5, name: "재고 관리", path: "/part" },
+    { id: 10, name: "차량 모델", path: "/car-models" },
     { id: 6, name: "자산 관리", path: "/property" },
     { id: 7, name: "입고 관리", path: "/inbound" },
     { id: 8, name: "출고 관리", path: "/outbound" },
     { id: 9, name: "인사 관리", path: "/human" },
   ];
-
-  const unread = true;
 
   return (
     <TopBarContainer>
@@ -197,12 +163,7 @@ const TopBar: React.FC = () => {
 
         <RightActions>
           <UserMenu />
-          <IconButton aria-label="알림">
-            <BellWrap>
-              <BellImg src={BellIcon} alt="알림" />
-              {unread && <BadgeDot />}
-            </BellWrap>
-          </IconButton>
+          <NotificationList />
         </RightActions>
       </Inner>
     </TopBarContainer>

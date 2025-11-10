@@ -40,6 +40,14 @@ export function generatePartMock(count = 100, seed = 20251027): PartRecord[] {
   ];
 
   const base = new Date("2025-01-05");
+  const carModels = [
+    "아반떼",
+    "스타리아",
+    "쏘나타",
+    "그랜저",
+    "카니발",
+    "포터",
+  ];
 
   const pick = <T>(arr: T[]) => arr[Math.floor(rnd() * arr.length)];
   const int = (min: number, max: number) =>
@@ -57,13 +65,24 @@ export function generatePartMock(count = 100, seed = 20251027): PartRecord[] {
     // PART-ID: PART-YYMMDD-###
     const yymmdd = createdDate.slice(2).replaceAll("-", "");
     const partId = `PART-${yymmdd}-${pad(i + 1, 3)}`;
+    const updatedDate = dateAdd(new Date(createdDate), int(0, 10));
 
     const rec: PartRecord = {
       partId,
       partName,
       partCode,
+      price: int(500, 150000),
+      safetyStockQty: int(10, 120),
       category,
       createdDate,
+      updatedDate,
+      carModelNames: Array.from(
+        new Set(
+          Array.from({ length: int(1, 3) }, () => pick(carModels))
+        )
+      ),
+      imageUrl: undefined,
+      enabled: rnd() > 0.2,
     };
     return rec;
   });

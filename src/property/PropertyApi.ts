@@ -1,34 +1,47 @@
-import type { PropertyRecord } from "./PropertyTypes";
+import axios from "axios";
+import type { PropertyResponse } from "./PropertyTypes";
 
 // --- query keys ---
 export const propertyKeys = {
-  records: ["property", "records"] as const,
+  records: ["property", "property-records"] as const,
 };
+
+// axios 인스턴스 생성
+const api = axios.create({
+  baseURL: "http://34.120.215.23/warehouse/api/v1", // 백엔드 API 주소
+  headers: {
+    "Content-Type": "application/json",
+  },
+  timeout: 10000, // 10초 제한
+});
 
 export type PropertyQueryParams = {
-  warehouse?: string;
-  keyword?: string; // 부품코드/부품명
-  page: number;
-  pageSize: number;
+  q?: string;
+  keyword?: string;
+  warehouseCode?: string;
+  page?: number;
+  size?: number;
+  pageSize?: number;
 };
 
-export type ListResponse<T> = {
-  data: T;
-  meta: { total: number; page: number; pageSize: number; totalPages: number };
-  facets?: { warehouses?: string[] };
-};
+export async function fetchPropertyRecords(
+  params: PropertyQueryParams
+): Promise<PropertyResponse> {
+  const requestParams: Record<string, string | number | undefined> = {
+    ...params,
+  };
 
-export async function fetchPropertyRecords(params: PropertyQueryParams) {
-  const qs = new URLSearchParams({
-    ...(params.warehouse && params.warehouse !== "ALL"
-      ? { warehouse: params.warehouse }
-      : {}),
-    ...(params.keyword ? { keyword: params.keyword } : {}),
-    page: String(params.page),
-    pageSize: String(params.pageSize),
-  });
+  if (requestParams.keyword && !requestParams.q) {
+    requestParams.q = requestParams.keyword;
+  }
 
-  const res = await fetch(`/api/property/records?${qs.toString()}`);
-  if (!res.ok) throw new Error("Failed to fetch property records");
-  return (await res.json()) as ListResponse<PropertyRecord[]>;
+  if (requestParams.pageSize != null) {
+    requestParams.size = requestParams.pageSize;
+  }
+
+  delete requestParams.keyword;
+  delete requestParams.pageSize;
+
+  const res = await api.get("/inventory/on-hand", { params: requestParams });
+  return res.data;
 }

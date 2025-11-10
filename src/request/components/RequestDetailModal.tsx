@@ -314,13 +314,13 @@ const DetailModal = ({
                   }}
                 >
                   <Button
-                    color="primary"
+                    color="black"
                     onClick={() => onApprove?.(record.orderId, remark)}
                   >
                     승인
                   </Button>
                   <Button
-                    color="danger"
+                    color="gray"
                     onClick={() => onReject?.(record.orderId, remark)}
                   >
                     반려

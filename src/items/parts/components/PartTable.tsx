@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useQueryClient, useMutation } from "@tanstack/react-query";
-import { Table, Td, Th } from "../../../components/common/PageLayout";
+import {
+  StatusBadge,
+  Table,
+  Td,
+  Th,
+} from "../../../components/common/PageLayout";
 
 import PartRegisterModal from "./PartRegisterModal";
 import PartDetailModal from "./PartDetailModal";
@@ -67,6 +72,14 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
     await deleteMut.mutateAsync(selectedRecord.partId);
   };
 
+  const numberFormatter = new Intl.NumberFormat("ko-KR");
+  const formatDate = (value?: string) => {
+    if (!value) return "—";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return value.slice(0, 10);
+    return date.toLocaleDateString();
+  };
+
   return (
     <>
       <Table>
@@ -75,24 +88,42 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
             <Th>부품코드</Th>
             <Th>부품명</Th>
             <Th>카테고리</Th>
-            <Th>안전수량</Th>
-            <Th>가격</Th>
+            <Th>차량 모델</Th>
+            <Th>안전재고</Th>
+            <Th>단가</Th>
             <Th>상태</Th>
+            <Th>최근 수정</Th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr
-              key={r.partCode}
+              key={r.partId}
               style={{ cursor: "pointer" }}
               onClick={() => openDetail(r)}
             >
               <Td>{r.partCode}</Td>
               <Td>{r.partName}</Td>
               <Td>{r.category.name}</Td>
-              <Td>{r.createdDate}</Td>
-              <Td>{r.createdDate}</Td>
-              <Td>{r.enabled}</Td>
+              <Td>
+                {r.carModelNames.length > 0 ? r.carModelNames.join(", ") : "—"}
+              </Td>
+              <Td>
+                {typeof r.safetyStockQty === "number"
+                  ? numberFormatter.format(r.safetyStockQty)
+                  : "—"}
+              </Td>
+              <Td>{numberFormatter.format(r.price ?? 0)}</Td>
+              <Td>
+                {r.enabled === undefined ? (
+                  <StatusBadge $variant="info">확인 필요</StatusBadge>
+                ) : r.enabled ? (
+                  <StatusBadge $variant="success">사용</StatusBadge>
+                ) : (
+                  <StatusBadge $variant="danger">중지</StatusBadge>
+                )}
+              </Td>
+              <Td>{formatDate(r.updatedDate || r.createdDate)}</Td>
             </tr>
           ))}
         </tbody>
@@ -109,15 +140,13 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
           setRegMode("edit");
           setEditingId(rec.partId); // 수정 대상 id 저장
 
-          // PartRecords에는 price가 없음. 상세 프리필이 필요하면
-          // PartDetail을 fetch해서 채워 넣거나, 일단 기본값으로 둡니다.
           setInitialForEdit({
             partCode: rec.partCode,
             partName: rec.partName,
-            partPrice: 0, // TODO: 편집 시에는 상세 조회로 실제 가격을 불러오세요.
+            partPrice: rec.price ?? 0,
+            safetyQty: rec.safetyStockQty ?? 0,
             categoryId: rec.category.id,
-            // enabled: rec.enabled,
-            // imageUrl / enabled 등 필요시 여기서 추가
+            enabled: rec.enabled ?? true,
           });
 
           setIsRegOpen(true);

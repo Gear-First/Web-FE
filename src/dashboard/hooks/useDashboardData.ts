@@ -268,9 +268,11 @@ export function useDashboardData() {
         const warehouseCode = item.warehouseCode || "UNKNOWN";
         const current = Number(item.onHandQty ?? 0);
         const safety = Number(item.safetyStockQty ?? 0);
-        const part: InventoryPartItem | undefined = (item as {
-          part?: InventoryPartItem;
-        }).part;
+        const part: InventoryPartItem | undefined = (
+          item as {
+            part?: InventoryPartItem;
+          }
+        ).part;
         const partCode = part?.code ?? "";
         const partName = part?.name ?? "";
         const resolvedPartCode = partCode || partName || "-";

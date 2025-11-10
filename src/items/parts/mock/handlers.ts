@@ -81,7 +81,13 @@ export const partHandlers = [
           id: body.categoryId,
           name: `카테고리 ${String(body.categoryId)}`,
         },
-        createdDate: new Date().toISOString().slice(0, 10),
+        createdDate: new Date().toISOString(),
+        updatedDate: new Date().toISOString(),
+        price: body.price,
+        safetyStockQty: null,
+        carModelNames: [],
+        imageUrl: body.imageUrl,
+        enabled: true,
       };
 
       PartMockdata.unshift(created);
@@ -112,6 +118,11 @@ export const partHandlers = [
       if (patch.enabled !== undefined) {
         target.enabled = !!patch.enabled;
       }
+      if (patch.price !== undefined) {
+        target.price = patch.price;
+      }
+
+      target.updatedDate = new Date().toISOString();
 
       PartMockdata[idx] = target;
       return HttpResponse.json(PartMockdata[idx]);

@@ -27,6 +27,7 @@ import {
   fetchPendingOrders,
   fetchProcessedOrders,
   fetchCancelOrders,
+  approveOrder,
   rejectOrder,
 } from "./RequestApi";
 import type {
@@ -48,6 +49,24 @@ export default function RequestPage() {
   );
 
   const queryClient = useQueryClient();
+
+  //승인 기능 (React Query invalidate 포함)
+  const handleApprove = async (orderId: number, remark?: string) => {
+    const note = remark?.trim() ?? "";
+
+    try {
+      const res = await approveOrder(orderId, note);
+      alert(res.message || "승인되었습니다.");
+
+      setIsModalOpen(false);
+
+      // 목록 새로고침
+      queryClient.invalidateQueries({ queryKey: ["pending-orders"] });
+      queryClient.invalidateQueries({ queryKey: ["processed-orders"] });
+    } catch (err: any) {
+      alert(err.response?.data?.message || "승인 요청 실패");
+    }
+  };
 
   // 반려 기능 (React Query invalidate 포함)
   const handleReject = async (orderId: number, remark?: string) => {
@@ -266,7 +285,9 @@ export default function RequestPage() {
                 ? "· · ·"
                 : cancelTotal.toLocaleString()}
             </SummaryValue>
-            <SummaryNote>재확인 필요 {openTotal.toLocaleString()}건</SummaryNote>
+            <SummaryNote>
+              재확인 필요 {openTotal.toLocaleString()}건
+            </SummaryNote>
           </SummaryCard>
         </SummaryGrid>
         {/* 미승인 요청 목록 */}
@@ -455,6 +476,7 @@ export default function RequestPage() {
         record={selectedRecord}
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
+        onApprove={handleApprove}
         onReject={handleReject}
       />
     </Layout>

@@ -4,7 +4,7 @@ interface Props {
   keyword: string;
   onKeywordChange: (v: string) => void;
   onSearch: () => void;
-  onReset: () => void;
+  onReset?: () => void;
   placeholder?: string;
   width?: string;
 }

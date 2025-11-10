@@ -15,6 +15,8 @@ import Pagination from "../../components/common/Pagination";
 import styled from "styled-components";
 import type { MaterialRecord } from "../../items/materials/MaterialTypes";
 import { useMaterialSearch } from "../../items/materials/hooks/useMaterialSearch";
+import SearchBox from "../../components/common/SearchBox";
+import { useDebouncedValue } from "./useDebouncedValue";
 
 interface Props {
   isOpen: boolean;
@@ -34,15 +36,16 @@ const MaterialSearchModal = ({
   const [keyword, setKeyword] = useState("");
   const [hasSearched, setHasSearched] = useState(false);
   const [params, setParams] = useState({
-    q: undefined as string | undefined,
+    keyword: undefined as string | undefined,
     page: 1,
     pageSize,
   });
+  const debouncedKeyword = useDebouncedValue(keyword, 400);
 
   useEffect(() => {
     if (isOpen) {
       setHasSearched(true);
-      setParams({ q: undefined, page: 1, pageSize });
+      setParams({ keyword: undefined, page: 1, pageSize });
     } else {
       setKeyword("");
       setHasSearched(false);
@@ -66,17 +69,21 @@ const MaterialSearchModal = ({
     const trimmed = keyword.trim();
     setParams((prev) => ({
       ...prev,
-      q: trimmed ? trimmed : undefined,
+      keyword: trimmed ? trimmed : undefined,
       page: 1,
     }));
     setHasSearched(true);
   };
 
-  const onReset = () => {
-    setKeyword("");
-    setParams({ q: undefined, page: 1, pageSize });
-    setHasSearched(false);
-  };
+  useEffect(() => {
+    if (!isOpen || !hasSearched) return;
+    const trimmed = debouncedKeyword.trim();
+    setParams((prev) => ({
+      ...prev,
+      keyword: trimmed ? trimmed : undefined,
+      page: 1,
+    }));
+  }, [debouncedKeyword, hasSearched, isOpen]);
 
   const onChangePage = (next: number) => {
     setParams((prev) => ({
@@ -101,21 +108,19 @@ const MaterialSearchModal = ({
 
         <Section>
           <SectionTitle>검색 조건</SectionTitle>
-          <SearchRow>
-            <SearchInput
-              placeholder="자재 코드 / 자재명"
-              value={keyword}
-              onChange={(e) => {
-                setKeyword(e.target.value);
-              }}
-            />
-            <Button size="sm" onClick={onSearch}>
-              검색
-            </Button>
-            <Button color="gray" size="sm" onClick={onReset}>
-              초기화
-            </Button>
-          </SearchRow>
+          <SearchBox
+            placeholder="자재 코드 / 자재명"
+            keyword={keyword}
+            onSearch={onSearch}
+            onKeywordChange={setKeyword}
+            onReset={() => {
+              setKeyword("");
+              setParams({ keyword: undefined, page: 1, pageSize });
+              setHasSearched(false);
+            }}
+            width="100%"
+          />
+
           <HelperText>
             입력 시 자동으로 검색합니다. (현재 페이지 {params.page}/{" "}
             {Math.max(1, totalPages)})
@@ -149,6 +154,7 @@ const MaterialSearchModal = ({
                     <Td>{row.createdDate ?? "-"}</Td>
                     <Td>
                       <Button
+                        color="black"
                         size="sm"
                         onClick={() => {
                           handleSelect(row);
@@ -184,21 +190,6 @@ const MaterialSearchModal = ({
 };
 
 export default MaterialSearchModal;
-
-const SearchRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 8px;
-`;
-
-const SearchInput = styled.input`
-  flex: 1;
-  min-width: 0;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-`;
 
 const HelperText = styled.p`
   margin: 8px 0 0;

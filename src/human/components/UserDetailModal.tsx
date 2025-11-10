@@ -2,13 +2,14 @@ import { useState } from "react";
 import Button from "../../components/common/Button";
 import { StatusBadge } from "../../components/common/PageLayout";
 import type {
-  CreateUserDTO,
   Rank,
   Region,
+  UpdateUserDTO,
   UserRecord,
   WorkType,
 } from "../HumanTypes";
 import UserRegisterModal from "./UserRegisterModal";
+import { getRankMeta } from "../utils/rank";
 import {
   CloseButton,
   DetailGrid,
@@ -27,8 +28,8 @@ type Props = {
   isOpen: boolean;
   record: UserRecord | null;
   onClose: () => void;
-  onDelete?: (record: UserRecord) => void;
-  onEdit?: (dto: CreateUserDTO) => Promise<void> | void;
+  onDelete?: (record: UserRecord) => Promise<void> | void;
+  onEdit?: (dto: UpdateUserDTO) => Promise<void> | void;
   disableOverlayClose?: boolean;
   regions?: Region[];
   workTypes?: WorkType[];
@@ -70,11 +71,14 @@ export default function UserDetailModal({
               <DetailItem>
                 <Label>직급</Label>
                 <Value>
-                  <StatusBadge
-                    $variant={record.rank === "LEADER" ? "success" : "info"}
-                  >
-                    {record.rank === "LEADER" ? "팀장" : "사원"}
-                  </StatusBadge>
+                  {(() => {
+                    const meta = getRankMeta(record.rank);
+                    return (
+                      <StatusBadge $variant={meta.variant}>
+                        {meta.label}
+                      </StatusBadge>
+                    );
+                  })()}
                 </Value>
               </DetailItem>
 
@@ -101,17 +105,24 @@ export default function UserDetailModal({
           </Section>
 
           <Footer>
-            {onDelete && <Button onClick={() => onDelete(record)}>삭제</Button>}
+            {onDelete && (
+              <Button
+                color="danger"
+                onClick={() => {
+                  void onDelete(record);
+                }}
+              >
+                삭제
+              </Button>
+            )}
             <Button
               type="button"
+              color="gray"
               onClick={() => {
                 setOpenEdit(true);
               }}
             >
               수정
-            </Button>
-            <Button type="button" onClick={onClose} color="black">
-              닫기
             </Button>
           </Footer>
         </ModalContainer>

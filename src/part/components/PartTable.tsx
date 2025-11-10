@@ -1,6 +1,6 @@
 import { Table, Th, Td, StatusBadge } from "../../components/common/PageLayout";
 import type { PartRecord, PartStatus } from "../PartTypes";
-import { fmtDate } from "../../utils/string";
+// import { fmtDate } from "../../utils/string";
 
 // 요청 상태
 const statusVariant: Record<PartStatus, "rejected" | "info" | "success"> = {
@@ -21,12 +21,13 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
       <Table>
         <thead>
           <tr>
-            <Th>창고 번호</Th>
+            <Th>창고</Th>
             <Th>부품 코드</Th>
             <Th>부품명</Th>
             <Th>가용 재고</Th>
             <Th>안전 재고</Th>
-            <Th>마지막 수정일</Th>
+            <Th>대리점</Th>
+            {/* <Th>수정일</Th> */}
             <Th>상태</Th>
           </tr>
         </thead>
@@ -41,7 +42,8 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
                   <Td>{r.part.name}</Td>
                   <Td>{r.onHandQty.toLocaleString()}</Td>
                   <Td>{r.safetyStockQty.toLocaleString()}</Td>
-                  <Td>{fmtDate(r.lastUpdatedAt)}</Td>
+                  <Td>{r.supplierName}</Td>
+                  {/* <Td>{fmtDate(r.updatedAt)}</Td> */}
                   <Td>
                     <StatusBadge $variant={statusVariant[status]}>
                       {status}

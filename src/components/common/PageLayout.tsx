@@ -45,6 +45,7 @@ export const FilterGroup = styled.div`
   gap: 12px;
   flex-wrap: wrap;
   justify-content: flex-end;
+  width: 100%;
 `;
 
 export const Select = styled.select`

@@ -1,5 +1,6 @@
-const AUTH_SERVER =
-  import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
+import { clearUserProfile } from "../store/userStore";
+
+const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER;
 
 export function logout(): void {
   // 서버 세션/쿠키가 있다면 동시에 무효화
@@ -12,6 +13,7 @@ export function logout(): void {
 
   sessionStorage.clear();
   localStorage.clear();
+  clearUserProfile();
 
   window.location.href = "/";
 }

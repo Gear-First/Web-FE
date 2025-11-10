@@ -1,8 +1,34 @@
 export interface PropertyRecord {
-  id: string; // 고유 식별자
-  warehouseId: string; //창고번호
-  partCode: string; //부품코드
-  partName: string; //부품명
-  partQuantity: number; //수량
-  partPrice: number; // 단가
+  id?: number | string;
+  warehouseCode: string;
+  warehouseId?: string;
+  supplierName?: string;
+  onHandQty?: number;
+  partQuantity?: number;
+  partPrice?: number;
+  price?: number;
+  priceTotal?: number;
+  updatedAt?: string;
+  lastUpdatedAt?: string;
+  partCode?: string;
+  partName?: string;
+  part?: PropertyItem;
+}
+
+export interface PropertyItem {
+  id: number;
+  code: string;
+  name: string;
+}
+
+export interface PropertyResponse {
+  status: number;
+  success: boolean;
+  message: string;
+  data: {
+    items: PropertyRecord[];
+    page: number;
+    size: number;
+    total: number;
+  };
 }

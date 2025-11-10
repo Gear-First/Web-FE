@@ -38,6 +38,7 @@ const PartRegisterModal = ({
   const [partCode, setPartCode] = useState("");
   const [partName, setPartName] = useState("");
   const [partPrice, setPartPrice] = useState<number | "">("");
+  const [safetyQty, setSafetyQty] = useState<number | "">("");
   const [categoryId, setCategoryId] = useState<string | number | "">("");
   const [categories, setCategories] = useState<ServerPartCategory[]>([]);
   const [enabled, setEnabled] = useState<boolean>(true);
@@ -63,15 +64,18 @@ const PartRegisterModal = ({
       setPartCode(initial.partCode ?? "");
       setPartName(initial.partName ?? "");
       setPartPrice(initial.partPrice ?? 0);
+      setSafetyQty(initial.safetyQty ?? 0);
       setCategoryId(initial.categoryId ?? "");
       setEnabled(initial.enabled ?? true);
-    } else {
-      setPartCode("");
-      setPartName("");
-      setPartPrice("");
-      setCategoryId("");
-      setEnabled(true);
+      return;
     }
+
+    setPartCode("");
+    setPartName("");
+    setPartPrice("");
+    setSafetyQty("");
+    setCategoryId("");
+    setEnabled(true);
   }, [isOpen, mode, initial]);
 
   const handleSubmit = () => {
@@ -81,11 +85,14 @@ const PartRegisterModal = ({
       return alert("카테고리를 선택하세요.");
     if (partPrice === "" || Number(partPrice) < 0)
       return alert("가격을 0 이상으로 입력하세요.");
+    if (safetyQty === "" || Number(safetyQty) < 0)
+      return alert("안전수량을 0 이상으로 입력하세요.");
 
     const payload: PartFormModel = {
       partCode: partCode.trim(),
       partName: partName.trim(),
       partPrice: Number(partPrice),
+      safetyQty: Number(safetyQty),
       categoryId: Number(categoryId),
       enabled: mode === "edit" ? enabled : true,
     };
@@ -165,6 +172,21 @@ const PartRegisterModal = ({
             </DetailItem>
 
             <DetailItem>
+              <Label>안전수량</Label>
+              <Input
+                type="number"
+                min={0}
+                placeholder="예) 5000"
+                value={safetyQty}
+                onChange={(e) =>
+                  setSafetyQty(
+                    e.target.value === "" ? "" : Number(e.target.value)
+                  )
+                }
+              />
+            </DetailItem>
+
+            <DetailItem>
               <Label>상태</Label>
               <Select
                 value={String(enabled)}
@@ -183,7 +205,7 @@ const PartRegisterModal = ({
           <Button color="gray" onClick={onClose}>
             취소
           </Button>
-          <Button onClick={handleSubmit}>
+          <Button color="black" onClick={handleSubmit}>
             {mode === "edit" ? "수정 저장" : "등록"}
           </Button>
         </Footer>

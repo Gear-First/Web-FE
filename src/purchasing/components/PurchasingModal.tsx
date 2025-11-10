@@ -193,7 +193,7 @@ export default function PurchasingModal({
             >
               {!readOnly && (
                 <Button
-                  color="gray"
+                  color="black"
                   size="sm"
                   onClick={() => setSearchModalOpen(true)}
                   style={{
@@ -322,9 +322,9 @@ export default function PurchasingModal({
         </Section>
 
         {/* 하단 버튼 */}
-        {/* <Section style={{ textAlign: "center" }}> */}
-        {/* 등록 */}
-        {/* {mode === "register" && (
+        <Section style={{ textAlign: "center" }}>
+          {/* 등록 */}
+          {mode === "register" && (
             <>
               <Button
                 style={{
@@ -335,14 +335,14 @@ export default function PurchasingModal({
               >
                 등록
               </Button>
-              <Button color="gray" onClick={onClose}>
+              {/* <Button color="gray" onClick={onClose}>
                 취소
-              </Button>
+              </Button> */}
             </>
-          )} */}
+          )}
 
-        {/* 상세 보기 */}
-        {/* {mode === "view" && (
+          {/* 상세 보기 */}
+          {/* {mode === "view" && (
             <>
               <Button
                 style={{
@@ -359,8 +359,8 @@ export default function PurchasingModal({
             </>
           )} */}
 
-        {/* 수정 */}
-        {/* {mode === "edit" && (
+          {/* 수정 */}
+          {/* {mode === "edit" && (
             <>
               <Button
                 style={{
@@ -375,8 +375,8 @@ export default function PurchasingModal({
                 취소
               </Button>
             </>
-          )}
-        </Section> */}
+          )}*/}
+        </Section>
         <MaterialSearchModal
           isOpen={isSearchModalOpen}
           onClose={() => setSearchModalOpen(false)}

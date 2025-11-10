@@ -82,6 +82,7 @@ export function generatePropertyMock(
     rows.push({
       id: crypto.randomUUID(),
       warehouseId: warehouse,
+      warehouseCode: warehouse,
       partCode: part.code,
       partName: part.name,
       partQuantity: rng.int(0, 500),

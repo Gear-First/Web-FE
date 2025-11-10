@@ -1,9 +1,9 @@
 import type { TokenResponse } from "../types/auth";
+import { syncUserProfileFromToken } from "../utils/userProfile";
 
-const AUTH_SERVER =
-  import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
-const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
-const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET ?? "secret";
+const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER;
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
+const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
 
 export async function refreshAccessToken(): Promise<string | null> {
   const refreshToken = localStorage.getItem("refresh_token");
@@ -37,6 +37,7 @@ export async function refreshAccessToken(): Promise<string | null> {
 
   if (data.access_token) {
     sessionStorage.setItem("access_token", data.access_token);
+    syncUserProfileFromToken(data.access_token);
   }
   if (data.refresh_token) {
     localStorage.setItem("refresh_token", data.refresh_token);
