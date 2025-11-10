@@ -6,8 +6,11 @@ import { syncUserProfileFromToken } from "../utils/userProfile";
 const AUTH_SERVER =
   import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
-const REDIRECT_URI =
-  import.meta.env.VITE_REDIRECT_URI ?? "http://localhost:5173/auth/callback";
+const DEFAULT_REDIRECT_URI =
+  typeof window !== "undefined"
+    ? `${window.location.origin}/auth/callback`
+    : "https:/gearfirst-fe.vercel.app/auth/callback";
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI ?? DEFAULT_REDIRECT_URI;
 const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET ?? "secret";
 
 function AuthCallback(): JSX.Element {
