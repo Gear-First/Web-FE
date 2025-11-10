@@ -1,11 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import styled from "styled-components";
-import { connectSSE } from "../NotificationApi";
+import { connectSSE, markAsRead } from "../NotificationApi";
 import type { NotificationItem } from "../NotificationTypes";
 
-/* ===========================
- 🎨 Styled Components
-=========================== */
 const Wrapper = styled.div`
   position: relative;
   display: inline-block;
@@ -40,13 +37,13 @@ const Dropdown = styled.div`
   position: absolute;
   right: 0;
   top: 48px;
-  width: 320px;
+  width: 340px;
   max-height: 420px;
   overflow-y: auto;
   background: #ffffff;
   border-radius: 12px;
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
-  padding: 10px;
+  padding: 4px 0;
   animation: fadeIn 0.2s ease-in-out;
   @keyframes fadeIn {
     from {
@@ -58,30 +55,38 @@ const Dropdown = styled.div`
       transform: translateY(0);
     }
   }
+
+  /* 스크롤 부드럽게 */
+  -webkit-overflow-scrolling: touch;
 `;
 
-const NotificationCard = styled.div`
-  background: #f8faff;
-  border: 1px solid #e3e6ee;
-  border-radius: 10px;
-  padding: 10px 12px;
-  margin-bottom: 8px;
-  transition: 0.2s ease;
+const NotificationItemBox = styled.div`
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+  cursor: pointer;
+  background: #fff;
+  transition: background 0.2s ease;
+
   &:hover {
-    background: #eef3ff;
+    background: #f9fafc;
+  }
+
+  &:last-child {
+    border-bottom: none;
   }
 `;
 
-const Message = styled.div`
-  font-size: 0.9rem;
-  font-weight: 500;
+const Title = styled.div`
+  font-size: 0.92rem;
+  font-weight: 700;
   color: #222;
+  margin-bottom: 4px;
 `;
 
-const SubInfo = styled.div`
-  font-size: 0.75rem;
+const Message = styled.div`
+  font-size: 0.83rem;
   color: #6b7280;
-  margin-top: 2px;
+  line-height: 1.3;
 `;
 
 export const NotificationList: React.FC = () => {
@@ -91,18 +96,22 @@ export const NotificationList: React.FC = () => {
   const dropdownRef = useRef<HTMLDivElement | null>(null);
   const eventSourceRef = useRef<EventSource | null>(null); // SSE 유지용 ref
 
-  // ✅ SSE 최초 연결 (1회만)
+  // SSE 최초 연결
   useEffect(() => {
     if (eventSourceRef.current) return; // 이미 연결되어 있으면 스킵
 
-    const receiver = "HQ";
-    console.log("🚀 SSE 연결 시작");
+    const receiver = "본사";
+    // console.log("SSE 연결 시작");
 
     const es = connectSSE(
       receiver,
       (data) => {
-        console.log("📩 새 알림 수신:", data);
+        // console.log("새 알림 수신:", data);
 
+        if (typeof data === "string") {
+          // console.warn("문자열 데이터 수신:", data);
+          return;
+        }
         // 새 알림 객체 생성
         const newItem: NotificationItem = {
           id: data.id ?? Date.now(),
@@ -112,32 +121,30 @@ export const NotificationList: React.FC = () => {
           receiver: receiver,
           read: false,
         };
-
-        // ✅ 누적 (최신이 위로)
+        // 누적 (최신이 위로)
         setNotifications((prev) => [newItem, ...prev]);
       },
       (err) => {
-        console.error("❌ SSE 오류:", err);
+        console.error("SSE 오류:", err);
         setConnected(false);
       }
     );
 
     es.onopen = () => {
-      console.log("✅ [SSE] 연결 성공");
+      // console.log("[SSE] 연결 성공");
       setConnected(true);
     };
 
     eventSourceRef.current = es;
-
     // cleanup 시 연결 닫기
     return () => {
-      console.log("🔌 SSE 연결 해제");
+      // console.log("SSE 연결 해제");
       es.close();
       eventSourceRef.current = null;
     };
   }, []);
 
-  // ✅ 외부 클릭 시 닫기
+  // 외부 클릭 시 닫기
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (
@@ -151,6 +158,15 @@ export const NotificationList: React.FC = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  const handleItemClick = async (id: number) => {
+    try {
+      await markAsRead(id);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+    } catch (err) {
+      console.error("읽음 처리 실패:", err);
+    }
+  };
+
   return (
     <Wrapper ref={dropdownRef}>
       <BellButton onClick={() => setIsOpen((prev) => !prev)}>🔔</BellButton>
@@ -161,10 +177,13 @@ export const NotificationList: React.FC = () => {
           {connected ? (
             notifications.length > 0 ? (
               notifications.map((n) => (
-                <NotificationCard key={n.id}>
+                <NotificationItemBox
+                  key={n.id}
+                  onClick={() => handleItemClick(n.id)}
+                >
+                  <Title>{n.type}</Title>
                   <Message>{n.message}</Message>
-                  <SubInfo>ID: {n.id}</SubInfo>
-                </NotificationCard>
+                </NotificationItemBox>
               ))
             ) : (
               <div style={{ textAlign: "center", color: "#888", padding: 12 }}>
@@ -173,7 +192,7 @@ export const NotificationList: React.FC = () => {
             )
           ) : (
             <div style={{ textAlign: "center", color: "#777", padding: 12 }}>
-              ⏳ 서버와 연결 중...
+              서버와 연결 중...
             </div>
           )}
         </Dropdown>
