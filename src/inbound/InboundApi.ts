@@ -161,6 +161,7 @@ type ServerInboundListItem = {
   status: string;
   warehouseCode?: string;
   requestedAt?: string;
+  expectedReceiveDate?: string;
   completedAt: string | null;
 };
 
@@ -214,6 +215,7 @@ function toInboundRecord(s: ServerInboundListItem): InboundRecord {
     statusRaw: s.status,
     completedAt: s.completedAt ?? null,
     requestedAt: s.requestedAt ?? null,
+    expectedReceiveDate: s.expectedReceiveDate ?? null,
     warehouseCode: s.warehouseCode ?? "-",
   };
 }

@@ -40,6 +40,7 @@ export interface InboundRecord {
   statusRaw?: string;
   completedAt: string | null;
   requestedAt: string | null;
+  expectedReceiveDate?: string | null;
   warehouseCode: string;
 }
 

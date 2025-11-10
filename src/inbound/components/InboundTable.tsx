@@ -36,7 +36,7 @@ export default function InboundTable({ rows, variant }: InboundTableProps) {
             <Th>품목수</Th>
             <Th>총수량</Th>
             <Th>요청일시</Th>
-            {variant === "done" && <Th>완료일시</Th>}
+            <Th>{variant === "done" ? "완료일시" : "입고 예정일"}</Th>
             <Th>창고</Th>
             <Th>상태</Th>
           </tr>
@@ -63,7 +63,13 @@ export default function InboundTable({ rows, variant }: InboundTableProps) {
                 <Td>{fmtNum(r.itemKindsNumber)}</Td>
                 <Td>{fmtNum(r.totalQty)}</Td>
                 <Td>{fmtDate(r.requestedAt)}</Td>
-                {variant === "done" && <Td>{fmtDate(r.completedAt)}</Td>}
+                <Td>
+                  {fmtDate(
+                    variant === "done"
+                      ? r.completedAt
+                      : r.expectedReceiveDate ?? r.completedAt
+                  )}
+                </Td>
                 <Td>{fmt(r.warehouseCode)}</Td>
                 <Td>
                   <StatusBadge
