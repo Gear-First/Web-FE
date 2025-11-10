@@ -2,11 +2,13 @@ import React, { useEffect, useState, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import type { TokenResponse } from "../types/auth";
 import { syncUserProfileFromToken } from "../utils/userProfile";
+import { resolveRedirectUri } from "../utils/redirectUri";
 
-const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER;
-const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI;
-const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET;
+const AUTH_SERVER =
+  import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
+const REDIRECT_URI = resolveRedirectUri(import.meta.env.VITE_REDIRECT_URI);
+const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET ?? "secret";
 
 function AuthCallback(): JSX.Element {
   const [message, setMessage] = useState<string>("로그인 중입니다...");
