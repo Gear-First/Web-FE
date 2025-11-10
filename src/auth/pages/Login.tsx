@@ -4,10 +4,12 @@ import {
   generateState,
 } from "../utils/pkce";
 import { type JSX } from "react";
+import { resolveRedirectUri } from "../utils/redirectUri";
 
-const AUTH_SERVER = import.meta.env.VITE_AUTH_SERVER;
-const CLIENT_ID = import.meta.env.VITE_CLIENT_ID;
-const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI;
+const AUTH_SERVER =
+  import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
+const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
+const REDIRECT_URI = resolveRedirectUri(import.meta.env.VITE_REDIRECT_URI);
 
 function Login(): JSX.Element {
   const handleLogin = async (): Promise<void> => {
