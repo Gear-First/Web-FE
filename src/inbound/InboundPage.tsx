@@ -40,10 +40,19 @@ type ListResponse<T> = {
 
 export default function InboundPage() {
   // 공통 필터
-  const [keyword, setKeyword] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [applied, setApplied] = useState<AppliedFilters>({
+  const [keywordNotDone, setKeywordNotDone] = useState("");
+  const [startNotDone, setStartNotDone] = useState("");
+  const [endNotDone, setEndNotDone] = useState("");
+  const [appliedNotDone, setAppliedNotDone] = useState<AppliedFilters>({
+    keyword: "",
+    dateFrom: null,
+    dateTo: null,
+  });
+
+  const [keywordDone, setKeywordDone] = useState("");
+  const [startDone, setStartDone] = useState("");
+  const [endDone, setEndDone] = useState("");
+  const [appliedDone, setAppliedDone] = useState<AppliedFilters>({
     keyword: "",
     dateFrom: null,
     dateTo: null,
@@ -55,16 +64,20 @@ export default function InboundPage() {
   const [pageSizeNotDone, setPageSizeNotDone] = useState(10);
   const [pageSizeDone, setPageSizeDone] = useState(10);
 
-  const buildParams = (page: number, pageSize: number) => ({
-    q: applied.keyword || undefined,
-    dateFrom: applied.dateFrom || undefined,
-    dateTo: applied.dateTo || undefined,
+  const buildParams = (
+    appliedFilters: AppliedFilters,
+    page: number,
+    pageSize: number
+  ) => ({
+    q: appliedFilters.keyword || undefined,
+    dateFrom: appliedFilters.dateFrom || undefined,
+    dateTo: appliedFilters.dateTo || undefined,
     page,
     pageSize,
   });
 
   // 입고 예정(Not Done)
-  const paramsNotDone = buildParams(pageNotDone, pageSizeNotDone);
+  const paramsNotDone = buildParams(appliedNotDone, pageNotDone, pageSizeNotDone);
   const { data: dataNotDone, fetchStatus: fetchStatusNotDone } = useQuery<
     ListResponse<InboundRecord[]>,
     Error
@@ -76,7 +89,7 @@ export default function InboundPage() {
   });
 
   // 입고 완료(Done)
-  const paramsDone = buildParams(pageDone, pageSizeDone);
+  const paramsDone = buildParams(appliedDone, pageDone, pageSizeDone);
   const { data: dataDone, fetchStatus: fetchStatusDone } = useQuery<
     ListResponse<InboundRecord[]>,
     Error
@@ -112,22 +125,37 @@ export default function InboundPage() {
       )
     : 0;
 
-  const onSearch = () => {
-    setApplied({
-      keyword: keyword.trim(),
-      dateFrom: startDate || null,
-      dateTo: endDate || null,
+  const onSearchNotDone = () => {
+    setAppliedNotDone({
+      keyword: keywordNotDone.trim(),
+      dateFrom: startNotDone || null,
+      dateTo: endNotDone || null,
     });
     setPageNotDone(1);
+  };
+
+  const onResetNotDone = () => {
+    setKeywordNotDone("");
+    setStartNotDone("");
+    setEndNotDone("");
+    setAppliedNotDone({ keyword: "", dateFrom: null, dateTo: null });
+    setPageNotDone(1);
+  };
+
+  const onSearchDone = () => {
+    setAppliedDone({
+      keyword: keywordDone.trim(),
+      dateFrom: startDone || null,
+      dateTo: endDone || null,
+    });
     setPageDone(1);
   };
 
-  const onReset = () => {
-    setKeyword("");
-    setStartDate("");
-    setEndDate("");
-    setApplied({ keyword: "", dateFrom: null, dateTo: null });
-    setPageNotDone(1);
+  const onResetDone = () => {
+    setKeywordDone("");
+    setStartDone("");
+    setEndDone("");
+    setAppliedDone({ keyword: "", dateFrom: null, dateTo: null });
     setPageDone(1);
   };
 
@@ -163,20 +191,20 @@ export default function InboundPage() {
           </SectionHeader>
 
           <FilterGroup>
-            <Button variant="icon" onClick={onReset}>
+            <Button variant="icon" onClick={onResetNotDone}>
               <img src={resetIcon} width={18} height={18} alt="초기화" />
             </Button>
             <DateRange
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
+              startDate={startNotDone}
+              endDate={endNotDone}
+              onStartDateChange={setStartNotDone}
+              onEndDateChange={setEndNotDone}
             />
             <SearchBox
-              keyword={keyword}
-              onKeywordChange={setKeyword}
-              onSearch={onSearch}
-              onReset={onReset}
+              keyword={keywordNotDone}
+              onKeywordChange={setKeywordNotDone}
+              onSearch={onSearchNotDone}
+              onReset={onResetNotDone}
               placeholder="입고번호 / 입고대상 / 공급업체 검색"
             />
           </FilterGroup>
@@ -231,20 +259,20 @@ export default function InboundPage() {
           </SectionHeader>
 
           <FilterGroup>
-            <Button variant="icon" onClick={onReset}>
+            <Button variant="icon" onClick={onResetDone}>
               <img src={resetIcon} width={18} height={18} alt="초기화" />
             </Button>
             <DateRange
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
+              startDate={startDone}
+              endDate={endDone}
+              onStartDateChange={setStartDone}
+              onEndDateChange={setEndDone}
             />
             <SearchBox
-              keyword={keyword}
-              onKeywordChange={setKeyword}
-              onSearch={onSearch}
-              onReset={onReset}
+              keyword={keywordDone}
+              onKeywordChange={setKeywordDone}
+              onSearch={onSearchDone}
+              onReset={onResetDone}
               placeholder="입고번호 / 입고대상 / 공급업체 검색"
             />
           </FilterGroup>

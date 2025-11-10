@@ -26,10 +26,128 @@ export type InboundListParams = {
   dateFrom?: string;
   dateTo?: string;
   warehouseCode?: string;
+  q?: string;
+  receivingNo?: string;
+  supplierName?: string;
   page?: number;
   pageSize?: number;
   sort?: string[] | string;
 };
+
+const SORTABLE_FIELDS = new Set([
+  "requestedAt",
+  "expectedReceiveDate",
+  "completedAt",
+  "receivingNo",
+  "noteId",
+  "status",
+  "supplierName",
+  "warehouseCode",
+]);
+const DEFAULT_SORTS = ["noteId,desc", "requestedAt,desc"];
+const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
+const DEFAULT_PAGE_SIZE = 20;
+const PAGE_SIZE_MIN = 1;
+const PAGE_SIZE_MAX = 100;
+
+function clampPageSize(size?: number): number {
+  if (typeof size !== "number" || Number.isNaN(size)) return DEFAULT_PAGE_SIZE;
+  return Math.max(PAGE_SIZE_MIN, Math.min(PAGE_SIZE_MAX, size));
+}
+
+function normalizeSort(sort?: string[] | string): string[] {
+  const entries = Array.isArray(sort)
+    ? sort
+    : typeof sort === "string"
+    ? [sort]
+    : [];
+
+  const sanitized = entries
+    .map((entry) => {
+      if (!entry) return null;
+      const [fieldRaw, dirRaw] = entry.split(",");
+      const field = (fieldRaw ?? "").trim();
+      if (!field || !SORTABLE_FIELDS.has(field)) return null;
+      const direction =
+        (dirRaw ?? "").trim().toLowerCase() === "asc" ? "asc" : "desc";
+      return `${field},${direction}`;
+    })
+    .filter(Boolean) as string[];
+
+  return sanitized.length ? sanitized : [...DEFAULT_SORTS];
+}
+
+function sanitizeDate(value?: string | null): string | undefined {
+  if (!value) return undefined;
+  const trimmed = value.trim();
+  if (DATE_REGEX.test(trimmed)) return trimmed;
+  const match = trimmed.match(/^(\d{4}-\d{2}-\d{2})/);
+  return match ? match[1] : undefined;
+}
+
+function buildDateFilters(
+  params?: InboundListParams
+): { date?: string; dateFrom?: string; dateTo?: string } {
+  if (!params) return {};
+
+  const hasRange = Boolean(params.dateFrom || params.dateTo);
+  const singleDate = !hasRange ? sanitizeDate(params.date) : undefined;
+
+  let fromDate = hasRange ? sanitizeDate(params.dateFrom) : singleDate;
+  let toDate = hasRange ? sanitizeDate(params.dateTo) : singleDate;
+
+  if (!hasRange && !singleDate) return {};
+
+  if (!fromDate && singleDate) fromDate = singleDate;
+  if (!toDate && singleDate) toDate = singleDate;
+
+  if (fromDate && toDate && fromDate > toDate) {
+    const tmp = fromDate;
+    fromDate = toDate;
+    toDate = tmp;
+  }
+
+  if (!hasRange && singleDate) {
+    return { date: singleDate };
+  }
+
+  const result: { date?: string; dateFrom?: string; dateTo?: string } = {};
+  if (fromDate) result.dateFrom = fromDate;
+  if (toDate) result.dateTo = toDate;
+  return result;
+}
+
+function buildInboundQuery(params?: InboundListParams): URLSearchParams {
+  const qs = new URLSearchParams();
+  const status = params?.status ?? "all";
+  qs.set("status", status);
+
+  const pageZeroBased = Math.max(0, (params?.page ?? 1) - 1);
+  qs.set("page", String(pageZeroBased));
+
+  qs.set("size", String(clampPageSize(params?.pageSize)));
+
+  const q = params?.q?.trim();
+  if (q) qs.set("q", q);
+
+  const receivingNo = params?.receivingNo?.trim();
+  if (receivingNo) qs.set("receivingNo", receivingNo);
+
+  const supplierName = params?.supplierName?.trim();
+  if (supplierName) qs.set("supplierName", supplierName);
+
+  const warehouseCode = params?.warehouseCode?.trim();
+  if (warehouseCode) qs.set("warehouseCode", warehouseCode);
+
+  const dateFilters = buildDateFilters(params);
+  if (dateFilters.date) qs.set("date", dateFilters.date);
+  if (dateFilters.dateFrom) qs.set("dateFrom", dateFilters.dateFrom);
+  if (dateFilters.dateTo) qs.set("dateTo", dateFilters.dateTo);
+
+  normalizeSort(params?.sort).forEach((s) => qs.append("sort", s));
+
+  return qs;
+}
 
 /* ========== 서버 DTO ========== */
 type ServerInboundListItem = {
@@ -136,25 +254,16 @@ export function toInboundDetailRecord(
 }
 
 /* ========== API 호출 ========== */
-export async function fetchInboundRecords(
-  params?: InboundListParams
+async function requestInboundList(
+  params: InboundListParams | undefined,
+  defaultStatus?: InboundStatus
 ): Promise<ListResponse<InboundRecord[]>> {
-  const qs = new URLSearchParams();
+  const mergedParams: InboundListParams = {
+    ...(params ?? {}),
+    ...(defaultStatus && !params?.status ? { status: defaultStatus } : {}),
+  };
 
-  if (params?.status) qs.set("status", params.status);
-  if (params?.date) qs.set("date", params.date);
-  if (params?.dateFrom) qs.set("dateFrom", params.dateFrom);
-  if (params?.dateTo) qs.set("dateTo", params.dateTo);
-  if (params?.warehouseCode) qs.set("warehouseCode", params.warehouseCode);
-
-  qs.set("page", String(Math.max(0, (params?.page ?? 1) - 1)));
-  qs.set("size", String(params?.pageSize ?? 20));
-
-  if (params?.sort) {
-    const sorts = Array.isArray(params.sort) ? params.sort : [params.sort];
-    sorts.forEach((s) => qs.append("sort", s));
-  }
-
+  const qs = buildInboundQuery(mergedParams);
   const base = `${WAREHOUSE_ENDPOINTS.INBOUND_LIST}/notes`;
   const url = qs.toString() ? `${base}?${qs.toString()}` : base;
 
@@ -182,96 +291,22 @@ export async function fetchInboundRecords(
   };
 }
 
-export async function fetchInboundDoneRecords(
+export function fetchInboundRecords(
   params?: InboundListParams
 ): Promise<ListResponse<InboundRecord[]>> {
-  const qs = new URLSearchParams();
-
-  if (params?.status) qs.set("status", params.status);
-  if (params?.date) qs.set("date", params.date);
-  if (params?.dateFrom) qs.set("dateFrom", params.dateFrom);
-  if (params?.dateTo) qs.set("dateTo", params.dateTo);
-  if (params?.warehouseCode) qs.set("warehouseCode", params.warehouseCode);
-
-  qs.set("page", String(Math.max(0, (params?.page ?? 1) - 1)));
-  qs.set("size", String(params?.pageSize ?? 20));
-
-  if (params?.sort) {
-    const sorts = Array.isArray(params.sort) ? params.sort : [params.sort];
-    sorts.forEach((s) => qs.append("sort", s));
-  }
-
-  const base = `${WAREHOUSE_ENDPOINTS.INBOUND_LIST}/done`;
-  const url = qs.toString() ? `${base}?${qs.toString()}` : base;
-
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error(`입고 데이터 요청 실패 (${res.status})`);
-
-  const json: ApiResponse<ServerInboundList> = await res.json();
-  if (!json.success) throw new Error(json.message || "입고 목록 조회 실패");
-
-  const page = json.data ?? { items: [], page: 0, size: 0, total: 0 };
-  const rows = Array.isArray(page.items) ? page.items.map(toInboundRecord) : [];
-  console.debug("[GET] inbound list:", url);
-
-  const totalPages =
-    page.size > 0 ? Math.max(1, Math.ceil(page.total / page.size)) : 1;
-
-  return {
-    data: rows,
-    meta: {
-      total: page.total,
-      page: (page.page ?? 0) + 1,
-      pageSize: page.size,
-      totalPages,
-    },
-  };
+  return requestInboundList(params, "all");
 }
 
-export async function fetchInboundNotDoneRecords(
+export function fetchInboundDoneRecords(
   params?: InboundListParams
 ): Promise<ListResponse<InboundRecord[]>> {
-  const qs = new URLSearchParams();
+  return requestInboundList(params, "done");
+}
 
-  if (params?.status) qs.set("status", params.status);
-  if (params?.date) qs.set("date", params.date);
-  if (params?.dateFrom) qs.set("dateFrom", params.dateFrom);
-  if (params?.dateTo) qs.set("dateTo", params.dateTo);
-  if (params?.warehouseCode) qs.set("warehouseCode", params.warehouseCode);
-
-  qs.set("page", String(Math.max(0, (params?.page ?? 1) - 1)));
-  qs.set("size", String(params?.pageSize ?? 20));
-
-  if (params?.sort) {
-    const sorts = Array.isArray(params.sort) ? params.sort : [params.sort];
-    sorts.forEach((s) => qs.append("sort", s));
-  }
-
-  const base = `${WAREHOUSE_ENDPOINTS.INBOUND_LIST}/not-done`;
-  const url = qs.toString() ? `${base}?${qs.toString()}` : base;
-
-  const res = await fetch(url, { headers: { Accept: "application/json" } });
-  if (!res.ok) throw new Error(`입고 데이터 요청 실패 (${res.status})`);
-
-  const json: ApiResponse<ServerInboundList> = await res.json();
-  if (!json.success) throw new Error(json.message || "입고 목록 조회 실패");
-
-  const page = json.data ?? { items: [], page: 0, size: 0, total: 0 };
-  const rows = Array.isArray(page.items) ? page.items.map(toInboundRecord) : [];
-  console.debug("[GET] inbound list:", url);
-
-  const totalPages =
-    page.size > 0 ? Math.max(1, Math.ceil(page.total / page.size)) : 1;
-
-  return {
-    data: rows,
-    meta: {
-      total: page.total,
-      page: (page.page ?? 0) + 1,
-      pageSize: page.size,
-      totalPages,
-    },
-  };
+export function fetchInboundNotDoneRecords(
+  params?: InboundListParams
+): Promise<ListResponse<InboundRecord[]>> {
+  return requestInboundList(params, "not-done");
 }
 
 export async function fetchInboundDetail(
