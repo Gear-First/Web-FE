@@ -17,7 +17,11 @@ import {
   Value,
 } from "../../components/common/ModalPageLayout";
 import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
-import type { InboundRecord, InboundLineStatus } from "../InboundTypes";
+import {
+  type InboundRecord,
+  type InboundLineStatus,
+  InboundStatusLabelMap,
+} from "../InboundTypes";
 import { fetchInboundDetail, inboundKeys } from "../InboundApi";
 import { getInboundStatusVariant } from "../InboundTypes";
 import { fmtDate } from "../../utils/string";
@@ -88,7 +92,9 @@ const InboundDetailModal = ({
               $variant={getInboundStatusVariant(record.statusRaw)}
               title={record.statusRaw || undefined}
             >
-              {record.statusRaw}
+              {InboundStatusLabelMap[
+                (record.statusRaw ?? "").trim().toUpperCase()
+              ] || InboundStatusLabelMap.DEFAULT}
             </StatusBadge>
           </HeaderLeft>
           <CloseButton onClick={onClose}>&times;</CloseButton>
@@ -164,7 +170,6 @@ const InboundDetailModal = ({
                   <Th>시리얼</Th>
                   <Th>LOT</Th>
                   <Th>주문수량</Th>
-                  <Th>검사수량</Th>
                   <Th>상태</Th>
                 </tr>
               </thead>
@@ -185,7 +190,6 @@ const InboundDetailModal = ({
                       <Td>{l.product.serial}</Td>
                       <Td>{l.product.lot}</Td>
                       <Td>{fmtNum(l.orderedQty)}</Td>
-                      <Td>{fmtNum(l.inspectedQty)}</Td>
                       <Td>
                         <StatusBadge
                           style={{ fontSize: "0.7rem" }}

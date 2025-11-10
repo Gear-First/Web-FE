@@ -8,7 +8,7 @@ export default defineConfig({
     port: 5173,
     proxy: {
       "/notification": {
-        target: "http://34.120.215.23",
+        target: "https://gearfirst-auth.duckdns.org",
         changeOrigin: true,
         secure: false,
         ws: true,

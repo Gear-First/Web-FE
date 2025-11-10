@@ -100,6 +100,12 @@ const DetailModal = ({
 
   if (!isOpen || !record) return null;
 
+  const getBranchType = (code?: string) => {
+    if (!code) return "";
+    if (code.includes("대리점")) return "대리점";
+    if (code.includes("창고")) return "창고";
+  };
+
   return (
     <Overlay onClick={onClose}>
       <ModalContainer onClick={(e) => e.stopPropagation()}>
@@ -259,16 +265,16 @@ const DetailModal = ({
             </StickyTable>
           </TableScroll>
         </Section>
-        {/* 대리점 정보 */}
+        {/* 지점 정보 */}
         <Section>
-          <SectionTitle>대리점 정보</SectionTitle>
+          <SectionTitle>{getBranchType(order?.branchCode)} 정보</SectionTitle>
           <DetailGrid>
             <DetailItem>
-              <Label>대리점</Label>
+              <Label>{getBranchType(order?.branchCode)}</Label>
               <Value>{order?.branchCode}</Value>
             </DetailItem>
             <DetailItem>
-              <Label>대리점 위치</Label>
+              <Label>{getBranchType(order?.branchCode)} 위치</Label>
               <Value>{order?.branchCode}</Value>
             </DetailItem>
           </DetailGrid>
