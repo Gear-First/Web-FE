@@ -215,8 +215,8 @@ export function useDashboardData() {
     queryKey: ["dashboard", "outbound", "pending"],
     queryFn: () =>
       fetchOutboundNotDoneRecords({
-        page: 0,
-        size: 100, // SLA 계산을 위해 더 많은 데이터 필요
+        page: 1,
+        pageSize: 100, // SLA 계산을 위해 더 많은 데이터 필요
       }),
     select: (res) => ({
       total: res.meta?.total ?? 0,

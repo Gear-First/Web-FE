@@ -150,8 +150,8 @@ export default function DashboardPage() {
     queryKey: ["dashboard", "outbound", "pending"],
     queryFn: () =>
       fetchOutboundNotDoneRecords({
-        page: 0,
-        size: 5,
+        page: 1,
+        pageSize: 5,
       }),
     select: (res) => res.meta?.total ?? 0,
     staleTime: 60 * 1000,
