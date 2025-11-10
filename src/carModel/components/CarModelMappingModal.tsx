@@ -19,10 +19,7 @@ import {
 import Button from "../../components/common/Button";
 import { Select } from "../../components/common/PageLayout";
 import type { PartRecord } from "../../items/parts/PartTypes";
-import type {
-  CarModelRecord,
-  PartCarModelMapping,
-} from "../CarModelTypes";
+import type { CarModelRecord, PartCarModelMapping } from "../CarModelTypes";
 import CarModelSearchModal from "./CarModelSearchModal";
 
 interface SubmitPayload {
@@ -78,11 +75,13 @@ export default function CarModelMappingModal({
   if (!isOpen || !part) return null;
 
   const handleSubmit = async () => {
-    const target = selectedModel ?? (mapping && {
-      id: mapping.carModelId,
-      name: mapping.carModelName,
-      enabled: mapping.enabled,
-    });
+    const target =
+      selectedModel ??
+      (mapping && {
+        id: mapping.carModelId,
+        name: mapping.carModelName,
+        enabled: mapping.enabled,
+      });
 
     if (!target) {
       alert("차량 모델을 선택해주세요.");
@@ -142,7 +141,11 @@ export default function CarModelMappingModal({
                   </PlaceholderText>
                 )}
               </div>
-              <Button color="black" size="sm" onClick={() => setIsSearchOpen(true)}>
+              <Button
+                color="black"
+                size="sm"
+                onClick={() => setIsSearchOpen(true)}
+              >
                 모델 선택
               </Button>
             </ModelSelectArea>
@@ -160,7 +163,7 @@ export default function CarModelMappingModal({
           <SectionTitle>설정</SectionTitle>
           <DetailGrid $cols={1}>
             <DetailItem>
-              <Label htmlFor="mapping-note">비고</Label>
+              <Label>비고</Label>
               <Input
                 as="textarea"
                 id="mapping-note"
