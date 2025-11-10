@@ -33,7 +33,6 @@ const PartSearchModal = ({
   pageSize = DEFAULT_PAGE_SIZE,
 }: Props) => {
   const [keyword, setKeyword] = useState("");
-  const [hasSearched, setHasSearched] = useState(false);
   const [params, setParams] = useState({
     q: undefined as string | undefined,
     page: 1,
@@ -45,13 +44,12 @@ const PartSearchModal = ({
       setParams({ q: undefined, page: 1, pageSize });
     } else {
       setKeyword("");
-      setHasSearched(false);
     }
   }, [isOpen, pageSize]);
 
   const { data, isFetching, error } = usePartSearch({
     params,
-    enabled: isOpen && hasSearched,
+    enabled: isOpen,
   });
 
   const rows = useMemo(() => data?.data ?? [], [data]);
@@ -69,7 +67,6 @@ const PartSearchModal = ({
       q: trimmed ? trimmed : undefined,
       page: 1,
     }));
-    setHasSearched(true);
   };
 
   const onChangePage = (next: number) => {
@@ -103,7 +100,7 @@ const PartSearchModal = ({
             width="100%"
           />
           <HelperText>
-            검색어 입력 후 Enter를 눌러 목록을 불러옵니다. (현재 페이지{" "}
+            검색어를 비워두면 전체 목록을 확인할 수 있습니다. (현재 페이지{" "}
             {params.page}/{Math.max(1, totalPages)})
           </HelperText>
           {error && <ErrorText>{error.message}</ErrorText>}
