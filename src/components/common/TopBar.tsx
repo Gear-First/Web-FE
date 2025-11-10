@@ -137,6 +137,7 @@ const TopBar: React.FC = () => {
     { id: 2, name: "구매 관리", path: "/purchasing" },
     { id: 4, name: "품목 관리", path: "/items" },
     { id: 5, name: "재고 관리", path: "/part" },
+    { id: 10, name: "차량 모델", path: "/car-models" },
     { id: 6, name: "자산 관리", path: "/property" },
     { id: 7, name: "입고 관리", path: "/inbound" },
     { id: 8, name: "출고 관리", path: "/outbound" },
