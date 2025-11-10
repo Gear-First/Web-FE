@@ -4,7 +4,7 @@ import styled from "styled-components";
 import Logo from "../../assets/logo_gearfirst.svg";
 import UserMenu from "./UserMenu";
 import { readCurrentUserFromToken } from "../../auth/utils/currentUser";
-// import { NotificationList } from "../../notification/components/NotificationList";
+import { NotificationList } from "../../notification/components/NotificationList";
 
 /* ─ tokens: 절제된 기업 톤 */
 const color = {
@@ -162,11 +162,8 @@ const TopBar: React.FC = () => {
         </MenuBar>
 
         <RightActions>
-          <UserMenu
-            displayName={profile?.name ?? "사용자"}
-            email={profile?.email}
-          />
-          {/* <NotificationList /> */}
+          <UserMenu />
+          <NotificationList />
         </RightActions>
       </Inner>
     </TopBarContainer>

@@ -106,3 +106,11 @@ export async function rejectOrder(orderId: number, note: string) {
   });
   return res.data;
 }
+
+// 발주 승인
+export async function approveOrder(orderId: number, note: string) {
+  const res = await api.patch(`/purchase-orders/${orderId}/approve`, {
+    note,
+  });
+  return res.data;
+}
