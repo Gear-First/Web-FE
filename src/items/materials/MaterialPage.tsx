@@ -1,13 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import Button from "../../components/common/Button";
 import DateRange from "../../components/common/DateRange";
-import {
-  FilterGroup,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
-} from "../../components/common/PageLayout";
+import PageSection from "../../components/common/sections/PageSection";
 import {
   toMaterialCreatePayload,
   type MaterialCreateDTO,
@@ -16,11 +10,12 @@ import {
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createMaterial, materialKeys } from "./MaterialApi";
 import SearchBox from "../../components/common/SearchBox";
-import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
 import MaterialTable from "./components/MaterialTable";
 import MaterialRegisterModal from "./components/MaterialRegisterModal";
 import { useMaterialSearch } from "./hooks/useMaterialSearch";
+import FilterResetButton from "../../components/common/filters/FilterResetButton";
+import { usePagination } from "../../hooks/usePagination";
 
 type AppliedFilters = {
   keyword: string;
@@ -39,8 +34,13 @@ export default function MaterialPage() {
     endDate: null,
   });
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const {
+    page,
+    pageSize,
+    onChangePage,
+    onChangePageSize,
+    resetPage,
+  } = usePagination(1, 10);
 
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
@@ -76,21 +76,16 @@ export default function MaterialPage() {
       startDate: startDate || null,
       endDate: endDate || null,
     });
-    setPage(1);
-  }, [keyword, startDate, endDate]);
+    resetPage();
+  }, [keyword, startDate, endDate, resetPage]);
 
   const onReset = useCallback(() => {
     setKeyword("");
     setStartDate("");
     setEndDate("");
-    setPage(1);
+    resetPage();
     setApplied({ keyword: "", startDate: null, endDate: null });
-  }, []);
-
-  const onChangePageSize = useCallback((n: number) => {
-    setPageSize(n);
-    setPage(1);
-  }, []);
+  }, [resetPage]);
 
   const createMut = useMutation<MaterialCreateDTO, Error, MaterialCreateDTO>({
     mutationFn: createMaterial,
@@ -102,12 +97,10 @@ export default function MaterialPage() {
 
   return (
     <>
-      <SectionCard>
-        <SectionHeader>
-          <div>
-            <SectionTitle>자재 관리</SectionTitle>
-            <SectionCaption>자재 기본정보를 관리합니다.</SectionCaption>
-          </div>
+      <PageSection
+        title="자재 관리"
+        caption="자재 기본정보를 관리합니다."
+        actions={
           <Button
             onClick={() => {
               setRegMode("create");
@@ -117,63 +110,50 @@ export default function MaterialPage() {
           >
             자재 +
           </Button>
-        </SectionHeader>
-
-        <FilterGroup>
-          <Button variant="icon" onClick={onReset}>
-            <img src={resetIcon} width={18} height={18} alt="초기화" />
-          </Button>
-          <DateRange
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-            width="80px"
+        }
+        filters={
+          <>
+            <FilterResetButton onClick={onReset} />
+            <DateRange
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              width="80px"
+            />
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              onReset={onReset}
+              placeholder="자재코드 / 자재명 검색"
+              width="150px"
+            />
+          </>
+        }
+        isBusy={isFetching}
+        minHeight={200}
+        footer={
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, totalPages)}
+            onChange={onChangePage}
+            isBusy={isFetching}
+            maxButtons={5}
+            totalItems={total}
+            pageSize={pageSize}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={onChangePageSize}
+            showSummary
+            showPageSize
+            align="center"
+            dense={false}
+            sticky={false}
           />
-          <SearchBox
-            keyword={keyword}
-            onKeywordChange={setKeyword}
-            onSearch={onSearch}
-            onReset={onReset}
-            placeholder="자재코드 / 자재명 검색"
-            width="150px"
-          />
-        </FilterGroup>
-
+        }
+      >
         <MaterialTable rows={records} />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            margin: "8px 0 12px",
-          }}
-        >
-          <div style={{ height: 18 }}>
-            {isFetching && (
-              <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-            )}
-          </div>
-        </div>
-
-        <Pagination
-          page={page}
-          totalPages={Math.max(1, totalPages)}
-          onChange={setPage}
-          isBusy={isFetching}
-          maxButtons={5}
-          totalItems={total}
-          pageSize={pageSize}
-          pageSizeOptions={[10, 20, 50, 100]}
-          onChangePageSize={onChangePageSize}
-          showSummary
-          showPageSize
-          align="center"
-          dense={false}
-          sticky={false}
-        />
-      </SectionCard>
+      </PageSection>
 
       <MaterialRegisterModal
         isOpen={isRegOpen}

@@ -1,12 +1,6 @@
 import { useMemo, useState } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import Layout from "../components/common/Layout";
 import {
-  PageContainer,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
-  SectionCaption,
   FilterGroup,
   Select,
   SummaryGrid,
@@ -18,27 +12,24 @@ import {
 import Button from "../components/common/Button";
 import SearchBox from "../components/common/SearchBox";
 import Pagination from "../components/common/Pagination";
-
 import UserTable from "./components/UserTable";
 import UserRegisterModal from "./components/UserRegisterModal";
 import { createUser, userKeys } from "./HumanApi";
 import { type CreateUserDTO, type Region, type WorkType } from "./HumanTypes";
-import resetIcon from "../assets/reset.svg";
 import { useRegions, useUsers, useWorkTypes } from "./components/queries";
+import FilterResetButton from "../components/common/filters/FilterResetButton";
+import Page from "../components/common/Page";
+import PageSection from "../components/common/sections/PageSection";
+import { usePagination } from "../hooks/usePagination";
 
 export default function HumanPage() {
-  // 공통 필터
   const [keyword, setKeyword] = useState("");
   const [rank, setRank] = useState<"EMPLOYEE" | "LEADER" | "ALL">("ALL");
   const [workType, setWorkType] = useState<WorkType | "ALL">("ALL");
   const [region, setRegion] = useState<Region | "ALL">("ALL");
   const [applied, setApplied] = useState<{ keyword: string }>({ keyword: "" });
 
-  // 페이지네이션
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
-
-  // 모달
+  const pagination = usePagination(1, 10);
   const [openReg, setOpenReg] = useState(false);
 
   const { data, fetchStatus } = useUsers({
@@ -46,8 +37,8 @@ export default function HumanPage() {
     rank,
     workTypeId: workType === "ALL" ? undefined : workType.workTypeId,
     regionId: region === "ALL" ? undefined : region.regionId,
-    page,
-    pageSize,
+    page: pagination.page,
+    pageSize: pagination.pageSize,
   });
 
   const {
@@ -82,7 +73,7 @@ export default function HumanPage() {
 
   const onSearch = () => {
     setApplied({ keyword: keyword.trim() });
-    setPage(1);
+    pagination.resetPage();
   };
 
   const onReset = () => {
@@ -90,7 +81,7 @@ export default function HumanPage() {
     setRank("ALL");
     setWorkType("ALL");
     setRegion("ALL");
-    setPage(1);
+    pagination.resetPage();
   };
 
   const isFetching = fetchStatus === "fetching";
@@ -107,160 +98,136 @@ export default function HumanPage() {
     ? "지점 정보를 불러오지 못했습니다"
     : `${totalWorkTypes}개 지점`;
 
-  return (
-    <Layout>
-      <PageContainer>
-        <SummaryGrid>
-          <SummaryCard>
-            <SummaryLabel>등록 인원</SummaryLabel>
-            <SummaryValue>
-              {isFetching ? "· · ·" : total.toLocaleString()}
-            </SummaryValue>
-            <SummaryNote>필터 기준 전체 구성원</SummaryNote>
-          </SummaryCard>
-          <SummaryCard>
-            <SummaryLabel>팀 리더</SummaryLabel>
-            <SummaryValue>{leaderCount.toLocaleString()}명</SummaryValue>
-            <SummaryNote>현재 페이지 필터 결과</SummaryNote>
-          </SummaryCard>
-          <SummaryCard>
-            <SummaryLabel>커버리지</SummaryLabel>
-            <SummaryValue>
-              {regionStatusText} · {workTypeStatusText}
-            </SummaryValue>
-            <SummaryNote>지역 · 지점 마스터</SummaryNote>
-          </SummaryCard>
-        </SummaryGrid>
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>인사관리</SectionTitle>
-              <SectionCaption>
-                구성원 계정의 등록·검색·필터링을 관리합니다.
-              </SectionCaption>
-            </div>
-            <Button onClick={() => setOpenReg(true)}>회원가입 +</Button>
-          </SectionHeader>
+  const filters = (
+    <FilterGroup>
+      <FilterResetButton onClick={onReset} />
+      <Select
+        value={rank}
+        onChange={(e) =>
+          setRank(e.target.value as "EMPLOYEE" | "LEADER" | "ALL")
+        }
+      >
+        <option value="ALL">전체 직급</option>
+        <option value="EMPLOYEE">사원</option>
+        <option value="LEADER">팀장</option>
+      </Select>
 
-          <FilterGroup>
-            <Button variant="icon" onClick={onReset}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
-            <Select
-              value={rank}
-              onChange={(e) =>
-                setRank(e.target.value as "EMPLOYEE" | "LEADER" | "ALL")
-              }
-            >
-              <option value="ALL">전체 직급</option>
-              <option value="EMPLOYEE">사원</option>
-              <option value="LEADER">팀장</option>
-            </Select>
-
-            <Select
-              value={workType === "ALL" ? "ALL" : String(workType.workTypeId)}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (v === "ALL") {
-                  setWorkType("ALL");
-                } else {
-                  const selected = workTypeOptions.find(
-                    (w) => String(w.workTypeId) === v
-                  );
-                  setWorkType(selected ?? "ALL");
-                }
-              }}
-              disabled={isWorkTypeLoading}
-            >
-              {workTypeOptions.map((w) => (
-                <option
-                  key={w.workTypeId}
-                  value={
-                    w.workTypeName === "ALL" ? "ALL" : String(w.workTypeId)
-                  }
-                >
-                  {w.workTypeName === "ALL" ? "전체 지점" : w.workTypeName}
-                </option>
-              ))}
-            </Select>
-
-            <Select
-              value={region === "ALL" ? "ALL" : String(region.regionId)}
-              onChange={(e) => {
-                const v = e.target.value;
-                if (v === "ALL") {
-                  setRegion("ALL");
-                } else {
-                  const selected = regionOptions.find(
-                    (r) => String(r.regionId) === v
-                  );
-                  setRegion(selected ?? "ALL");
-                }
-              }}
-              disabled={isRegionLoading}
-            >
-              {regionOptions.map((r) => (
-                <option
-                  key={r.regionId}
-                  value={r.regionName === "ALL" ? "ALL" : String(r.regionId)}
-                >
-                  {r.regionName === "ALL" ? "전체 지역" : r.regionName}
-                </option>
-              ))}
-            </Select>
-
-            <SearchBox
-              keyword={keyword}
-              onKeywordChange={setKeyword}
-              onSearch={onSearch}
-              onReset={onReset}
-              placeholder="이름 / 이메일 / 연락처 검색"
-            />
-          </FilterGroup>
-
-          <UserTable rows={rows} />
-
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              margin: "8px 0 12px",
-            }}
+      <Select
+        value={workType === "ALL" ? "ALL" : String(workType.workTypeId)}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v === "ALL") {
+            setWorkType("ALL");
+          } else {
+            const selected = workTypeOptions.find(
+              (w) => String(w.workTypeId) === v
+            );
+            setWorkType(selected ?? "ALL");
+          }
+        }}
+        disabled={isWorkTypeLoading}
+      >
+        {workTypeOptions.map((w) => (
+          <option
+            key={w.workTypeId}
+            value={w.workTypeName === "ALL" ? "ALL" : String(w.workTypeId)}
           >
-            <div style={{ height: 18 }}>
-              {isFetching && (
-                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-              )}
-            </div>
-          </div>
+            {w.workTypeName === "ALL" ? "전체 지점" : w.workTypeName}
+          </option>
+        ))}
+      </Select>
 
+      <Select
+        value={region === "ALL" ? "ALL" : String(region.regionId)}
+        onChange={(e) => {
+          const v = e.target.value;
+          if (v === "ALL") {
+            setRegion("ALL");
+          } else {
+            const selected = regionOptions.find(
+              (r) => String(r.regionId) === v
+            );
+            setRegion(selected ?? "ALL");
+          }
+        }}
+        disabled={isRegionLoading}
+      >
+        {regionOptions.map((r) => (
+          <option
+            key={r.regionId}
+            value={r.regionName === "ALL" ? "ALL" : String(r.regionId)}
+          >
+            {r.regionName === "ALL" ? "전체 지역" : r.regionName}
+          </option>
+        ))}
+      </Select>
+
+      <SearchBox
+        keyword={keyword}
+        onKeywordChange={setKeyword}
+        onSearch={onSearch}
+        onReset={onReset}
+        placeholder="이름 / 이메일 / 소속 검색"
+      />
+    </FilterGroup>
+  );
+
+  return (
+    <Page>
+      <SummaryGrid>
+        <SummaryCard>
+          <SummaryLabel>등록 인원</SummaryLabel>
+          <SummaryValue>
+            {isFetching ? "· · ·" : total.toLocaleString()}
+          </SummaryValue>
+          <SummaryNote>필터 기준 전체 구성원</SummaryNote>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>팀 리더</SummaryLabel>
+          <SummaryValue>{leaderCount.toLocaleString()}명</SummaryValue>
+          <SummaryNote>현재 페이지 필터 결과</SummaryNote>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>커버리지</SummaryLabel>
+          <SummaryValue>
+            {regionStatusText} · {workTypeStatusText}
+          </SummaryValue>
+          <SummaryNote>지역 · 지점 마스터</SummaryNote>
+        </SummaryCard>
+      </SummaryGrid>
+
+      <PageSection
+        title="인사관리"
+        caption="구성원 계정의 등록·검색·필터링을 관리합니다."
+        actions={<Button onClick={() => setOpenReg(true)}>회원가입 +</Button>}
+        filters={filters}
+        isBusy={isFetching || isRegionLoading || isWorkTypeLoading}
+        footer={
           <Pagination
-            page={page}
+            page={pagination.page}
             totalPages={Math.max(1, totalPages)}
-            onChange={(n) => setPage(n)}
-            isBusy={isFetching}
-            maxButtons={5}
+            onChange={pagination.onChangePage}
             totalItems={total}
-            pageSize={pageSize}
-            pageSizeOptions={[10, 20, 50, 100]}
-            onChangePageSize={(n) => {
-              setPageSize(n);
-              setPage(1);
-            }}
+            pageSize={pagination.pageSize}
+            onChangePageSize={pagination.onChangePageSize}
             showSummary
             showPageSize
             align="center"
           />
-        </SectionCard>
-      </PageContainer>
+        }
+      >
+        <UserTable rows={rows} />
+      </PageSection>
+
       <UserRegisterModal
         mode="create"
         isOpen={openReg}
         onClose={() => setOpenReg(false)}
-        onCreate={async (dto) => {
-          await createMut.mutateAsync(dto);
+        onCreate={async (form) => {
+          await createMut.mutateAsync(form);
+          setOpenReg(false);
         }}
       />
-    </Layout>
+    </Page>
   );
 }

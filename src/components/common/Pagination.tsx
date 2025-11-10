@@ -149,9 +149,6 @@ export default function Pagination({
         >
           »
         </IconButton>
-
-        {/* Busy 표시 (간단 스피너) */}
-        <Busy $show={busy} aria-hidden={!busy} />
       </Center>
 
       {/* 왼쪽: 요약/페이지 크기 */}

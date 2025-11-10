@@ -1,13 +1,6 @@
 import { useMemo, useState } from "react";
 import styled from "styled-components";
-import Layout from "../components/common/Layout";
 import {
-  FilterGroup,
-  PageContainer,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
   StatusBadge,
   Table,
   Td,
@@ -16,7 +9,6 @@ import {
 import Button from "../components/common/Button";
 import SearchBox from "../components/common/SearchBox";
 import Pagination from "../components/common/Pagination";
-import resetIcon from "../assets/reset.svg";
 import PartSearchModal from "../bom/components/PartSearchModal";
 import type { PartRecord } from "../items/parts/PartTypes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
@@ -35,6 +27,10 @@ import type {
 } from "./CarModelTypes";
 import CarModelMappingModal from "./components/CarModelMappingModal";
 import CarModelExplorerSection from "./components/CarModelExplorerSection";
+import Page from "../components/common/Page";
+import PageSection from "../components/common/sections/PageSection";
+import FilterResetButton from "../components/common/filters/FilterResetButton";
+import { usePagination } from "../hooks/usePagination";
 
 export default function CarModelPage() {
   const [selectedPart, setSelectedPart] = useState<PartRecord | null>(null);
@@ -42,17 +38,16 @@ export default function CarModelPage() {
 
   const [keyword, setKeyword] = useState("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const pagination = usePagination(1, 10);
 
   const mappingParams = useMemo<PartCarModelListParams>(
     () => ({
       name: appliedKeyword || undefined,
-      page,
-      pageSize,
+      page: pagination.page,
+      pageSize: pagination.pageSize,
       sort: "name,asc",
     }),
-    [appliedKeyword, page, pageSize]
+    [appliedKeyword, pagination.page, pagination.pageSize]
   );
 
   const queryClient = useQueryClient();
@@ -191,42 +186,67 @@ export default function CarModelPage() {
     setIsPartModalOpen(false);
     setKeyword("");
     setAppliedKeyword("");
-    setPage(1);
+    pagination.resetPage();
   };
 
   const onSearch = () => {
     setAppliedKeyword(keyword.trim());
-    setPage(1);
+    pagination.resetPage();
   };
 
   const onResetFilters = () => {
     setKeyword("");
     setAppliedKeyword("");
-    setPage(1);
+    pagination.resetPage();
   };
 
   const isMutating = createMut.isPending || updateMut.isPending;
 
   return (
-    <Layout>
-      <PageContainer>
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>부품별 차량 모델 매핑</SectionTitle>
-              <SectionCaption>
-                부품과 적용 차량 모델 간의 관계를 조회·관리합니다.
-              </SectionCaption>
-            </div>
-            <HeaderActions>
-              <Button color="black" onClick={() => setIsPartModalOpen(true)}>
-                부품 선택
-              </Button>
-            </HeaderActions>
-          </SectionHeader>
-
-          {selectedPart ? (
+    <Page>
+      <PageSection
+        title="부품별 차량 모델 매핑"
+        caption="부품과 적용 차량 모델 간의 관계를 조회·관리합니다."
+        actions={
+          <HeaderActions>
+            <Button color="black" onClick={() => setIsPartModalOpen(true)}>
+              부품 선택
+            </Button>
+          </HeaderActions>
+        }
+        filters={
+          selectedPart ? (
             <>
+              <FilterResetButton onClick={onResetFilters} />
+              <SearchBox
+                keyword={keyword}
+                onKeywordChange={setKeyword}
+                onSearch={onSearch}
+                placeholder="모델명 검색"
+                width="280px"
+              />
+            </>
+          ) : undefined
+        }
+        isBusy={Boolean(selectedPart && (isFetching || isMutating))}
+        showOverlay={Boolean(selectedPart)}
+        footer={
+          selectedPart ? (
+            <Pagination
+              page={pagination.page}
+              totalPages={Math.max(1, totalPages)}
+              onChange={pagination.onChangePage}
+              totalItems={total}
+              pageSize={pagination.pageSize}
+              onChangePageSize={pagination.onChangePageSize}
+              align="center"
+              dense
+            />
+          ) : undefined
+        }
+      >
+        {selectedPart ? (
+          <>
               <SelectedPartCard>
                 <div>
                   <span className="label">선택된 부품</span>
@@ -242,39 +262,22 @@ export default function CarModelPage() {
                 </Button>
               </SelectedPartCard>
 
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  margin: "16px 0",
-                  gap: 12,
-                }}
-              >
-                <div style={{ color: "#6b7280", fontSize: 13 }}>
-                  총 {total.toLocaleString()}건
-                </div>
-                <Button color="black" onClick={openCreateModal}>
-                  차량 모델 추가
-                </Button>
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                margin: "16px 0",
+                gap: 12,
+              }}
+            >
+              <div style={{ color: "#6b7280", fontSize: 13 }}>
+                총 {total.toLocaleString()}건
               </div>
-
-              <FilterGroup>
-                <Button
-                  variant="icon"
-                  onClick={onResetFilters}
-                  aria-label="초기화"
-                >
-                  <img src={resetIcon} width={18} height={18} alt="초기화" />
-                </Button>
-                <SearchBox
-                  keyword={keyword}
-                  onKeywordChange={setKeyword}
-                  onSearch={onSearch}
-                  placeholder="모델명 검색"
-                  width="280px"
-                />
-              </FilterGroup>
+              <Button color="black" onClick={openCreateModal}>
+                차량 모델 추가
+              </Button>
+            </div>
 
               <Table>
                 <thead>
@@ -343,30 +346,15 @@ export default function CarModelPage() {
                 </tbody>
               </Table>
 
-              <Pagination
-                page={page}
-                totalPages={Math.max(1, totalPages)}
-                onChange={setPage}
-                isBusy={isFetching}
-                totalItems={total}
-                pageSize={pageSize}
-                onChangePageSize={(n) => {
-                  setPageSize(n);
-                  setPage(1);
-                }}
-                align="center"
-                dense
-              />
-            </>
-          ) : (
-            <EmptyState>
-              먼저 상단의 “부품 선택” 버튼을 눌러 관리할 부품을 선택하세요.
-            </EmptyState>
-          )}
-        </SectionCard>
+          </>
+        ) : (
+          <EmptyState>
+            먼저 상단의 “부품 선택” 버튼을 눌러 관리할 부품을 선택하세요.
+          </EmptyState>
+        )}
+      </PageSection>
 
-        <CarModelExplorerSection />
-      </PageContainer>
+      <CarModelExplorerSection />
 
       <PartSearchModal
         isOpen={isPartModalOpen}
@@ -383,7 +371,7 @@ export default function CarModelPage() {
         onSubmit={handleSubmitMapping}
         loading={isMutating}
       />
-    </Layout>
+    </Page>
   );
 }
 

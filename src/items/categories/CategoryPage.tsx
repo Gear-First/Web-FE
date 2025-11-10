@@ -2,20 +2,12 @@ import { useCallback, useMemo, useState } from "react";
 import Button from "../../components/common/Button";
 import DateRange from "../../components/common/DateRange";
 import {
-  FilterGroup,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
-} from "../../components/common/PageLayout";
-import {
   useMutation,
   useQuery,
   useQueryClient,
   type QueryKey,
 } from "@tanstack/react-query";
 import SearchBox from "../../components/common/SearchBox";
-import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
 import type { ListResponse } from "../../api";
 
@@ -27,6 +19,9 @@ import {
   type CategoryFormModel,
   type CategoryRecord,
 } from "./CategoryTypes";
+import PageSection from "../../components/common/sections/PageSection";
+import FilterResetButton from "../../components/common/filters/FilterResetButton";
+import { usePagination } from "../../hooks/usePagination";
 
 type AppliedFilters = {
   keyword: string;
@@ -45,8 +40,13 @@ export default function CategoryPage() {
     endDate: null,
   });
 
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const {
+    page,
+    pageSize,
+    onChangePage,
+    onChangePageSize,
+    resetPage,
+  } = usePagination(1, 10);
 
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
@@ -96,21 +96,16 @@ export default function CategoryPage() {
       startDate: startDate || null,
       endDate: endDate || null,
     });
-    setPage(1);
-  }, [keyword, startDate, endDate]);
+    resetPage();
+  }, [keyword, startDate, endDate, resetPage]);
 
   const onReset = useCallback(() => {
     setKeyword("");
     setStartDate("");
     setEndDate("");
-    setPage(1);
+    resetPage();
     setApplied({ keyword: "", startDate: null, endDate: null });
-  }, []);
-
-  const onChangePageSize = useCallback((n: number) => {
-    setPageSize(n);
-    setPage(1);
-  }, []);
+  }, [resetPage]);
 
   const createMut = useMutation<CategoryRecord, Error, CategoryFormModel>({
     mutationFn: (form) => createCategory(toCategoryCreatePayload(form)),
@@ -122,14 +117,10 @@ export default function CategoryPage() {
 
   return (
     <>
-      <SectionCard>
-        <SectionHeader>
-          <div>
-            <SectionTitle>카테고리 관리</SectionTitle>
-            <SectionCaption>
-              부품 카테고리를 생성/수정/삭제합니다.
-            </SectionCaption>
-          </div>
+      <PageSection
+        title="카테고리 관리"
+        caption="부품 카테고리를 생성/수정/삭제합니다."
+        actions={
           <Button
             onClick={() => {
               setRegMode("create");
@@ -139,63 +130,48 @@ export default function CategoryPage() {
           >
             카테고리 +
           </Button>
-        </SectionHeader>
-
-        <FilterGroup>
-          <Button variant="icon" onClick={onReset}>
-            <img src={resetIcon} width={18} height={18} alt="초기화" />
-          </Button>
-          <DateRange
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-            width="80px"
+        }
+        filters={
+          <>
+            <FilterResetButton onClick={onReset} />
+            <DateRange
+              startDate={startDate}
+              endDate={endDate}
+              onStartDateChange={setStartDate}
+              onEndDateChange={setEndDate}
+              width="80px"
+            />
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              onReset={onReset}
+              placeholder="카테고리명 / 설명 검색"
+              width="150px"
+            />
+          </>
+        }
+        isBusy={isFetching}
+        footer={
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, totalPages)}
+            onChange={onChangePage}
+            maxButtons={5}
+            totalItems={total}
+            pageSize={pageSize}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={onChangePageSize}
+            showSummary
+            showPageSize
+            align="center"
+            dense={false}
+            sticky={false}
           />
-          <SearchBox
-            keyword={keyword}
-            onKeywordChange={setKeyword}
-            onSearch={onSearch}
-            onReset={onReset}
-            placeholder="카테고리명 / 설명 검색"
-            width="150px"
-          />
-        </FilterGroup>
-
+        }
+      >
         <CategoryTable rows={records} />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            margin: "8px 0 12px",
-          }}
-        >
-          <div style={{ height: 18 }}>
-            {isFetching && (
-              <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-            )}
-          </div>
-        </div>
-
-        <Pagination
-          page={page}
-          totalPages={Math.max(1, totalPages)}
-          onChange={setPage}
-          isBusy={isFetching}
-          maxButtons={5}
-          totalItems={total}
-          pageSize={pageSize}
-          pageSizeOptions={[10, 20, 50, 100]}
-          onChangePageSize={onChangePageSize}
-          showSummary
-          showPageSize
-          align="center"
-          dense={false}
-          sticky={false}
-        />
-      </SectionCard>
+      </PageSection>
 
       <CategoryRegisterModal
         isOpen={isRegOpen}

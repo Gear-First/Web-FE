@@ -1,13 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
 import Button from "../../components/common/Button";
-import {
-  FilterGroup,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
-  Select,
-} from "../../components/common/PageLayout";
+import { Select } from "../../components/common/PageLayout";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import PartTable from "./components/PartTable";
@@ -22,9 +15,11 @@ import {
 } from "./PartTypes";
 
 import SearchBox from "../../components/common/SearchBox";
-import resetIcon from "../../assets/reset.svg";
 import Pagination from "../../components/common/Pagination";
 import { usePartSearch } from "./hooks/usePartSearch";
+import PageSection from "../../components/common/sections/PageSection";
+import FilterResetButton from "../../components/common/filters/FilterResetButton";
+import { usePagination } from "../../hooks/usePagination";
 
 type AppliedFilters = {
   keyword: string;
@@ -43,8 +38,13 @@ export default function PartPage() {
   });
 
   // 페이지네이션 (UI 1-based)
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const {
+    page,
+    pageSize,
+    onChangePage,
+    onChangePageSize,
+    resetPage,
+  } = usePagination(1, 10);
 
   // 등록/수정 모달
   const [isRegOpen, setIsRegOpen] = useState(false);
@@ -86,8 +86,8 @@ export default function PartPage() {
       keyword: keyword.trim(),
       enabled: enabledFilter,
     });
-    setPage(1);
-  }, [keyword, enabledFilter]);
+    resetPage();
+  }, [keyword, enabledFilter, resetPage]);
 
   const onReset = useCallback(() => {
     setKeyword("");
@@ -96,8 +96,8 @@ export default function PartPage() {
       keyword: "",
       enabled: "all",
     });
-    setPage(1);
-  }, []);
+    resetPage();
+  }, [resetPage]);
 
   const onChangeEnabledFilter = useCallback(
     (value: AppliedFilters["enabled"]) => {
@@ -107,15 +107,10 @@ export default function PartPage() {
         keyword: keyword.trim(),
         enabled: value,
       }));
-      setPage(1);
+      resetPage();
     },
-    [keyword]
+    [keyword, resetPage]
   );
-
-  const onChangePageSize = useCallback((n: number) => {
-    setPageSize(n);
-    setPage(1);
-  }, []);
 
   // 생성 뮤테이션 (UI DTO → 서버 바디 매핑은 createPart 내부에서 처리)
   const createMut = useMutation<PartRecord, Error, PartCreateDTO>({
@@ -129,14 +124,10 @@ export default function PartPage() {
 
   return (
     <>
-      <SectionCard>
-        <SectionHeader>
-          <div>
-            <SectionTitle>부품 관리</SectionTitle>
-            <SectionCaption>
-              부품 기본정보 및 자재구성을 관리합니다.
-            </SectionCaption>
-          </div>
+      <PageSection
+        title="부품 관리"
+        caption="부품 기본정보 및 자재구성을 관리합니다."
+        actions={
           <Button
             onClick={() => {
               setRegMode("create");
@@ -146,65 +137,55 @@ export default function PartPage() {
           >
             부품 +
           </Button>
-        </SectionHeader>
-
-        <FilterGroup>
-          <Button variant="icon" onClick={onReset} aria-label="초기화">
-            <img src={resetIcon} width={18} height={18} alt="초기화" />
-          </Button>
-          <Select
-            value={enabledFilter}
-            onChange={(e) =>
-              onChangeEnabledFilter(e.target.value as AppliedFilters["enabled"])
-            }
-          >
-            <option value="all">전체 상태</option>
-            <option value="true">사용</option>
-            <option value="false">중지</option>
-          </Select>
-          <SearchBox
-            keyword={keyword}
-            onKeywordChange={setKeyword}
-            onSearch={onSearch}
-            placeholder="카테고리 / 차모델 / 부품코드 / 부품명 검색"
-            width="320px"
+        }
+        filters={
+          <>
+            <FilterResetButton onClick={onReset} />
+            <Select
+              value={enabledFilter}
+              onChange={(e) =>
+                onChangeEnabledFilter(
+                  e.target.value as AppliedFilters["enabled"]
+                )
+              }
+              style={{ minWidth: 140 }}
+            >
+              <option value="all">전체 상태</option>
+              <option value="true">사용</option>
+              <option value="false">중지</option>
+            </Select>
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              placeholder="카테고리 / 차모델 / 부품코드 / 부품명 검색"
+              width="320px"
+            />
+          </>
+        }
+        isBusy={isFetching}
+        minHeight={220}
+        footer={
+          <Pagination
+            page={page}
+            totalPages={Math.max(1, totalPages)}
+            onChange={onChangePage}
+            isBusy={isFetching}
+            maxButtons={5}
+            totalItems={total}
+            pageSize={pageSize}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={onChangePageSize}
+            showSummary
+            showPageSize
+            align="center"
+            dense={false}
+            sticky={false}
           />
-        </FilterGroup>
-
+        }
+      >
         <PartTable rows={records} />
-
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            margin: "8px 0 12px",
-          }}
-        >
-          <div style={{ height: 18 }}>
-            {isFetching && (
-              <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-            )}
-          </div>
-        </div>
-
-        <Pagination
-          page={page}
-          totalPages={Math.max(1, totalPages)}
-          onChange={setPage}
-          isBusy={isFetching}
-          maxButtons={5}
-          totalItems={total}
-          pageSize={pageSize}
-          pageSizeOptions={[10, 20, 50, 100]}
-          onChangePageSize={onChangePageSize}
-          showSummary
-          showPageSize
-          align="center"
-          dense={false}
-          sticky={false}
-        />
-      </SectionCard>
+      </PageSection>
 
       <PartRegisterModal
         isOpen={isRegOpen}

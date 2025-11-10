@@ -1,11 +1,5 @@
-import Layout from "../components/common/Layout";
+import Page from "../components/common/Page";
 import {
-  PageContainer,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
-  FilterGroup,
   Select,
   SummaryGrid,
   SummaryCard,
@@ -21,8 +15,9 @@ import DetailModal from "./components/RequestDetailModal";
 import Pagination from "../components/common/Pagination";
 import DateRange from "../components/common/DateRange";
 import SearchBox from "../components/common/SearchBox";
-import Button from "../components/common/Button";
-import resetIcon from "../assets/reset.svg";
+import FilterResetButton from "../components/common/filters/FilterResetButton";
+import PageSection from "../components/common/sections/PageSection";
+import { usePagination } from "../hooks/usePagination";
 import {
   fetchPendingOrders,
   fetchProcessedOrders,
@@ -34,6 +29,9 @@ import type {
   PendingOrderItem,
   ProcessedOrderItem,
   OrderStatus,
+  PendingOrderResponse,
+  ProcessedOrderResponse,
+  CancelOrderResponse,
 } from "./RequestTypes";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -92,23 +90,24 @@ export default function RequestPage() {
   const [endDatePending, setEndDatePending] = useState("");
   const [appliedStartDatePending, setAppliedStartDatePending] = useState("");
   const [appliedEndDatePending, setAppliedEndDatePending] = useState("");
-  const [pagePending, setPagePending] = useState(1);
-  const [pageSizePending, setPageSizePending] = useState(10);
+  const pendingPagination = usePagination(1, 10);
 
   // 미승인 목록 조회
-  const { data: pendingData, fetchStatus: pendingFetchStatus } = useQuery({
+  const { data: pendingData, fetchStatus: pendingFetchStatus } = useQuery<
+    PendingOrderResponse
+  >({
     queryKey: [
       "pending-orders",
-      pagePending,
-      pageSizePending,
+      pendingPagination.page,
+      pendingPagination.pageSize,
       appliedPendingKeyword,
       appliedStartDatePending,
       appliedEndDatePending,
     ],
     queryFn: () =>
       fetchPendingOrders({
-        page: pagePending - 1,
-        size: pageSizePending,
+        page: pendingPagination.page - 1,
+        size: pendingPagination.pageSize,
         sort: "",
         search: appliedPendingKeyword || undefined,
         startDate: appliedStartDatePending || undefined,
@@ -123,7 +122,7 @@ export default function RequestPage() {
     setAppliedPendingKeyword(keywordPending.trim());
     setAppliedStartDatePending(startDatePending);
     setAppliedEndDatePending(endDatePending);
-    setPagePending(1);
+    pendingPagination.resetPage();
   };
 
   const onResetPending = () => {
@@ -133,7 +132,7 @@ export default function RequestPage() {
     setEndDatePending("");
     setAppliedStartDatePending("");
     setAppliedEndDatePending("");
-    setPagePending(1);
+    pendingPagination.resetPage();
   };
 
   // 승인/진행중/완료 (APPROVED, SHIPPED, COMPLETED)
@@ -144,22 +143,23 @@ export default function RequestPage() {
   const [appliedStartDateProcessed, setAppliedStartDateProcessed] =
     useState("");
   const [appliedEndDateProcessed, setAppliedEndDateProcessed] = useState("");
-  const [pageProcessed, setPageProcessed] = useState(1);
-  const [pageSizeProcessed, setPageSizeProcessed] = useState(10);
+  const processedPagination = usePagination(1, 10);
 
-  const { data: processedData, fetchStatus: processedFetchStatus } = useQuery({
+  const { data: processedData, fetchStatus: processedFetchStatus } = useQuery<
+    ProcessedOrderResponse
+  >({
     queryKey: [
       "processed-orders",
-      pageProcessed,
-      pageSizeProcessed,
+      processedPagination.page,
+      processedPagination.pageSize,
       appliedProcessedKeyword,
       appliedStartDateProcessed,
       appliedEndDateProcessed,
     ],
     queryFn: () =>
       fetchProcessedOrders({
-        page: pageProcessed - 1,
-        size: pageSizeProcessed,
+        page: processedPagination.page - 1,
+        size: processedPagination.pageSize,
         sort: "",
         search: appliedProcessedKeyword || undefined,
         startDate: appliedStartDateProcessed || undefined,
@@ -173,7 +173,7 @@ export default function RequestPage() {
     setAppliedProcessedKeyword(keywordProcessed.trim());
     setAppliedStartDateProcessed(startDateProcessed);
     setAppliedEndDateProcessed(endDateProcessed);
-    setPageProcessed(1);
+    processedPagination.resetPage();
   };
 
   const onResetProcessed = () => {
@@ -183,7 +183,7 @@ export default function RequestPage() {
     setEndDateProcessed("");
     setAppliedStartDateProcessed("");
     setAppliedEndDateProcessed("");
-    setPageProcessed(1);
+    processedPagination.resetPage();
   };
 
   // 반려/취소 (REJECTED, CANCELLED)
@@ -193,24 +193,25 @@ export default function RequestPage() {
   const [endDateCancel, setEndDateCancel] = useState("");
   const [appliedStartDateCancel, setAppliedStartDateCancel] = useState("");
   const [appliedEndDateCancel, setAppliedEndDateCancel] = useState("");
-  const [pageCancel, setPageCancel] = useState(1);
-  const [pageSizeCancel, setPageSizeCancel] = useState(10);
+  const cancelPagination = usePagination(1, 10);
 
   const [status, setStatus] = useState("");
 
-  const { data: cancelData, fetchStatus: cancelFetchStatus } = useQuery({
+  const { data: cancelData, fetchStatus: cancelFetchStatus } = useQuery<
+    CancelOrderResponse
+  >({
     queryKey: [
       "cancel-orders",
-      pageCancel,
-      pageSizeCancel,
+      cancelPagination.page,
+      cancelPagination.pageSize,
       appliedCancelKeyword,
       appliedStartDateCancel,
       appliedEndDateCancel,
     ],
     queryFn: () =>
       fetchCancelOrders({
-        page: pageCancel - 1,
-        size: pageSizeCancel,
+        page: cancelPagination.page - 1,
+        size: cancelPagination.pageSize,
         sort: "",
         search: appliedCancelKeyword || undefined,
         startDate: appliedStartDateCancel || undefined,
@@ -224,7 +225,7 @@ export default function RequestPage() {
     setAppliedCancelKeyword(keywordCancel.trim());
     setAppliedStartDateCancel(startDateCancel);
     setAppliedEndDateCancel(endDateCancel);
-    setPageCancel(1);
+    cancelPagination.resetPage();
   };
 
   const onResetCancel = () => {
@@ -234,7 +235,7 @@ export default function RequestPage() {
     setEndDateCancel("");
     setAppliedStartDateCancel("");
     setAppliedEndDateCancel("");
-    setPageCancel(1);
+    cancelPagination.resetPage();
   };
 
   const pendingTotal = pendingData?.data?.totalElements ?? 0;
@@ -257,8 +258,7 @@ export default function RequestPage() {
   };
 
   return (
-    <Layout>
-      <PageContainer>
+    <Page>
         <SummaryGrid>
           <SummaryCard>
             <SummaryLabel>승인 대기</SummaryLabel>
@@ -290,187 +290,157 @@ export default function RequestPage() {
             </SummaryNote>
           </SummaryCard>
         </SummaryGrid>
-        {/* 미승인 요청 목록 */}
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>발주 요청 목록</SectionTitle>
-              <SectionCaption>
-                아직 승인되지 않은 발주 요청들을 확인합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
-
-          {/* 필터 영역 */}
-          <FilterGroup>
-            <Button variant="icon" onClick={onResetPending}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
-            <DateRange
-              startDate={startDatePending}
-              endDate={endDatePending}
-              onStartDateChange={setStartDatePending}
-              onEndDateChange={setEndDatePending}
+        <PageSection
+          title="발주 요청 목록"
+          caption="아직 승인되지 않은 발주 요청들을 확인합니다."
+          filters={
+            <>
+              <FilterResetButton onClick={onResetPending} />
+              <DateRange
+                startDate={startDatePending}
+                endDate={endDatePending}
+                onStartDateChange={setStartDatePending}
+                onEndDateChange={setEndDatePending}
+              />
+              <SearchBox
+                keyword={keywordPending}
+                onKeywordChange={setKeywordPending}
+                onSearch={onSearchPending}
+                onReset={onResetPending}
+                placeholder="발주번호 / 대리점 검색"
+              />
+            </>
+          }
+          isBusy={pendingFetchStatus === "fetching"}
+          minHeight={280}
+          footer={
+            <Pagination
+              page={pendingPagination.page}
+              totalPages={pendingData?.data?.totalPages ?? 1}
+              onChange={pendingPagination.onChangePage}
+              isBusy={pendingFetchStatus === "fetching"}
+              totalItems={pendingData?.data?.totalElements ?? 0}
+              pageSize={pendingPagination.pageSize}
+              onChangePageSize={pendingPagination.onChangePageSize}
+              showSummary
+              showPageSize
+              align="center"
             />
-            <SearchBox
-              keyword={keywordPending}
-              onKeywordChange={setKeywordPending}
-              onSearch={onSearchPending}
-              onReset={onResetPending}
-              placeholder="발주번호 / 대리점 검색"
-            />
-          </FilterGroup>
-
-          {/* 테이블 */}
+          }
+        >
           <OrderTable
             rows={pendingData?.data?.content ?? []}
             onRowClick={(rec) => handleOpen(rec, "order")}
           />
+        </PageSection>
 
-          {/* 로딩 표시 */}
-          <div style={{ height: 18, marginTop: 8, marginBottom: 12 }}>
-            {pendingFetchStatus === "fetching" && (
-              <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-            )}
-          </div>
-
-          {/* 페이지네이션 */}
-          <Pagination
-            page={pagePending}
-            totalPages={pendingData?.data?.totalPages ?? 1}
-            onChange={setPagePending}
-            isBusy={pendingFetchStatus === "fetching"}
-            totalItems={pendingData?.data?.totalElements ?? 0}
-            pageSize={pageSizePending}
-            onChangePageSize={(n) => {
-              setPageSizePending(n);
-              setPagePending(1);
-            }}
-            showSummary
-            showPageSize
-            align="center"
-          />
-        </SectionCard>
-
-        {/* 승인 및 진행중 목록 */}
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>승인 및 진행중 목록</SectionTitle>
-              <SectionCaption>
-                처리 중 및 완료된 요청들을 확인합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
-          {/* 필터 영역 */}
-          <FilterGroup>
-            <Button variant="icon" onClick={onResetProcessed}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
-            <Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as OrderStatus | "ALL")}
-            >
-              <option value="ALL">전체</option>
-              <option value="APPROVED">승인 완료</option>
-              <option value="SHIPPED">출고 중</option>
-              <option value="COMPLETED">납품 완료</option>
-            </Select>
-            <DateRange
-              startDate={startDateProcessed}
-              endDate={endDateProcessed}
-              onStartDateChange={setStartDateProcessed}
-              onEndDateChange={setEndDateProcessed}
+        <PageSection
+          title="승인 및 진행중 목록"
+          caption="처리 중 및 완료된 요청들을 확인합니다."
+          filters={
+            <>
+              <FilterResetButton onClick={onResetProcessed} />
+              <Select
+                value={status}
+                onChange={(e) =>
+                  setStatus(e.target.value as OrderStatus | "ALL")
+                }
+              >
+                <option value="ALL">전체</option>
+                <option value="APPROVED">승인 완료</option>
+                <option value="SHIPPED">출고 중</option>
+                <option value="COMPLETED">납품 완료</option>
+              </Select>
+              <DateRange
+                startDate={startDateProcessed}
+                endDate={endDateProcessed}
+                onStartDateChange={setStartDateProcessed}
+                onEndDateChange={setEndDateProcessed}
+              />
+              <SearchBox
+                keyword={keywordProcessed}
+                onKeywordChange={setKeywordProcessed}
+                onSearch={onSearchProcessed}
+                onReset={onResetProcessed}
+                placeholder="발주번호 / 대리점 검색"
+              />
+            </>
+          }
+          isBusy={processedFetchStatus === "fetching"}
+          minHeight={280}
+          footer={
+            <Pagination
+              page={processedPagination.page}
+              totalPages={processedData?.data?.totalPages ?? 1}
+              onChange={processedPagination.onChangePage}
+              isBusy={processedFetchStatus === "fetching"}
+              totalItems={processedData?.data?.totalElements ?? 0}
+              pageSize={processedPagination.pageSize}
+              onChangePageSize={processedPagination.onChangePageSize}
+              showSummary
+              showPageSize
+              align="center"
             />
-            <SearchBox
-              keyword={keywordProcessed}
-              onKeywordChange={setKeywordProcessed}
-              onSearch={onSearchProcessed}
-              onReset={onResetProcessed}
-              placeholder="발주번호 / 대리점 검색"
-            />
-          </FilterGroup>
+          }
+        >
           <RequestTable
             rows={processedData?.data?.content ?? []}
             onRowClick={(rec) => handleOpen(rec, "request")}
           />
-
-          <Pagination
-            page={pageProcessed}
-            totalPages={processedData?.data?.totalPages ?? 1}
-            onChange={setPageProcessed}
-            isBusy={processedFetchStatus === "fetching"}
-            totalItems={processedData?.data?.totalElements ?? 0}
-            pageSize={pageSizeProcessed}
-            onChangePageSize={(n) => {
-              setPageSizeProcessed(n);
-              setPageProcessed(1);
-            }}
-            showSummary
-            showPageSize
-            align="center"
-          />
-        </SectionCard>
-        {/* 반려 목록 */}
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>취소 및 반려 목록</SectionTitle>
-              <SectionCaption>
-                취소 및 반려된 요청들을 확인합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
-          {/* 필터 영역 */}
-          <FilterGroup>
-            <Button variant="icon" onClick={onResetCancel}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
-            <Select
-              value={status}
-              onChange={(e) => setStatus(e.target.value as OrderStatus | "ALL")}
-            >
-              <option value="ALL">전체</option>
-              <option value="REJECTED">반려</option>
-              <option value="CANCELLED">취소</option>
-            </Select>
-            <DateRange
-              startDate={startDateCancel}
-              endDate={endDateCancel}
-              onStartDateChange={setStartDatePending}
-              onEndDateChange={setEndDatePending}
+        </PageSection>
+        <PageSection
+          title="취소 및 반려 목록"
+          caption="취소 및 반려된 요청들을 확인합니다."
+          filters={
+            <>
+              <FilterResetButton onClick={onResetCancel} />
+              <Select
+                value={status}
+                onChange={(e) =>
+                  setStatus(e.target.value as OrderStatus | "ALL")
+                }
+              >
+                <option value="ALL">전체</option>
+                <option value="REJECTED">반려</option>
+                <option value="CANCELLED">취소</option>
+              </Select>
+              <DateRange
+                startDate={startDateCancel}
+                endDate={endDateCancel}
+                onStartDateChange={setStartDateCancel}
+                onEndDateChange={setEndDateCancel}
+              />
+              <SearchBox
+                keyword={keywordCancel}
+                onKeywordChange={setKeywordCancel}
+                onSearch={onSearchCancel}
+                onReset={onResetCancel}
+                placeholder="발주번호 / 대리점 검색"
+              />
+            </>
+          }
+          isBusy={cancelFetchStatus === "fetching"}
+          minHeight={280}
+          footer={
+            <Pagination
+              page={cancelPagination.page}
+              totalPages={cancelData?.data?.totalPages ?? 1}
+              onChange={cancelPagination.onChangePage}
+              isBusy={cancelFetchStatus === "fetching"}
+              totalItems={cancelData?.data?.totalElements ?? 0}
+              pageSize={cancelPagination.pageSize}
+              onChangePageSize={cancelPagination.onChangePageSize}
+              showSummary
+              showPageSize
+              align="center"
             />
-            <SearchBox
-              keyword={keywordCancel}
-              onKeywordChange={setKeywordCancel}
-              onSearch={onSearchCancel}
-              onReset={onResetCancel}
-              placeholder="발주번호 / 대리점 검색"
-            />
-          </FilterGroup>
+          }
+        >
           <RequestTable
             rows={cancelData?.data?.content ?? []}
             onRowClick={(rec) => handleOpen(rec, "request")}
           />
-
-          <Pagination
-            page={pageCancel}
-            totalPages={cancelData?.data?.totalPages ?? 1}
-            onChange={setPageCancel}
-            isBusy={cancelFetchStatus === "fetching"}
-            totalItems={cancelData?.data?.totalElements ?? 0}
-            pageSize={pageSizeCancel}
-            onChangePageSize={(n) => {
-              setPageSizeCancel(n);
-              setPageCancel(1);
-            }}
-            showSummary
-            showPageSize
-            align="center"
-          />
-        </SectionCard>
-      </PageContainer>
-
+        </PageSection>
       <DetailModal
         variant={modalVariant}
         record={selectedRecord}
@@ -479,6 +449,6 @@ export default function RequestPage() {
         onApprove={handleApprove}
         onReject={handleReject}
       />
-    </Layout>
+    </Page>
   );
 }

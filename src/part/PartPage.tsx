@@ -1,10 +1,4 @@
-import Layout from "../components/common/Layout";
 import {
-  PageContainer,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
   FilterGroup,
   SummaryGrid,
   SummaryCard,
@@ -17,16 +11,23 @@ import { useQuery } from "@tanstack/react-query";
 import PartTable from "./components/PartTable";
 import { fetchPartRecords } from "./PartApi";
 import SearchBox from "../components/common/SearchBox";
-import Button from "../components/common/Button";
-import resetIcon from "../assets/reset.svg";
 import Pagination from "../components/common/Pagination";
+import Page from "../components/common/Page";
+import PageSection from "../components/common/sections/PageSection";
+import FilterResetButton from "../components/common/filters/FilterResetButton";
+import { usePagination } from "../hooks/usePagination";
 
 export default function PartPage() {
   // 입력 상태
   const [keyword, setKeyword] = useState("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const {
+    page,
+    pageSize,
+    onChangePage,
+    onChangePageSize,
+    resetPage,
+  } = usePagination(1, 10);
 
   const { data: partData, fetchStatus: fetchStatus } = useQuery({
     queryKey: ["part-records", page, pageSize, appliedKeyword],
@@ -42,13 +43,13 @@ export default function PartPage() {
 
   const onSearch = () => {
     setAppliedKeyword(keyword.trim());
-    setPage(1);
+    resetPage();
   };
 
   const onReset = () => {
     setKeyword("");
     setAppliedKeyword("");
-    setPage(1);
+    resetPage();
   };
 
   const items = partData?.data.items ?? [];
@@ -61,46 +62,43 @@ export default function PartPage() {
         )
       : 0;
 
-  return (
-    <Layout>
-      <PageContainer>
-        <SummaryGrid>
-          <SummaryCard>
-            <SummaryLabel>총 재고 품목</SummaryLabel>
-            <SummaryValue>
-              {fetchStatus === "fetching"
-                ? "· · ·"
-                : totalItems.toLocaleString()}
-            </SummaryValue>
-            <SummaryNote>창고 전체 등록 품목 수</SummaryNote>
-          </SummaryCard>
-          <SummaryCard>
-            <SummaryLabel>안전재고 이하</SummaryLabel>
-            <SummaryValue>{lowStockCount.toLocaleString()}</SummaryValue>
-            <SummaryNote>보충 필요 품목 비중</SummaryNote>
-          </SummaryCard>
-          <SummaryCard>
-            <SummaryLabel>평균 보유 수량</SummaryLabel>
-            <SummaryValue>
-              {fetchStatus === "fetching" ? "· · ·" : avgQty.toLocaleString()}
-            </SummaryValue>
-            <SummaryNote>표본 기준 가용 재고</SummaryNote>
-          </SummaryCard>
-        </SummaryGrid>
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>재고 관리</SectionTitle>
-              <SectionCaption>
-                창고별 부품 재고 현황을 확인합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
+  const totalPages = Math.max(
+    1,
+    Math.ceil(totalItems / pageSize) || 1
+  );
 
+  return (
+    <Page>
+      <SummaryGrid>
+        <SummaryCard>
+          <SummaryLabel>총 재고 품목</SummaryLabel>
+          <SummaryValue>
+            {fetchStatus === "fetching"
+              ? "· · ·"
+              : totalItems.toLocaleString()}
+          </SummaryValue>
+          <SummaryNote>창고 전체 등록 품목 수</SummaryNote>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>안전재고 이하</SummaryLabel>
+          <SummaryValue>{lowStockCount.toLocaleString()}</SummaryValue>
+          <SummaryNote>보충 필요 품목 비중</SummaryNote>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>평균 보유 수량</SummaryLabel>
+          <SummaryValue>
+            {fetchStatus === "fetching" ? "· · ·" : avgQty.toLocaleString()}
+          </SummaryValue>
+          <SummaryNote>표본 기준 가용 재고</SummaryNote>
+        </SummaryCard>
+      </SummaryGrid>
+
+      <PageSection
+        title="재고 관리"
+        caption="창고별 부품 재고 현황을 확인합니다."
+        filters={
           <FilterGroup>
-            <Button variant="icon" onClick={onReset}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
+            <FilterResetButton onClick={onReset} />
             <SearchBox
               keyword={keyword}
               onKeywordChange={setKeyword}
@@ -109,35 +107,24 @@ export default function PartPage() {
               placeholder="창고 / 대리점 / 부품코드 / 부품명 검색"
             />
           </FilterGroup>
-
-          <PartTable rows={partData?.data.items ?? []} />
-
-          {/* 로딩 표시 */}
-          <div style={{ height: 18, marginTop: 8, marginBottom: 12 }}>
-            {fetchStatus === "fetching" && (
-              <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-            )}
-          </div>
-
+        }
+        isBusy={fetchStatus === "fetching"}
+        footer={
           <Pagination
             page={page}
-            totalPages={Math.ceil(
-              (partData?.data.total ?? 1) / (partData?.data.size ?? 10)
-            )}
-            onChange={setPage}
-            isBusy={fetchStatus === "fetching"}
-            totalItems={partData?.data.total ?? 0}
+            totalPages={totalPages}
+            onChange={onChangePage}
+            totalItems={totalItems}
             pageSize={pageSize}
-            onChangePageSize={(n) => {
-              setPageSize(n);
-              setPage(1);
-            }}
+            onChangePageSize={onChangePageSize}
             showSummary
             showPageSize
             align="center"
           />
-        </SectionCard>
-      </PageContainer>
-    </Layout>
+        }
+      >
+        <PartTable rows={items} />
+      </PageSection>
+    </Page>
   );
 }

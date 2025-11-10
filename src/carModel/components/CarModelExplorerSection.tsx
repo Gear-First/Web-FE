@@ -3,13 +3,8 @@ import styled from "styled-components";
 import Button from "../../components/common/Button";
 import SearchBox from "../../components/common/SearchBox";
 import Pagination from "../../components/common/Pagination";
-import resetIcon from "../../assets/reset.svg";
 import {
   FilterGroup,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
   Select,
   StatusBadge,
   Table,
@@ -27,6 +22,9 @@ import {
   type CarModelPartListParams,
 } from "../CarModelApi";
 import CarModelRegisterModal from "./CarModelRegisterModal";
+import PageSection from "../../components/common/sections/PageSection";
+import FilterResetButton from "../../components/common/filters/FilterResetButton";
+import { usePagination } from "../../hooks/usePagination";
 
 const MODEL_PAGE_SIZE = 8;
 const PART_PAGE_SIZE = 10;
@@ -41,8 +39,7 @@ export default function CarModelExplorerSection() {
     keyword: "",
     status: "all" as StatusFilter,
   });
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(MODEL_PAGE_SIZE);
+  const modelPagination = usePagination(1, MODEL_PAGE_SIZE);
   const [isCarModelRegisterModalOpen, setIsCarModelRegisterModalOpen] =
     useState(false);
 
@@ -55,11 +52,11 @@ export default function CarModelExplorerSection() {
           : applied.status === "true"
           ? true
           : false,
-      page,
-      pageSize,
+      page: modelPagination.page,
+      pageSize: modelPagination.pageSize,
       sort: "name,asc",
     }),
-    [applied, page, pageSize]
+    [applied, modelPagination.page, modelPagination.pageSize]
   );
 
   const { data, fetchStatus } = useCarModelSearch({
@@ -87,23 +84,22 @@ export default function CarModelExplorerSection() {
 
   const [partKeyword, setPartKeyword] = useState("");
   const [appliedPartKeyword, setAppliedPartKeyword] = useState("");
-  const [partPage, setPartPage] = useState(1);
-  const [partPageSize, setPartPageSize] = useState(PART_PAGE_SIZE);
+  const partPagination = usePagination(1, PART_PAGE_SIZE);
 
   useEffect(() => {
     setPartKeyword("");
     setAppliedPartKeyword("");
-    setPartPage(1);
+    partPagination.resetPage();
   }, [selected?.id]);
 
   const partParams = useMemo<CarModelPartListParams>(
     () => ({
       name: appliedPartKeyword || undefined,
-      page: partPage,
-      pageSize: partPageSize,
+      page: partPagination.page,
+      pageSize: partPagination.pageSize,
       sort: "name,asc",
     }),
-    [appliedPartKeyword, partPage, partPageSize]
+    [appliedPartKeyword, partPagination.page, partPagination.pageSize]
   );
 
   const partQueryKey = useMemo(
@@ -126,25 +122,25 @@ export default function CarModelExplorerSection() {
 
   const onSearch = () => {
     setApplied({ keyword: keyword.trim(), status });
-    setPage(1);
+    modelPagination.resetPage();
   };
 
   const onReset = () => {
     setKeyword("");
     setStatus("all");
     setApplied({ keyword: "", status: "all" });
-    setPage(1);
+    modelPagination.resetPage();
   };
 
   const onSearchParts = () => {
     setAppliedPartKeyword(partKeyword.trim());
-    setPartPage(1);
+    partPagination.resetPage();
   };
 
   const onResetParts = () => {
     setPartKeyword("");
     setAppliedPartKeyword("");
-    setPartPage(1);
+    partPagination.resetPage();
   };
 
   const toggleModelMut = useMutation({
@@ -190,62 +186,53 @@ export default function CarModelExplorerSection() {
 
   return (
     <>
-      <SectionCard>
-        <SectionHeader>
-          <div>
-            <SectionTitle>차량 모델별 적용 현황</SectionTitle>
-            <SectionCaption>
-              좌측에서 모델을 선택하면 우측에서 적용된 부품 목록을 확인할 수
-              있습니다.
-            </SectionCaption>
-          </div>
-        </SectionHeader>
-
+      <PageSection
+        title="차량 모델별 적용 현황"
+        caption="좌측에서 모델을 선택하면 우측에서 적용된 부품 목록을 확인할 수 있습니다."
+        filters={
+          <>
+            <FilterResetButton onClick={onReset} />
+            <Select
+              value={status}
+              onChange={(e) => {
+                const value = e.target.value as StatusFilter;
+                setStatus(value);
+                setApplied((prev) => ({ ...prev, status: value }));
+                modelPagination.resetPage();
+              }}
+              style={{ minWidth: 120 }}
+            >
+              <option value="all">전체</option>
+              <option value="true">활성</option>
+              <option value="false">중지</option>
+            </Select>
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              placeholder="모델명 검색"
+              width="200px"
+            />
+            <Button
+              color="black"
+              onClick={() => setIsCarModelRegisterModalOpen(true)}
+            >
+              차량 모델 등록
+            </Button>
+          </>
+        }
+        isBusy={
+          isFetching ||
+          partFetching ||
+          toggleModelMut.isPending ||
+          createCarModelMut.isPending
+        }
+        minHeight={520}
+      >
         <ExplorerGrid>
           <Pane>
             <PaneHeader>
-              <div
-                style={{
-                  width: "100%",
-                  display: "flex",
-                  justifyContent: "space-between",
-                }}
-              >
-                <PaneTitle>차량 모델 목록</PaneTitle>
-                <Button
-                  color="black"
-                  onClick={() => setIsCarModelRegisterModalOpen(true)}
-                >
-                  차량 모델 등록
-                </Button>
-              </div>
-              <FilterGroup style={{ margin: "0" }}>
-                <Button variant="icon" onClick={onReset} aria-label="초기화">
-                  <img src={resetIcon} width={18} height={18} alt="초기화" />
-                </Button>
-                <Select
-                  value={status}
-                  onChange={(e) => {
-                    const value = e.target.value as StatusFilter;
-                    setStatus(value);
-                    setApplied((prev) => ({ ...prev, status: value }));
-                    setPage(1);
-                  }}
-                  style={{ minWidth: "10px", width: "100px" }}
-                >
-                  <option value="all">전체</option>
-                  <option value="true">활성</option>
-                  <option value="false">중지</option>
-                </Select>
-
-                <SearchBox
-                  keyword={keyword}
-                  onKeywordChange={setKeyword}
-                  onSearch={onSearch}
-                  placeholder="모델명 검색"
-                  width="150px"
-                />
-              </FilterGroup>
+              <PaneTitle>차량 모델 목록</PaneTitle>
             </PaneHeader>
 
             <CenteredTable>
@@ -273,7 +260,7 @@ export default function CarModelExplorerSection() {
                       $active={selected?.id === model.id}
                       onClick={() => {
                         setSelected(model);
-                        setPartPage(1);
+                        partPagination.resetPage();
                       }}
                     >
                       <Td>{model.id}</Td>
@@ -305,16 +292,12 @@ export default function CarModelExplorerSection() {
             </CenteredTable>
 
             <Pagination
-              page={page}
+              page={modelPagination.page}
               totalPages={Math.max(1, totalPages)}
-              onChange={setPage}
-              isBusy={isFetching}
+              onChange={modelPagination.onChangePage}
               totalItems={total}
-              pageSize={pageSize}
-              onChangePageSize={(n) => {
-                setPageSize(n);
-                setPage(1);
-              }}
+              pageSize={modelPagination.pageSize}
+              onChangePageSize={modelPagination.onChangePageSize}
               pageSizeOptions={[6, 8, 10]}
               align="center"
               dense
@@ -334,18 +317,7 @@ export default function CarModelExplorerSection() {
                   <FilterGroup
                     style={{ justifyContent: "flex-end", marginBottom: 0 }}
                   >
-                    <Button
-                      variant="icon"
-                      onClick={onResetParts}
-                      aria-label="초기화"
-                    >
-                      <img
-                        src={resetIcon}
-                        width={18}
-                        height={18}
-                        alt="초기화"
-                      />
-                    </Button>
+                    <FilterResetButton onClick={onResetParts} />
                     <SearchBox
                       keyword={partKeyword}
                       onKeywordChange={setPartKeyword}
@@ -386,16 +358,12 @@ export default function CarModelExplorerSection() {
                 </CenteredTable>
 
                 <Pagination
-                  page={partPage}
+                  page={partPagination.page}
                   totalPages={Math.max(1, partTotalPages)}
-                  onChange={setPartPage}
-                  isBusy={partFetching}
+                  onChange={partPagination.onChangePage}
                   totalItems={partTotal}
-                  pageSize={partPageSize}
-                  onChangePageSize={(n) => {
-                    setPartPageSize(n);
-                    setPartPage(1);
-                  }}
+                  pageSize={partPagination.pageSize}
+                  onChangePageSize={partPagination.onChangePageSize}
                   pageSizeOptions={[10, 20, 50]}
                   align="center"
                   dense
@@ -406,7 +374,7 @@ export default function CarModelExplorerSection() {
             )}
           </Pane>
         </ExplorerGrid>
-      </SectionCard>
+      </PageSection>
       <CarModelRegisterModal
         isOpen={isCarModelRegisterModalOpen}
         onClose={() => setIsCarModelRegisterModalOpen(false)}

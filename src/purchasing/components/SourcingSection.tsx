@@ -1,9 +1,3 @@
-import {
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
-  SectionCaption,
-} from "../../components/common/PageLayout";
 import { useState } from "react";
 import VendorQuotesTable from "./VendorQuotesTable";
 import BasketTable from "./BasketTable";
@@ -19,6 +13,7 @@ import Button from "../../components/common/Button";
 import MaterialSearchModal from "../../bom/components/MaterialSearchModal";
 import { useQueryClient } from "@tanstack/react-query";
 import SingleDatePicker from "../../components/common/SingleDatePicker";
+import PageSection from "../../components/common/sections/PageSection";
 
 const FormContainer = styled.div`
   display: flex;
@@ -84,6 +79,7 @@ export default function SourcingSection() {
   const [vendorCandidates, setVendorCandidates] = useState<
     VendorQuoteWithSelected[]
   >([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = async () => {
     const dateToUse = tempDate; // 임시 날짜를 지역 변수에 저장
@@ -98,6 +94,7 @@ export default function SourcingSection() {
       return;
     }
     try {
+      setIsSearching(true);
       // YYYY-MM-DD → YYYYMMDD로 변환
       const formattedDate = needDate.replaceAll("-", "");
 
@@ -121,6 +118,8 @@ export default function SourcingSection() {
     } catch (err) {
       console.error(err);
       alert("업체 조회 중 오류가 발생했습니다.");
+    } finally {
+      setIsSearching(false);
     }
   };
 
@@ -209,16 +208,12 @@ export default function SourcingSection() {
   }));
 
   return (
-    <SectionCard>
-      <SectionHeader>
-        <div>
-          <SectionTitle>공급업체 선정</SectionTitle>
-          <SectionCaption>
-            자재 입력 → 공급업체 선택 → 장바구니 → PO 생성
-          </SectionCaption>
-        </div>
-      </SectionHeader>
-
+    <PageSection
+      title="공급업체 선정"
+      caption="자재 입력 → 공급업체 선택 → 장바구니 → PO 생성"
+      isBusy={isSearching}
+      minHeight={320}
+    >
       <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: 16 }}>
         {/* 왼쪽: 자재 입력 */}
         <FormContainer>
@@ -296,6 +291,6 @@ export default function SourcingSection() {
           setSearchModalOpen(false);
         }}
       />
-    </SectionCard>
+    </PageSection>
   );
 }

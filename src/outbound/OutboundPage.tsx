@@ -1,11 +1,5 @@
-import Layout from "../components/common/Layout";
+import Page from "../components/common/Page";
 import {
-  PageContainer,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
-  SectionCaption,
-  FilterGroup,
   SummaryGrid,
   SummaryCard,
   SummaryLabel,
@@ -19,13 +13,14 @@ import {
   fetchOutboundNotDoneRecords,
   fetchOutboundDoneRecords,
 } from "./OutboundApi";
-import resetIcon from "../assets/reset.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
-import Button from "../components/common/Button";
 import Pagination from "../components/common/Pagination";
 import OutboundTable from "./components/OutboundTable";
 import type { OutboundStatus } from "./OutboundTypes";
+import PageSection from "../components/common/sections/PageSection";
+import FilterResetButton from "../components/common/filters/FilterResetButton";
+import { usePagination } from "../hooks/usePagination";
 
 export default function OutboundPage() {
   // 출고 예정 (미완료) 상태
@@ -41,23 +36,27 @@ export default function OutboundPage() {
     dateFrom: null as string | null,
     dateTo: null as string | null,
   });
-  const [pagePending, setPagePending] = useState(1);
-  const [pageSizePending, setPageSizePending] = useState(10);
+  const pendingPagination = usePagination(1, 10);
 
   const { data: notDoneData, isLoading: isPendingLoading } = useQuery({
     queryKey: [
       ...outboundKeys.notDoneRecords,
-      { appliedPending, pagePending, pageSizePending },
+      {
+        appliedPending,
+        page: pendingPagination.page,
+        pageSize: pendingPagination.pageSize,
+      },
     ],
     queryFn: () =>
       fetchOutboundNotDoneRecords({
         dateFrom: appliedPending.dateFrom,
         dateTo: appliedPending.dateTo,
         q: appliedPending.keyword || undefined,
-        page: pagePending,
-        pageSize: pageSizePending,
+        page: pendingPagination.page,
+        pageSize: pendingPagination.pageSize,
       }),
     staleTime: 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
   const pendingRecords = notDoneData?.data ?? [];
@@ -70,7 +69,7 @@ export default function OutboundPage() {
       dateFrom: pendingStartDate || null,
       dateTo: pendingEndDate || null,
     });
-    setPagePending(1);
+    pendingPagination.resetPage();
   };
 
   const onResetPending = () => {
@@ -84,7 +83,7 @@ export default function OutboundPage() {
       dateFrom: null,
       dateTo: null,
     });
-    setPagePending(1);
+    pendingPagination.resetPage();
   };
 
   // 출고 완료 상태
@@ -100,23 +99,27 @@ export default function OutboundPage() {
     dateFrom: null as string | null,
     dateTo: null as string | null,
   });
-  const [pageDone, setPageDone] = useState(1);
-  const [pageSizeDone, setPageSizeDone] = useState(10);
+  const donePagination = usePagination(1, 10);
 
   const { data: doneData, isLoading: isDoneLoading } = useQuery({
     queryKey: [
       ...outboundKeys.doneRecords,
-      { appliedDone, pageDone, pageSizeDone },
+      {
+        appliedDone,
+        page: donePagination.page,
+        pageSize: donePagination.pageSize,
+      },
     ],
     queryFn: () =>
       fetchOutboundDoneRecords({
         dateFrom: appliedDone.dateFrom,
         dateTo: appliedDone.dateTo,
         q: appliedDone.keyword || undefined,
-        page: pageDone,
-        pageSize: pageSizeDone,
+        page: donePagination.page,
+        pageSize: donePagination.pageSize,
       }),
     staleTime: 60 * 1000,
+    placeholderData: (prev) => prev,
   });
 
   const doneRecords = doneData?.data ?? [];
@@ -149,7 +152,7 @@ export default function OutboundPage() {
       dateFrom: doneStartDate || null,
       dateTo: doneEndDate || null,
     });
-    setPageDone(1);
+    donePagination.resetPage();
   };
 
   const onResetDone = () => {
@@ -163,46 +166,37 @@ export default function OutboundPage() {
       dateFrom: null,
       dateTo: null,
     });
-    setPageDone(1);
+    donePagination.resetPage();
   };
 
   return (
-    <Layout>
-      <PageContainer>
-        <SummaryGrid>
-          <SummaryCard>
-            <SummaryLabel>출고 대기</SummaryLabel>
-            <SummaryValue>{pendingTotal.toLocaleString()}건</SummaryValue>
-            <SummaryNote>대기 수량 {backlogQty.toLocaleString()}ea</SummaryNote>
-          </SummaryCard>
-          <SummaryCard>
-            <SummaryLabel>출고 완료</SummaryLabel>
-            <SummaryValue>{doneTotal.toLocaleString()}건</SummaryValue>
-            <SummaryNote>완료율 {completionRate}%</SummaryNote>
-          </SummaryCard>
-          <SummaryCard>
-            <SummaryLabel>지연 + 평균 품목</SummaryLabel>
-            <SummaryValue>
-              {delayedCount.toLocaleString()} / {avgKindsDone.toLocaleString()}
-            </SummaryValue>
-            <SummaryNote>지연 건수 / 평균 품목 종류</SummaryNote>
-          </SummaryCard>
-        </SummaryGrid>
-        {/* 출고 예정 섹션 */}
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>출고 예정</SectionTitle>
-              <SectionCaption>
-                대기 및 진행중 상태의 출고 요청을 조회합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
+    <Page>
+      <SummaryGrid>
+        <SummaryCard>
+          <SummaryLabel>출고 대기</SummaryLabel>
+          <SummaryValue>{pendingTotal.toLocaleString()}건</SummaryValue>
+          <SummaryNote>대기 수량 {backlogQty.toLocaleString()}ea</SummaryNote>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>출고 완료</SummaryLabel>
+          <SummaryValue>{doneTotal.toLocaleString()}건</SummaryValue>
+          <SummaryNote>완료율 {completionRate}%</SummaryNote>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>지연 + 평균 품목</SummaryLabel>
+          <SummaryValue>
+            {delayedCount.toLocaleString()} / {avgKindsDone.toLocaleString()}
+          </SummaryValue>
+          <SummaryNote>지연 건수 / 평균 품목 종류</SummaryNote>
+        </SummaryCard>
+      </SummaryGrid>
 
-          <FilterGroup>
-            <Button variant="icon" onClick={onResetPending}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
+      <PageSection
+        title="출고 예정"
+        caption="대기 및 진행중 상태의 출고 요청을 조회합니다."
+        filters={
+          <>
+            <FilterResetButton onClick={onResetPending} />
             <DateRange
               startDate={pendingStartDate}
               endDate={pendingEndDate}
@@ -216,41 +210,34 @@ export default function OutboundPage() {
               onReset={onResetPending}
               placeholder="출고번호 / 대리점 / 창고 검색"
             />
-          </FilterGroup>
-
-          <OutboundTable rows={pendingRecords} variant="pending" />
+          </>
+        }
+        isBusy={isPendingLoading}
+        minHeight={260}
+        footer={
           <Pagination
-            page={pagePending}
+            page={pendingPagination.page}
             totalPages={pendingMeta.totalPages}
             totalItems={pendingMeta.total}
-            onChange={setPagePending}
+            onChange={pendingPagination.onChangePage}
             isBusy={isPendingLoading}
-            pageSize={pageSizePending}
-            onChangePageSize={(n) => {
-              setPageSizePending(n);
-              setPagePending(1);
-            }}
+            pageSize={pendingPagination.pageSize}
+            onChangePageSize={pendingPagination.onChangePageSize}
             showSummary
             showPageSize
             align="center"
           />
-        </SectionCard>
+        }
+      >
+        <OutboundTable rows={pendingRecords} variant="pending" />
+      </PageSection>
 
-        {/* 출고 완료 섹션 */}
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>출고 완료</SectionTitle>
-              <SectionCaption>
-                완료 및 지연 상태의 출고 요청을 조회합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
-
-          <FilterGroup>
-            <Button variant="icon" onClick={onResetDone}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
+      <PageSection
+        title="출고 완료"
+        caption="완료 및 지연 상태의 출고 요청을 조회합니다."
+        filters={
+          <>
+            <FilterResetButton onClick={onResetDone} />
             <DateRange
               startDate={doneStartDate}
               endDate={doneEndDate}
@@ -264,26 +251,27 @@ export default function OutboundPage() {
               onReset={onResetDone}
               placeholder="출고번호 / 대리점 / 창고 검색"
             />
-          </FilterGroup>
-
-          <OutboundTable rows={doneRecords} variant="done" />
+          </>
+        }
+        isBusy={isDoneLoading}
+        minHeight={260}
+        footer={
           <Pagination
-            page={pageDone}
+            page={donePagination.page}
             totalPages={doneMeta.totalPages}
             totalItems={doneMeta.total}
-            onChange={setPageDone}
+            onChange={donePagination.onChangePage}
             isBusy={isDoneLoading}
-            pageSize={pageSizeDone}
-            onChangePageSize={(n) => {
-              setPageSizeDone(n);
-              setPageDone(1);
-            }}
+            pageSize={donePagination.pageSize}
+            onChangePageSize={donePagination.onChangePageSize}
             showSummary
             showPageSize
             align="center"
           />
-        </SectionCard>
-      </PageContainer>
-    </Layout>
+        }
+      >
+        <OutboundTable rows={doneRecords} variant="done" />
+      </PageSection>
+    </Page>
   );
 }

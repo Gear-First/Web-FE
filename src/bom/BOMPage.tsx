@@ -1,14 +1,6 @@
 import { useCallback, useMemo, useState } from "react";
-import Layout from "../components/common/Layout";
-import {
-  FilterGroup,
-  PageContainer,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
-  Select,
-} from "../components/common/PageLayout";
+import Page from "../components/common/Page";
+import { Select } from "../components/common/PageLayout";
 import {
   toBOMCreatePayload,
   type BOMCreateDTO,
@@ -27,11 +19,13 @@ import Button from "../components/common/Button";
 import BOMRegisterModal, {
   type AddMaterialsPayload,
 } from "./components/BOMRegisterModal";
-import resetIcon from "../assets/reset.svg";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
 import Pagination from "../components/common/Pagination";
 import type { ListResponse } from "../api";
+import PageSection from "../components/common/sections/PageSection";
+import FilterResetButton from "../components/common/filters/FilterResetButton";
+import { usePagination } from "../hooks/usePagination";
 
 type CateFilter = string | "ALL";
 
@@ -59,8 +53,13 @@ export default function BOMPage() {
   });
 
   // 페이지네이션 (화면 1-based)
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const {
+    page,
+    pageSize,
+    onChangePage,
+    onChangePageSize,
+    resetPage,
+  } = usePagination(1, 10);
 
   // 등록 모달
   const [isRegOpen, setIsRegOpen] = useState(false);
@@ -116,26 +115,21 @@ export default function BOMPage() {
       startDate: startDate || null,
       endDate: endDate || null,
     });
-    setPage(1);
-  }, [keyword, startDate, endDate]);
+    resetPage();
+  }, [keyword, startDate, endDate, resetPage]);
 
   const onReset = useCallback(() => {
     setKeyword("");
     setStartDate("");
     setEndDate("");
     setCate("ALL");
-    setPage(1);
+    resetPage();
     setApplied({ keyword: "", startDate: null, endDate: null });
-  }, []);
+  }, [resetPage]);
 
   const onChangeCate = useCallback((next: CateFilter) => {
     setCate(next);
-    setPage(1);
-  }, []);
-
-  const onChangePageSize = useCallback((n: number) => {
-    setPageSize(n);
-    setPage(1);
+    resetPage();
   }, []);
 
   // 생성
@@ -152,35 +146,28 @@ export default function BOMPage() {
 
   return (
     <>
-      <Layout>
-        <PageContainer>
-          <SectionCard>
-            {/* 상단 제목 */}
-            <SectionHeader>
-              <div>
-                <SectionTitle>BOM</SectionTitle>
-                <SectionCaption>
-                  자재 소요량 산출 및 계획을 관리합니다.
-                </SectionCaption>
-              </div>
-              <Button
-                onClick={() => {
-                  setRegMode("create");
-                  setInitialForEdit(null);
-                  setIsRegOpen(true);
-                }}
-              >
-                BOM +
-              </Button>
-            </SectionHeader>
-
-            <FilterGroup>
-              <Button variant="icon" onClick={onReset} aria-label="초기화">
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
+      <Page>
+        <PageSection
+          title="BOM"
+          caption="자재 소요량 산출 및 계획을 관리합니다."
+          actions={
+            <Button
+              onClick={() => {
+                setRegMode("create");
+                setInitialForEdit(null);
+                setIsRegOpen(true);
+              }}
+            >
+              BOM +
+            </Button>
+          }
+          filters={
+            <>
+              <FilterResetButton onClick={onReset} />
               <Select
                 value={cate}
                 onChange={(e) => onChangeCate(e.target.value as CateFilter)}
+                style={{ minWidth: 180 }}
               >
                 {CATE_OPTIONS.map((opt) => (
                   <option key={opt} value={opt}>
@@ -188,16 +175,12 @@ export default function BOMPage() {
                   </option>
                 ))}
               </Select>
-
-              {/* 날짜 범위 */}
               <DateRange
                 startDate={startDate}
                 endDate={endDate}
                 onStartDateChange={setStartDate}
                 onEndDateChange={setEndDate}
               />
-
-              {/* 검색어 */}
               <SearchBox
                 keyword={keyword}
                 onKeywordChange={setKeyword}
@@ -205,35 +188,14 @@ export default function BOMPage() {
                 onReset={onReset}
                 placeholder="부품코드 / 부품명 검색"
               />
-            </FilterGroup>
-
-            {/* 테이블 */}
-            <BOMTable rows={records} />
-
-            {/* 하단 상태/총건수 */}
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                margin: "8px 0 12px",
-              }}
-            >
-              <div style={{ height: 18 }}>
-                {isFetching && (
-                  <span style={{ fontSize: 12, color: "#6b7280" }}>
-                    로딩중…
-                  </span>
-                )}
-              </div>
-            </div>
-
-            {/* 페이지네이션 */}
+            </>
+          }
+          isBusy={isFetching}
+          footer={
             <Pagination
               page={page}
               totalPages={Math.max(1, totalPages)}
-              onChange={setPage}
-              isBusy={isFetching}
+              onChange={onChangePage}
               maxButtons={5}
               totalItems={total}
               pageSize={pageSize}
@@ -245,10 +207,11 @@ export default function BOMPage() {
               dense={false}
               sticky={false}
             />
-          </SectionCard>
-        </PageContainer>
-      </Layout>
-
+          }
+        >
+          <BOMTable rows={records} />
+        </PageSection>
+      </Page>
       <BOMRegisterModal
         isOpen={isRegOpen}
         onClose={() => setIsRegOpen(false)}

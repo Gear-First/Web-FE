@@ -1,13 +1,6 @@
 import { useState } from "react";
-import styled, { keyframes } from "styled-components";
-import Layout from "../components/common/Layout";
+import Page from "../components/common/Page";
 import {
-  FilterGroup,
-  PageContainer,
-  SectionCaption,
-  SectionCard,
-  SectionHeader,
-  SectionTitle,
   SummaryGrid,
   SummaryCard,
   SummaryLabel,
@@ -24,9 +17,10 @@ import {
 import InboundTable from "./components/InboundTable";
 import SearchBox from "../components/common/SearchBox";
 import DateRange from "../components/common/DateRange";
-import Button from "../components/common/Button";
-import resetIcon from "../assets/reset.svg";
 import Pagination from "../components/common/Pagination";
+import PageSection from "../components/common/sections/PageSection";
+import FilterResetButton from "../components/common/filters/FilterResetButton";
+import { usePagination } from "../hooks/usePagination";
 
 type AppliedFilters = {
   keyword: string;
@@ -60,10 +54,8 @@ export default function InboundPage() {
   });
 
   // 섹션별 페이지네이션
-  const [pageNotDone, setPageNotDone] = useState(1);
-  const [pageDone, setPageDone] = useState(1);
-  const [pageSizeNotDone, setPageSizeNotDone] = useState(10);
-  const [pageSizeDone, setPageSizeDone] = useState(10);
+  const pendingPagination = usePagination(1, 10);
+  const donePagination = usePagination(1, 10);
 
   const buildParams = (
     appliedFilters: AppliedFilters,
@@ -80,8 +72,8 @@ export default function InboundPage() {
   // 입고 예정(Not Done)
   const paramsNotDone = buildParams(
     appliedNotDone,
-    pageNotDone,
-    pageSizeNotDone
+    pendingPagination.page,
+    pendingPagination.pageSize
   );
   const { data: dataNotDone, fetchStatus: fetchStatusNotDone } = useQuery<
     ListResponse<InboundRecord[]>,
@@ -94,7 +86,11 @@ export default function InboundPage() {
   });
 
   // 입고 완료(Done)
-  const paramsDone = buildParams(appliedDone, pageDone, pageSizeDone);
+  const paramsDone = buildParams(
+    appliedDone,
+    donePagination.page,
+    donePagination.pageSize
+  );
   const { data: dataDone, fetchStatus: fetchStatusDone } = useQuery<
     ListResponse<InboundRecord[]>,
     Error
@@ -137,7 +133,7 @@ export default function InboundPage() {
       dateFrom: startNotDone || null,
       dateTo: endNotDone || null,
     });
-    setPageNotDone(1);
+    pendingPagination.resetPage();
   };
 
   const onResetNotDone = () => {
@@ -145,7 +141,7 @@ export default function InboundPage() {
     setStartNotDone("");
     setEndNotDone("");
     setAppliedNotDone({ keyword: "", dateFrom: null, dateTo: null });
-    setPageNotDone(1);
+    pendingPagination.resetPage();
   };
 
   const onSearchDone = () => {
@@ -154,7 +150,7 @@ export default function InboundPage() {
       dateFrom: startDone || null,
       dateTo: endDone || null,
     });
-    setPageDone(1);
+    donePagination.resetPage();
   };
 
   const onResetDone = () => {
@@ -162,46 +158,37 @@ export default function InboundPage() {
     setStartDone("");
     setEndDone("");
     setAppliedDone({ keyword: "", dateFrom: null, dateTo: null });
-    setPageDone(1);
+    donePagination.resetPage();
   };
 
   return (
-    <Layout>
-      <PageContainer>
-        <SummaryGrid>
-          <SummaryCard>
-            <SummaryLabel>입고 예정</SummaryLabel>
-            <SummaryValue>{totalNotDone.toLocaleString()}건</SummaryValue>
-            <SummaryNote>
-              대기 중 수량 {backlogQty.toLocaleString()}ea
-            </SummaryNote>
-          </SummaryCard>
-          <SummaryCard>
-            <SummaryLabel>입고 완료</SummaryLabel>
-            <SummaryValue>{totalDone.toLocaleString()}건</SummaryValue>
-            <SummaryNote>처리율 {completionRate}%</SummaryNote>
-          </SummaryCard>
-          <SummaryCard>
-            <SummaryLabel>평균 품목 종류</SummaryLabel>
-            <SummaryValue>{avgKindsDone.toLocaleString()}개</SummaryValue>
-            <SummaryNote>완료 건 기준</SummaryNote>
-          </SummaryCard>
-        </SummaryGrid>
-        {/* 입고 예정 섹션 */}
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>입고 예정</SectionTitle>
-              <SectionCaption>
-                입고예정 자재의 검수 상태와 보관 위치를 확인합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
+    <Page>
+      <SummaryGrid>
+        <SummaryCard>
+          <SummaryLabel>입고 예정</SummaryLabel>
+          <SummaryValue>{totalNotDone.toLocaleString()}건</SummaryValue>
+          <SummaryNote>
+            대기 중 수량 {backlogQty.toLocaleString()}ea
+          </SummaryNote>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>입고 완료</SummaryLabel>
+          <SummaryValue>{totalDone.toLocaleString()}건</SummaryValue>
+          <SummaryNote>처리율 {completionRate}%</SummaryNote>
+        </SummaryCard>
+        <SummaryCard>
+          <SummaryLabel>평균 품목 종류</SummaryLabel>
+          <SummaryValue>{avgKindsDone.toLocaleString()}개</SummaryValue>
+          <SummaryNote>완료 건 기준</SummaryNote>
+        </SummaryCard>
+      </SummaryGrid>
 
-          <FilterGroup>
-            <Button variant="icon" onClick={onResetNotDone}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
+      <PageSection
+        title="입고 예정"
+        caption="입고예정 자재의 검수 상태와 보관 위치를 확인합니다."
+        filters={
+          <>
+            <FilterResetButton onClick={onResetNotDone} />
             <DateRange
               startDate={startNotDone}
               endDate={endNotDone}
@@ -215,52 +202,36 @@ export default function InboundPage() {
               onReset={onResetNotDone}
               placeholder="입고번호 / 입고대상 / 공급업체 검색"
             />
-          </FilterGroup>
+          </>
+        }
+        isBusy={isFetchingNotDone}
+        minHeight={260}
+        footer={
+          <Pagination
+            page={pendingPagination.page}
+            totalPages={Math.max(1, totalPagesNotDone)}
+            onChange={pendingPagination.onChangePage}
+            isBusy={isFetchingNotDone}
+            maxButtons={5}
+            totalItems={totalNotDone}
+            pageSize={pendingPagination.pageSize}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={pendingPagination.onChangePageSize}
+            showSummary
+            showPageSize
+            align="center"
+          />
+        }
+      >
+        <InboundTable rows={recordsNotDone} variant="pending" />
+      </PageSection>
 
-          <SectionContent>
-            <InboundTable rows={recordsNotDone} variant="pending" />
-
-            <Pagination
-              page={pageNotDone}
-              totalPages={Math.max(1, totalPagesNotDone)}
-              onChange={(next) => setPageNotDone(next)}
-              isBusy={isFetchingNotDone}
-              maxButtons={5}
-              totalItems={totalNotDone}
-              pageSize={pageSizeNotDone}
-              pageSizeOptions={[10, 20, 50, 100]}
-              onChangePageSize={(n) => {
-                setPageSizeNotDone(n);
-                setPageNotDone(1);
-              }}
-              showSummary
-              showPageSize
-              align="center"
-              dense={false}
-              sticky={false}
-            />
-
-            {isFetchingNotDone ? (
-              <LoadingOverlay label="데이터를 불러오는 중입니다..." />
-            ) : null}
-          </SectionContent>
-        </SectionCard>
-
-        {/* 입고 완료 섹션 */}
-        <SectionCard>
-          <SectionHeader>
-            <div>
-              <SectionTitle>입고 완료</SectionTitle>
-              <SectionCaption>
-                입고된 자재의 검수 상태와 보관 위치를 확인합니다.
-              </SectionCaption>
-            </div>
-          </SectionHeader>
-
-          <FilterGroup>
-            <Button variant="icon" onClick={onResetDone}>
-              <img src={resetIcon} width={18} height={18} alt="초기화" />
-            </Button>
+      <PageSection
+        title="입고 완료"
+        caption="입고된 자재의 검수 상태와 보관 위치를 확인합니다."
+        filters={
+          <>
+            <FilterResetButton onClick={onResetDone} />
             <DateRange
               startDate={startDone}
               endDate={endDone}
@@ -274,91 +245,29 @@ export default function InboundPage() {
               onReset={onResetDone}
               placeholder="입고번호 / 입고대상 / 공급업체 검색"
             />
-          </FilterGroup>
-
-          <SectionContent>
-            <InboundTable rows={recordsDone} variant="done" />
-
-            <Pagination
-              page={pageDone}
-              totalPages={Math.max(1, totalPagesDone)}
-              onChange={(next) => setPageDone(next)}
-              isBusy={isFetchingDone}
-              maxButtons={5}
-              totalItems={totalDone}
-              pageSize={pageSizeDone}
-              pageSizeOptions={[10, 20, 50, 100]}
-              onChangePageSize={(n) => {
-                setPageSizeDone(n);
-                setPageDone(1);
-              }}
-              showSummary
-              showPageSize
-              align="center"
-              dense={false}
-              sticky={false}
-            />
-
-            {isFetchingDone ? (
-              <LoadingOverlay label="데이터를 불러오는 중입니다..." />
-            ) : null}
-          </SectionContent>
-        </SectionCard>
-      </PageContainer>
-    </Layout>
-  );
-}
-
-const SectionContent = styled.div`
-  position: relative;
-  min-height: 240px;
-  padding-bottom: 12px;
-`;
-
-const spin = keyframes`
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-`;
-
-const Overlay = styled.div`
-  position: absolute;
-  inset: 0;
-  background: rgba(255, 255, 255, 0.85);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  border-radius: 18px;
-  z-index: 10;
-  text-align: center;
-  padding: 24px;
-`;
-
-const Spinner = styled.div`
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
-  border: 3px solid rgba(37, 99, 235, 0.2);
-  border-top-color: #2563eb;
-  animation: ${spin} 0.85s linear infinite;
-`;
-
-const OverlayText = styled.p`
-  margin: 0;
-  font-size: 0.95rem;
-  color: #4b5563;
-`;
-
-function LoadingOverlay({ label }: { label: string }) {
-  return (
-    <Overlay role="status" aria-live="polite">
-      <Spinner />
-      <OverlayText>{label}</OverlayText>
-    </Overlay>
+          </>
+        }
+        isBusy={isFetchingDone}
+        minHeight={260}
+        footer={
+          <Pagination
+            page={donePagination.page}
+            totalPages={Math.max(1, totalPagesDone)}
+            onChange={donePagination.onChangePage}
+            isBusy={isFetchingDone}
+            maxButtons={5}
+            totalItems={totalDone}
+            pageSize={donePagination.pageSize}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={donePagination.onChangePageSize}
+            showSummary
+            showPageSize
+            align="center"
+          />
+        }
+      >
+        <InboundTable rows={recordsDone} variant="done" />
+      </PageSection>
+    </Page>
   );
 }
