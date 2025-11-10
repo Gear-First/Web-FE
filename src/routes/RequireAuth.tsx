@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { refreshAccessToken } from "../auth/api/refreshToken";
+import { syncUserProfileFromToken } from "../auth/utils/userProfile";
 
 type AuthStatus = "checking" | "authorized" | "unauthorized";
 
@@ -11,6 +12,7 @@ export default function RequireAuth() {
   useEffect(() => {
     const token = sessionStorage.getItem("access_token");
     if (token) {
+      syncUserProfileFromToken(token);
       setStatus("authorized");
       return;
     }

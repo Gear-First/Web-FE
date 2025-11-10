@@ -224,7 +224,7 @@ export const StyledTextarea = styled.textarea`
 export const Footer = styled.div`
   padding: 1.4rem 2.1rem 1.8rem;
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   gap: 0.75rem;
 `;
 

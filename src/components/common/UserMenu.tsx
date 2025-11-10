@@ -1,7 +1,17 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import {
+  useState,
+  useRef,
+  useEffect,
+  useCallback,
+  useSyncExternalStore,
+} from "react";
 import styled, { keyframes } from "styled-components";
 import Button from "./Button";
 import { logout } from "../../auth/api/logout";
+import {
+  getUserProfile,
+  subscribeToUserProfile,
+} from "../../auth/store/userStore";
 import { useNavigate } from "react-router-dom";
 
 type Props = {
@@ -12,6 +22,13 @@ type Props = {
 export default function UserMenu({ displayName = "사용자", email }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const profile = useSyncExternalStore(
+    subscribeToUserProfile,
+    getUserProfile,
+    getUserProfile
+  );
+
+  const effectiveName = profile?.name ?? displayName;
   const navigate = useNavigate();
 
   const close = useCallback(() => setOpen(false), []);
@@ -44,7 +61,7 @@ export default function UserMenu({ displayName = "사용자", email }: Props) {
     if (confirm("로그아웃하시겠습니까?")) await logout();
   };
 
-  const initials = getInitials(displayName);
+  const initials = getInitials(effectiveName);
 
   return (
     <Wrapper ref={menuRef}>
@@ -55,7 +72,7 @@ export default function UserMenu({ displayName = "사용자", email }: Props) {
         onClick={() => setOpen((v) => !v)}
       >
         <Avatar aria-hidden>{initials}</Avatar>
-        <Name>{displayName}</Name>
+        <Name>{effectiveName}</Name>
         <Caret $open={open} viewBox="0 0 24 24" aria-hidden>
           <path
             d="M6 9l6 6 6-6"
@@ -73,8 +90,7 @@ export default function UserMenu({ displayName = "사용자", email }: Props) {
           <MenuHeader>
             <HeaderAvatar>{initials}</HeaderAvatar>
             <HeaderInfo>
-              <strong>{displayName}</strong>
-              {email ? <small>{email}</small> : null}
+              <strong>{effectiveName}</strong>
             </HeaderInfo>
           </MenuHeader>
           <Divider />
