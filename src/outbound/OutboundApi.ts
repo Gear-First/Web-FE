@@ -57,7 +57,8 @@ async function fetchOutboundList(
 export async function fetchOutboundNotDoneRecords(
   params?: OutboundListParams
 ): Promise<ListResponse<OutboundRecord[]>> {
-  const baseUrl = "http://34.120.215.23/warehouse/api/v1/shipping/not-done";
+  const baseUrl =
+    "https://gearfirst-auth.duckdns.org/warehouse/api/v1/shipping/not-done";
   return fetchOutboundList(baseUrl, params);
 }
 
@@ -65,7 +66,8 @@ export async function fetchOutboundNotDoneRecords(
 export async function fetchOutboundDoneRecords(
   params?: OutboundListParams
 ): Promise<ListResponse<OutboundRecord[]>> {
-  const baseUrl = "http://34.120.215.23/warehouse/api/v1/shipping/done";
+  const baseUrl =
+    "https://gearfirst-auth.duckdns.org/warehouse/api/v1/shipping/done";
   return fetchOutboundList(baseUrl, params);
 }
 
@@ -73,7 +75,7 @@ export async function fetchOutboundDoneRecords(
 export async function fetchOutboundDetail(
   noteId: string
 ): Promise<OutboundRecord> {
-  const url = `http://34.120.215.23/warehouse/api/v1/shipping/${noteId}`;
+  const url = `https://gearfirst-auth.duckdns.org/warehouse/api/v1/shipping/${noteId}`;
   const res = await axios.get(url);
 
   if (res.status !== 200)

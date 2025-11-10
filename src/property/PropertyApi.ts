@@ -8,7 +8,7 @@ export const propertyKeys = {
 
 // axios 인스턴스 생성
 const api = axios.create({
-  baseURL: "http://34.120.215.23/warehouse/api/v1", // 백엔드 API 주소
+  baseURL: "https://gearfirst-auth.duckdns.org/warehouse/api/v1", // 백엔드 API 주소
   headers: {
     "Content-Type": "application/json",
   },

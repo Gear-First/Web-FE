@@ -135,9 +135,8 @@ export default function CarModelPage() {
 
   const [isMappingModalOpen, setIsMappingModalOpen] = useState(false);
   const [mappingMode, setMappingMode] = useState<"create" | "edit">("create");
-  const [editingMapping, setEditingMapping] = useState<PartCarModelMapping | null>(
-    null
-  );
+  const [editingMapping, setEditingMapping] =
+    useState<PartCarModelMapping | null>(null);
 
   const openCreateModal = () => {
     if (!selectedPart) {
@@ -219,9 +218,11 @@ export default function CarModelPage() {
                 부품과 적용 차량 모델 간의 관계를 조회·관리합니다.
               </SectionCaption>
             </div>
-            <Button color="black" onClick={() => setIsPartModalOpen(true)}>
-              부품 선택
-            </Button>
+            <HeaderActions>
+              <Button color="black" onClick={() => setIsPartModalOpen(true)}>
+                부품 선택
+              </Button>
+            </HeaderActions>
           </SectionHeader>
 
           {selectedPart ? (
@@ -289,13 +290,17 @@ export default function CarModelPage() {
                   {rows.length === 0 ? (
                     <tr>
                       <Td colSpan={5} style={{ textAlign: "center" }}>
-                        {isFetching ? "불러오는 중..." : "등록된 매핑이 없습니다."}
+                        {isFetching
+                          ? "불러오는 중..."
+                          : "등록된 매핑이 없습니다."}
                       </Td>
                     </tr>
                   ) : (
                     rows.map((mapping) => (
                       <tr key={`${mapping.carModelId}`}>
-                        <Td style={{ textAlign: "left" }}>{mapping.carModelName}</Td>
+                        <Td style={{ textAlign: "left" }}>
+                          {mapping.carModelName}
+                        </Td>
                         <Td style={{ textAlign: "left" }}>
                           {mapping.note ?? "-"}
                         </Td>
@@ -308,7 +313,13 @@ export default function CarModelPage() {
                         </Td>
                         <Td>{mapping.updatedAt ?? "-"}</Td>
                         <Td>
-                          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              justifyContent: "center",
+                            }}
+                          >
                             <Button
                               color="gray"
                               size="sm"
@@ -410,4 +421,16 @@ const EmptyState = styled.div`
   text-align: center;
   color: #9ca3af;
   font-size: 0.95rem;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;
