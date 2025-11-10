@@ -29,7 +29,7 @@ export async function refreshAccessToken(): Promise<string | null> {
 
   if (!res.ok) {
     alert("토큰 갱신 실패. 다시 로그인해주세요.");
-    window.location.href = "/";
+    window.location.href = "/login";
     return null;
   }
 
