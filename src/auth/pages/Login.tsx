@@ -5,17 +5,14 @@ import {
 } from "../utils/pkce";
 import { type JSX } from "react";
 
-/**
- * 필요시 .env에 다음 값을 넣어 타입 안정성 높일 수 있어요.
- * VITE_AUTH_SERVER=http://localhost:8084
- * VITE_CLIENT_ID=gearfirst-client
- * VITE_REDIRECT_URI=http://localhost:5173/auth/callback
- */
 const AUTH_SERVER =
   import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
-const REDIRECT_URI =
-  import.meta.env.VITE_REDIRECT_URI ?? "http://localhost:5173/auth/callback";
+const DEFAULT_REDIRECT_URI =
+  typeof window !== "undefined"
+    ? `${window.location.origin}/auth/callback`
+    : "https:/gearfirst-fe.vercel.app/auth/callback";
+const REDIRECT_URI = import.meta.env.VITE_REDIRECT_URI ?? DEFAULT_REDIRECT_URI;
 
 function Login(): JSX.Element {
   const handleLogin = async (): Promise<void> => {
