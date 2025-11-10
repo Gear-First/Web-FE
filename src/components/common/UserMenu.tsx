@@ -19,7 +19,7 @@ type Props = {
   email?: string;
 };
 
-export default function UserMenu({ displayName = "사용자", email }: Props) {
+export default function UserMenu({ displayName = "사용자" }: Props) {
   const [open, setOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const profile = useSyncExternalStore(

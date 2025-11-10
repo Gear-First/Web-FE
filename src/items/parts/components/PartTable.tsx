@@ -92,7 +92,6 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
             <Th>안전재고</Th>
             <Th>단가</Th>
             <Th>상태</Th>
-            <Th>최근 수정</Th>
           </tr>
         </thead>
         <tbody>
@@ -123,7 +122,6 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
                   <StatusBadge $variant="danger">중지</StatusBadge>
                 )}
               </Td>
-              <Td>{formatDate(r.updatedDate || r.createdDate)}</Td>
             </tr>
           ))}
         </tbody>

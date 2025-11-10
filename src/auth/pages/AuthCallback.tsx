@@ -5,7 +5,7 @@ import { syncUserProfileFromToken } from "../utils/userProfile";
 import { resolveRedirectUri } from "../utils/redirectUri";
 
 const AUTH_SERVER =
-  import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
+  import.meta.env.VITE_AUTH_SERVER ?? "https://gearfirst-auth.duckdns.org/auth";
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
 const REDIRECT_URI = resolveRedirectUri(import.meta.env.VITE_REDIRECT_URI);
 const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET ?? "secret";
@@ -70,7 +70,7 @@ function AuthCallback(): JSX.Element {
 
         setMessage("로그인 성공! 🎉");
         setTimeout(() => {
-          navigate("/mrp", { replace: true });
+          navigate("/dashboard", { replace: true });
         }, 800);
       } catch (e) {
         console.error(e);

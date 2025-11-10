@@ -13,6 +13,8 @@ import {
   type ServerPage,
   type ServerPartCarModel,
   type CarModelPartRecord,
+  type CarModelCreateDTO,
+  type CarModelUpdateDTO,
   toCarModelPartRecord,
   toCarModelRecord,
   toPartCarModelMapping,
@@ -127,8 +129,7 @@ export async function fetchCarModels(
 ): Promise<ListResponse<CarModelRecord[]>> {
   const qs = new URLSearchParams();
   if (params?.q?.trim()) qs.set("q", params.q.trim());
-  if (params?.enabled !== undefined)
-    qs.set("enabled", String(params.enabled));
+  if (params?.enabled !== undefined) qs.set("enabled", String(params.enabled));
   appendPaging(qs, params?.page, params?.pageSize);
 
   if (params?.sort) {
@@ -145,11 +146,14 @@ export async function fetchCarModels(
     qs.append("sort", "name,asc");
   }
 
-  const url = qs.toString() ? `${CAR_MODEL_ENDPOINT}?${qs.toString()}` : CAR_MODEL_ENDPOINT;
+  const url = qs.toString()
+    ? `${CAR_MODEL_ENDPOINT}?${qs.toString()}`
+    : CAR_MODEL_ENDPOINT;
   const res = await fetch(url, { method: "GET" });
   if (!res.ok) throw new Error(`차량 모델 목록 요청 실패 (${res.status})`);
   const json: ApiResponse<ServerPage<ServerCarModel>> = await res.json();
-  if (!json.success) throw new Error(json.message || "차량 모델 목록 조회 실패");
+  if (!json.success)
+    throw new Error(json.message || "차량 모델 목록 조회 실패");
   return mapPagedResponse(json.data, toCarModelRecord);
 }
 
@@ -159,7 +163,10 @@ export async function fetchPartCarModels(
 ): Promise<ListResponse<PartCarModelMapping[]>> {
   const numericId = resolvePartId(partId);
   if (!numericId)
-    return { data: [], meta: { total: 0, page: 1, pageSize: 0, totalPages: 1 } };
+    return {
+      data: [],
+      meta: { total: 0, page: 1, pageSize: 0, totalPages: 1 },
+    };
   const qs = new URLSearchParams();
   if (params?.name?.trim()) qs.set("name", params.name.trim());
   appendPaging(qs, params?.page, params?.pageSize);
@@ -201,11 +208,14 @@ export async function updatePartCarModelMapping(
   payload: PartCarModelUpdateDTO
 ): Promise<PartCarModelMapping> {
   const numericId = resolvePartId(partId);
-  const res = await fetch(`${PARTS_ENDPOINT}/${numericId}/car-models/${carModelId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(payload),
-  });
+  const res = await fetch(
+    `${PARTS_ENDPOINT}/${numericId}/car-models/${carModelId}`,
+    {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    }
+  );
   if (!res.ok) throw new Error(`부품-차량 모델 매핑 수정 실패 (${res.status})`);
   const json: ApiResponse<ServerPartCarModel> = await res.json();
   if (!json.success) throw new Error(json.message || "매핑 수정 실패");
@@ -217,9 +227,12 @@ export async function deletePartCarModelMapping(
   carModelId: number
 ): Promise<void> {
   const numericId = resolvePartId(partId);
-  const res = await fetch(`${PARTS_ENDPOINT}/${numericId}/car-models/${carModelId}`, {
-    method: "DELETE",
-  });
+  const res = await fetch(
+    `${PARTS_ENDPOINT}/${numericId}/car-models/${carModelId}`,
+    {
+      method: "DELETE",
+    }
+  );
   if (!res.ok) throw new Error(`부품-차량 모델 매핑 삭제 실패 (${res.status})`);
 }
 
@@ -228,7 +241,10 @@ export async function fetchCarModelParts(
   params?: CarModelPartListParams
 ): Promise<ListResponse<CarModelPartRecord[]>> {
   if (!carModelId)
-    return { data: [], meta: { total: 0, page: 1, pageSize: 0, totalPages: 1 } };
+    return {
+      data: [],
+      meta: { total: 0, page: 1, pageSize: 0, totalPages: 1 },
+    };
   const qs = new URLSearchParams();
   if (params?.code?.trim()) qs.set("code", params.code.trim());
   if (params?.name?.trim()) qs.set("name", params.name.trim());
@@ -250,9 +266,48 @@ export async function fetchCarModelParts(
     ? `${CAR_MODEL_ENDPOINT}/${carModelId}/parts?${qs.toString()}`
     : `${CAR_MODEL_ENDPOINT}/${carModelId}/parts`;
   const res = await fetch(url, { method: "GET" });
-  if (!res.ok) throw new Error(`차량 모델 적용 부품 목록 요청 실패 (${res.status})`);
+  if (!res.ok)
+    throw new Error(`차량 모델 적용 부품 목록 요청 실패 (${res.status})`);
   const json: ApiResponse<ServerPage<ServerCarModelPart>> = await res.json();
   if (!json.success)
     throw new Error(json.message || "차량 모델 적용 부품 조회 실패");
   return mapPagedResponse(json.data, toCarModelPartRecord);
+}
+
+export async function createCarModel(
+  payload: CarModelCreateDTO
+): Promise<CarModelRecord> {
+  const res = await fetch(CAR_MODEL_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`차량 모델 생성 실패 (${res.status})`);
+  const json: ApiResponse<ServerCarModel> = await res.json();
+  if (!json.success) throw new Error(json.message || "차량 모델 생성 실패");
+  return toCarModelRecord(json.data);
+}
+
+export async function updateCarModel(
+  carModelId: number,
+  payload: CarModelUpdateDTO
+): Promise<CarModelRecord> {
+  const res = await fetch(`${CAR_MODEL_ENDPOINT}/${carModelId}/enable`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) {
+    let message = `차량 모델 수정 실패 (${res.status})`;
+    try {
+      const json = (await res.json()) as Partial<ApiResponse<ServerCarModel>>;
+      if (json?.message) message = json.message;
+    } catch {
+      // ignore
+    }
+    throw new Error(message);
+  }
+  const json: ApiResponse<ServerCarModel> = await res.json();
+  if (!json.success) throw new Error(json.message || "차량 모델 수정 실패");
+  return toCarModelRecord(json.data);
 }

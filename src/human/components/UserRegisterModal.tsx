@@ -106,7 +106,7 @@ export default function UserRegisterModal({
 
     setForm({
       name: initial?.name ?? "",
-      personalEmail: initial?.email ?? "",
+      personalEmail: initial?.personalEmail ?? "",
       email: initial?.email ?? "",
       phoneNum: initial?.phoneNum ?? "",
       rank: KO_TO_KEY(initial?.rank) as "EMPLOYEE" | "LEADER",
@@ -133,13 +133,13 @@ export default function UserRegisterModal({
 
   const canSubmit = useMemo(() => {
     if (!form.name.trim()) return false;
-    if (!form.personalEmail.trim()) return false;
+    if (!isEdit && !form.personalEmail.trim()) return false;
     if (!form.email.trim()) return false;
     if (!form.phoneNum.trim()) return false;
     if (!form.regionId || !form.workTypeId) return false;
     if (!form.rank) return false;
     return true;
-  }, [form]);
+  }, [form, isEdit]);
 
   if (!isOpen) return null;
 
@@ -224,16 +224,18 @@ export default function UserRegisterModal({
                 </Select>
               </DetailItem>
 
-              <DetailItem>
-                <Label>개인 이메일</Label>
-                <Input
-                  type="email"
-                  value={form.personalEmail}
-                  onChange={(e) => update("personalEmail", e.target.value)}
-                  placeholder="personal@example.com"
-                  required
-                />
-              </DetailItem>
+              {!isEdit && (
+                <DetailItem>
+                  <Label>개인 이메일</Label>
+                  <Input
+                    type="email"
+                    value={form.personalEmail}
+                    onChange={(e) => update("personalEmail", e.target.value)}
+                    placeholder="personal@example.com"
+                    required
+                  />
+                </DetailItem>
+              )}
 
               <DetailItem>
                 <Label>이메일</Label>
