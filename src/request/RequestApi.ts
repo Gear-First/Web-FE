@@ -15,7 +15,7 @@ export const requestKeys = {
 
 // axios 인스턴스 생성
 const api = axios.create({
-  baseURL: "http://34.120.215.23/order/api/v1",
+  baseURL: "https://gearfirst-auth.duckdns.org/order/api/v1",
   headers: {
     "Content-Type": "application/json",
   },
