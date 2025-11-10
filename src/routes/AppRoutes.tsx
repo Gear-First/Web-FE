@@ -11,6 +11,7 @@ import HumanPage from "../human/HumanPage";
 import DashboardPage from "../dashboard/DashboardPage";
 import RequireAuth from "./RequireAuth";
 import UserProfilePage from "../user/UserProfilePage";
+import CarModelPage from "../carModel/CarModelPage";
 
 import Login from "../auth/pages/Login";
 import AuthCallback from "../auth/pages/AuthCallback";
@@ -28,6 +29,7 @@ const AppRoutes = () => {
         <Route path="/request" element={<RequestPage />} />
         <Route path="/items" element={<ItemPage />} />
         <Route path="/part" element={<PartPage />} />
+        <Route path="/car-models" element={<CarModelPage />} />
         <Route path="/property" element={<PropertyPage />} />
         <Route path="/inbound" element={<InboundPage />} />
         <Route path="/outbound" element={<OutboundPage />} />
