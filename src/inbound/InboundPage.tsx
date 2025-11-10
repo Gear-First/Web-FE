@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styled, { keyframes } from "styled-components";
 import Layout from "../components/common/Layout";
 import {
   FilterGroup,
@@ -40,10 +41,19 @@ type ListResponse<T> = {
 
 export default function InboundPage() {
   // 공통 필터
-  const [keyword, setKeyword] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
-  const [applied, setApplied] = useState<AppliedFilters>({
+  const [keywordNotDone, setKeywordNotDone] = useState("");
+  const [startNotDone, setStartNotDone] = useState("");
+  const [endNotDone, setEndNotDone] = useState("");
+  const [appliedNotDone, setAppliedNotDone] = useState<AppliedFilters>({
+    keyword: "",
+    dateFrom: null,
+    dateTo: null,
+  });
+
+  const [keywordDone, setKeywordDone] = useState("");
+  const [startDone, setStartDone] = useState("");
+  const [endDone, setEndDone] = useState("");
+  const [appliedDone, setAppliedDone] = useState<AppliedFilters>({
     keyword: "",
     dateFrom: null,
     dateTo: null,
@@ -55,16 +65,24 @@ export default function InboundPage() {
   const [pageSizeNotDone, setPageSizeNotDone] = useState(10);
   const [pageSizeDone, setPageSizeDone] = useState(10);
 
-  const buildParams = (page: number, pageSize: number) => ({
-    q: applied.keyword || undefined,
-    dateFrom: applied.dateFrom || undefined,
-    dateTo: applied.dateTo || undefined,
+  const buildParams = (
+    appliedFilters: AppliedFilters,
+    page: number,
+    pageSize: number
+  ) => ({
+    q: appliedFilters.keyword || undefined,
+    dateFrom: appliedFilters.dateFrom || undefined,
+    dateTo: appliedFilters.dateTo || undefined,
     page,
     pageSize,
   });
 
   // 입고 예정(Not Done)
-  const paramsNotDone = buildParams(pageNotDone, pageSizeNotDone);
+  const paramsNotDone = buildParams(
+    appliedNotDone,
+    pageNotDone,
+    pageSizeNotDone
+  );
   const { data: dataNotDone, fetchStatus: fetchStatusNotDone } = useQuery<
     ListResponse<InboundRecord[]>,
     Error
@@ -76,7 +94,7 @@ export default function InboundPage() {
   });
 
   // 입고 완료(Done)
-  const paramsDone = buildParams(pageDone, pageSizeDone);
+  const paramsDone = buildParams(appliedDone, pageDone, pageSizeDone);
   const { data: dataDone, fetchStatus: fetchStatusDone } = useQuery<
     ListResponse<InboundRecord[]>,
     Error
@@ -113,22 +131,37 @@ export default function InboundPage() {
       )
     : 0;
 
-  const onSearch = () => {
-    setApplied({
-      keyword: keyword.trim(),
-      dateFrom: startDate || null,
-      dateTo: endDate || null,
+  const onSearchNotDone = () => {
+    setAppliedNotDone({
+      keyword: keywordNotDone.trim(),
+      dateFrom: startNotDone || null,
+      dateTo: endNotDone || null,
     });
     setPageNotDone(1);
+  };
+
+  const onResetNotDone = () => {
+    setKeywordNotDone("");
+    setStartNotDone("");
+    setEndNotDone("");
+    setAppliedNotDone({ keyword: "", dateFrom: null, dateTo: null });
+    setPageNotDone(1);
+  };
+
+  const onSearchDone = () => {
+    setAppliedDone({
+      keyword: keywordDone.trim(),
+      dateFrom: startDone || null,
+      dateTo: endDone || null,
+    });
     setPageDone(1);
   };
 
-  const onReset = () => {
-    setKeyword("");
-    setStartDate("");
-    setEndDate("");
-    setApplied({ keyword: "", dateFrom: null, dateTo: null });
-    setPageNotDone(1);
+  const onResetDone = () => {
+    setKeywordDone("");
+    setStartDone("");
+    setEndDone("");
+    setAppliedDone({ keyword: "", dateFrom: null, dateTo: null });
     setPageDone(1);
   };
 
@@ -166,60 +199,51 @@ export default function InboundPage() {
           </SectionHeader>
 
           <FilterGroup>
-            <Button variant="icon" onClick={onReset}>
+            <Button variant="icon" onClick={onResetNotDone}>
               <img src={resetIcon} width={18} height={18} alt="초기화" />
             </Button>
             <DateRange
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
+              startDate={startNotDone}
+              endDate={endNotDone}
+              onStartDateChange={setStartNotDone}
+              onEndDateChange={setEndNotDone}
             />
             <SearchBox
-              keyword={keyword}
-              onKeywordChange={setKeyword}
-              onSearch={onSearch}
-              onReset={onReset}
+              keyword={keywordNotDone}
+              onKeywordChange={setKeywordNotDone}
+              onSearch={onSearchNotDone}
+              onReset={onResetNotDone}
               placeholder="입고번호 / 입고대상 / 공급업체 검색"
             />
           </FilterGroup>
 
-          <InboundTable rows={recordsNotDone} variant="pending" />
+          <SectionContent>
+            <InboundTable rows={recordsNotDone} variant="pending" />
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              margin: "8px 0 12px",
-            }}
-          >
-            <div style={{ height: 18 }}>
-              {isFetchingNotDone && (
-                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-              )}
-            </div>
-          </div>
+            <Pagination
+              page={pageNotDone}
+              totalPages={Math.max(1, totalPagesNotDone)}
+              onChange={(next) => setPageNotDone(next)}
+              isBusy={isFetchingNotDone}
+              maxButtons={5}
+              totalItems={totalNotDone}
+              pageSize={pageSizeNotDone}
+              pageSizeOptions={[10, 20, 50, 100]}
+              onChangePageSize={(n) => {
+                setPageSizeNotDone(n);
+                setPageNotDone(1);
+              }}
+              showSummary
+              showPageSize
+              align="center"
+              dense={false}
+              sticky={false}
+            />
 
-          <Pagination
-            page={pageNotDone}
-            totalPages={Math.max(1, totalPagesNotDone)}
-            onChange={(next) => setPageNotDone(next)}
-            isBusy={isFetchingNotDone}
-            maxButtons={5}
-            totalItems={totalNotDone}
-            pageSize={pageSizeNotDone}
-            pageSizeOptions={[10, 20, 50, 100]}
-            onChangePageSize={(n) => {
-              setPageSizeNotDone(n);
-              setPageNotDone(1);
-            }}
-            showSummary
-            showPageSize
-            align="center"
-            dense={false}
-            sticky={false}
-          />
+            {isFetchingNotDone ? (
+              <LoadingOverlay label="데이터를 불러오는 중입니다..." />
+            ) : null}
+          </SectionContent>
         </SectionCard>
 
         {/* 입고 완료 섹션 */}
@@ -234,62 +258,107 @@ export default function InboundPage() {
           </SectionHeader>
 
           <FilterGroup>
-            <Button variant="icon" onClick={onReset}>
+            <Button variant="icon" onClick={onResetDone}>
               <img src={resetIcon} width={18} height={18} alt="초기화" />
             </Button>
             <DateRange
-              startDate={startDate}
-              endDate={endDate}
-              onStartDateChange={setStartDate}
-              onEndDateChange={setEndDate}
+              startDate={startDone}
+              endDate={endDone}
+              onStartDateChange={setStartDone}
+              onEndDateChange={setEndDone}
             />
             <SearchBox
-              keyword={keyword}
-              onKeywordChange={setKeyword}
-              onSearch={onSearch}
-              onReset={onReset}
+              keyword={keywordDone}
+              onKeywordChange={setKeywordDone}
+              onSearch={onSearchDone}
+              onReset={onResetDone}
               placeholder="입고번호 / 입고대상 / 공급업체 검색"
             />
           </FilterGroup>
 
-          <InboundTable rows={recordsDone} variant="done" />
+          <SectionContent>
+            <InboundTable rows={recordsDone} variant="done" />
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              margin: "8px 0 12px",
-            }}
-          >
-            <div style={{ height: 18 }}>
-              {isFetchingDone && (
-                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-              )}
-            </div>
-          </div>
+            <Pagination
+              page={pageDone}
+              totalPages={Math.max(1, totalPagesDone)}
+              onChange={(next) => setPageDone(next)}
+              isBusy={isFetchingDone}
+              maxButtons={5}
+              totalItems={totalDone}
+              pageSize={pageSizeDone}
+              pageSizeOptions={[10, 20, 50, 100]}
+              onChangePageSize={(n) => {
+                setPageSizeDone(n);
+                setPageDone(1);
+              }}
+              showSummary
+              showPageSize
+              align="center"
+              dense={false}
+              sticky={false}
+            />
 
-          <Pagination
-            page={pageDone}
-            totalPages={Math.max(1, totalPagesDone)}
-            onChange={(next) => setPageDone(next)}
-            isBusy={isFetchingDone}
-            maxButtons={5}
-            totalItems={totalDone}
-            pageSize={pageSizeDone}
-            pageSizeOptions={[10, 20, 50, 100]}
-            onChangePageSize={(n) => {
-              setPageSizeDone(n);
-              setPageDone(1);
-            }}
-            showSummary
-            showPageSize
-            align="center"
-            dense={false}
-            sticky={false}
-          />
+            {isFetchingDone ? (
+              <LoadingOverlay label="데이터를 불러오는 중입니다..." />
+            ) : null}
+          </SectionContent>
         </SectionCard>
       </PageContainer>
     </Layout>
+  );
+}
+
+const SectionContent = styled.div`
+  position: relative;
+  min-height: 240px;
+  padding-bottom: 12px;
+`;
+
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 18px;
+  z-index: 10;
+  text-align: center;
+  padding: 24px;
+`;
+
+const Spinner = styled.div`
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid rgba(37, 99, 235, 0.2);
+  border-top-color: #2563eb;
+  animation: ${spin} 0.85s linear infinite;
+`;
+
+const OverlayText = styled.p`
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4b5563;
+`;
+
+function LoadingOverlay({ label }: { label: string }) {
+  return (
+    <Overlay role="status" aria-live="polite">
+      <Spinner />
+      <OverlayText>{label}</OverlayText>
+    </Overlay>
   );
 }
