@@ -2,9 +2,9 @@ import { useState } from "react";
 import Button from "../../components/common/Button";
 import { StatusBadge } from "../../components/common/PageLayout";
 import type {
-  CreateUserDTO,
   Rank,
   Region,
+  UpdateUserDTO,
   UserRecord,
   WorkType,
 } from "../HumanTypes";
@@ -28,8 +28,8 @@ type Props = {
   isOpen: boolean;
   record: UserRecord | null;
   onClose: () => void;
-  onDelete?: (record: UserRecord) => void;
-  onEdit?: (dto: CreateUserDTO) => Promise<void> | void;
+  onDelete?: (record: UserRecord) => Promise<void> | void;
+  onEdit?: (dto: UpdateUserDTO) => Promise<void> | void;
   disableOverlayClose?: boolean;
   regions?: Region[];
   workTypes?: WorkType[];
@@ -106,21 +106,23 @@ export default function UserDetailModal({
 
           <Footer>
             {onDelete && (
-              <Button color="danger" onClick={() => onDelete(record)}>
+              <Button
+                color="danger"
+                onClick={() => {
+                  void onDelete(record);
+                }}
+              >
                 삭제
               </Button>
             )}
             <Button
               type="button"
-              color="black"
+              color="gray"
               onClick={() => {
                 setOpenEdit(true);
               }}
             >
               수정
-            </Button>
-            <Button type="button" onClick={onClose} color="gray">
-              닫기
             </Button>
           </Footer>
         </ModalContainer>

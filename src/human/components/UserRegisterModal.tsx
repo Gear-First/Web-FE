@@ -6,6 +6,7 @@ import type {
   UserRecord,
   Region,
   WorkType,
+  UpdateUserDTO,
 } from "../HumanTypes";
 import type { Rank } from "../HumanTypes";
 import { useRegions, useWorkTypes } from "./queries";
@@ -40,7 +41,7 @@ type Props = {
   onClose: () => void;
   initial?: Partial<UserRecord>;
   onCreate?: (dto: CreateUserDTO) => Promise<void> | void;
-  onUpdate?: (dto: CreateUserDTO) => Promise<void> | void;
+  onUpdate?: (dto: UpdateUserDTO) => Promise<void> | void;
   currentUserId?: number;
 };
 
@@ -51,6 +52,8 @@ const DEFAULT_RANKS: Rank[] = [
 
 const KO_TO_KEY = (v?: string) =>
   v === "사원" ? "EMPLOYEE" : v === "팀장" ? "LEADER" : v ?? "EMPLOYEE";
+
+type UserFormState = CreateUserDTO & { userId?: number };
 
 export default function UserRegisterModal({
   mode,
@@ -68,7 +71,7 @@ export default function UserRegisterModal({
   const regions: Region[] = regionRes?.data ?? [];
   const workTypes: WorkType[] = workTypeRes?.data ?? [];
 
-  const [form, setForm] = useState<CreateUserDTO>({
+  const [form, setForm] = useState<UserFormState>({
     name: "",
     personalEmail: "",
     email: "",
@@ -76,6 +79,7 @@ export default function UserRegisterModal({
     rank: "EMPLOYEE",
     regionId: 1,
     workTypeId: 1,
+    userId: undefined,
   });
 
   const [error, setError] = useState<string | null>(null);
@@ -108,6 +112,7 @@ export default function UserRegisterModal({
       rank: KO_TO_KEY(initial?.rank) as "EMPLOYEE" | "LEADER",
       regionId,
       workTypeId,
+      userId: initial?.id ?? undefined,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen, initial?.id]);
@@ -153,7 +158,20 @@ export default function UserRegisterModal({
     setBusy(true);
     try {
       if (isEdit && typeof onUpdate === "function") {
-        await onUpdate(form); // DTO 전체 (userId 포함)
+        if (!form.userId) {
+          throw new Error("수정할 사용자 ID를 찾을 수 없습니다.");
+        }
+        const payload: UpdateUserDTO = {
+          userId: form.userId,
+          name: form.name,
+          personalEmail: form.personalEmail,
+          email: form.email,
+          phoneNum: form.phoneNum,
+          rank: form.rank,
+          regionId: form.regionId,
+          workTypeId: form.workTypeId,
+        };
+        await onUpdate(payload);
       } else if (!isEdit && typeof onCreate === "function") {
         await onCreate(form);
       }

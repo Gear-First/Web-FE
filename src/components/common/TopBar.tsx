@@ -1,8 +1,10 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavLink, Link } from "react-router-dom";
 import styled from "styled-components";
 import Logo from "../../assets/logo_gearfirst.svg";
 import UserMenu from "./UserMenu";
+import { readCurrentUserFromToken } from "../../auth/utils/currentUser";
+// import { NotificationList } from "../../notification/components/NotificationList";
 import { NotificationList } from "../../notification/components/NotificationList";
 
 /* ─ tokens: 절제된 기업 톤 */
@@ -113,6 +115,22 @@ const RightActions = styled.div`
 `;
 
 const TopBar: React.FC = () => {
+  const [profile, setProfile] = useState(readCurrentUserFromToken());
+
+  useEffect(() => {
+    const syncProfile = () => {
+      setProfile(readCurrentUserFromToken());
+    };
+
+    window.addEventListener("storage", syncProfile);
+    window.addEventListener("focus", syncProfile);
+
+    return () => {
+      window.removeEventListener("storage", syncProfile);
+      window.removeEventListener("focus", syncProfile);
+    };
+  }, []);
+
   const menus = [
     { id: -1, name: "대시보드", path: "/dashboard" },
     { id: 0, name: "요청관리", path: "/request" },
@@ -144,6 +162,11 @@ const TopBar: React.FC = () => {
         </MenuBar>
 
         <RightActions>
+          <UserMenu
+            displayName={profile?.name ?? "사용자"}
+            email={profile?.email}
+          />
+          {/* <NotificationList /> */}
           <UserMenu />
           <NotificationList />
         </RightActions>

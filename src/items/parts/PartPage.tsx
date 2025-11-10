@@ -1,12 +1,12 @@
 import { useCallback, useMemo, useState } from "react";
 import Button from "../../components/common/Button";
-import DateRange from "../../components/common/DateRange";
 import {
   FilterGroup,
   SectionCaption,
   SectionCard,
   SectionHeader,
   SectionTitle,
+  Select,
 } from "../../components/common/PageLayout";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
@@ -28,20 +28,18 @@ import { usePartSearch } from "./hooks/usePartSearch";
 
 type AppliedFilters = {
   keyword: string;
-  startDate: string | null;
-  endDate: string | null;
+  enabled: "all" | "true" | "false";
 };
 
 export default function PartPage() {
   // 검색 상태
   const [keyword, setKeyword] = useState("");
-  const [startDate, setStartDate] = useState<string>("");
-  const [endDate, setEndDate] = useState<string>("");
+  const [enabledFilter, setEnabledFilter] =
+    useState<AppliedFilters["enabled"]>("all");
 
   const [applied, setApplied] = useState<AppliedFilters>({
     keyword: "",
-    startDate: null,
-    endDate: null,
+    enabled: "all",
   });
 
   // 페이지네이션 (UI 1-based)
@@ -60,12 +58,16 @@ export default function PartPage() {
   const params = useMemo(
     () => ({
       q: applied.keyword || undefined,
-      startDate: applied.startDate || undefined,
-      endDate: applied.endDate || undefined,
+      enabled:
+        applied.enabled === "all"
+          ? undefined
+          : applied.enabled === "true"
+          ? true
+          : false,
       page,
       pageSize,
     }),
-    [applied.keyword, applied.startDate, applied.endDate, page, pageSize]
+    [applied, page, pageSize]
   );
 
   const { data, fetchStatus } = usePartSearch({
@@ -82,19 +84,33 @@ export default function PartPage() {
   const onSearch = useCallback(() => {
     setApplied({
       keyword: keyword.trim(),
-      startDate: startDate || null,
-      endDate: endDate || null,
+      enabled: enabledFilter,
     });
     setPage(1);
-  }, [keyword, startDate, endDate]);
+  }, [keyword, enabledFilter]);
 
   const onReset = useCallback(() => {
     setKeyword("");
-    setStartDate("");
-    setEndDate("");
-    setApplied({ keyword: "", startDate: null, endDate: null });
+    setEnabledFilter("all");
+    setApplied({
+      keyword: "",
+      enabled: "all",
+    });
     setPage(1);
   }, []);
+
+  const onChangeEnabledFilter = useCallback(
+    (value: AppliedFilters["enabled"]) => {
+      setEnabledFilter(value);
+      setApplied((prev) => ({
+        ...prev,
+        keyword: keyword.trim(),
+        enabled: value,
+      }));
+      setPage(1);
+    },
+    [keyword]
+  );
 
   const onChangePageSize = useCallback((n: number) => {
     setPageSize(n);
@@ -136,18 +152,22 @@ export default function PartPage() {
           <Button variant="icon" onClick={onReset} aria-label="초기화">
             <img src={resetIcon} width={18} height={18} alt="초기화" />
           </Button>
-          <DateRange
-            startDate={startDate}
-            endDate={endDate}
-            onStartDateChange={setStartDate}
-            onEndDateChange={setEndDate}
-          />
+          <Select
+            value={enabledFilter}
+            onChange={(e) =>
+              onChangeEnabledFilter(e.target.value as AppliedFilters["enabled"])
+            }
+          >
+            <option value="all">전체 상태</option>
+            <option value="true">사용</option>
+            <option value="false">중지</option>
+          </Select>
           <SearchBox
             keyword={keyword}
             onKeywordChange={setKeyword}
             onSearch={onSearch}
-            onReset={onReset}
-            placeholder="부품코드 / 부품명 검색"
+            placeholder="카테고리 / 차모델 / 부품코드 / 부품명 검색"
+            width="320px"
           />
         </FilterGroup>
 

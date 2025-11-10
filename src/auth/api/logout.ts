@@ -1,3 +1,5 @@
+import { clearUserProfile } from "../store/userStore";
+
 const AUTH_SERVER =
   import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
 
@@ -12,6 +14,7 @@ export function logout(): void {
 
   sessionStorage.clear();
   localStorage.clear();
+  clearUserProfile();
 
   window.location.href = "/";
 }

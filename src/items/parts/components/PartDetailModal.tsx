@@ -70,6 +70,23 @@ const PartDetailModal = ({
     : detail?.enabled === false
     ? "중지"
     : "—";
+  const numberFormatter = new Intl.NumberFormat("ko-KR");
+  const formatNumber = (value?: number | null) =>
+    typeof value === "number" ? numberFormatter.format(value) : "—";
+  const priceText = numberFormatter.format(
+    detail?.price ?? record.price ?? 0
+  );
+  const safetyStockText = formatNumber(
+    detail?.safetyStockQty ?? record.safetyStockQty
+  );
+  const carModels =
+    (detail?.carModelNames?.length
+      ? detail.carModelNames
+      : record.carModelNames) ?? [];
+  const carModelText =
+    Array.isArray(carModels) && carModels.length > 0
+      ? carModels.join(", ")
+      : "—";
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
@@ -106,7 +123,15 @@ const PartDetailModal = ({
             </DetailItem>
             <DetailItem>
               <Label>단가</Label>
-              <Value>{detail?.price}</Value>
+              <Value>{priceText}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>안전재고</Label>
+              <Value>{safetyStockText}</Value>
+            </DetailItem>
+            <DetailItem>
+              <Label>적용 차종</Label>
+              <Value>{carModelText}</Value>
             </DetailItem>
             <DetailItem>
               <Label>상태</Label>

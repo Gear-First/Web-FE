@@ -4,7 +4,7 @@ import type { UserRecord } from "../HumanTypes";
 import { useState } from "react";
 import UserDetailModal from "./UserDetailModal";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateUser, userKeys } from "../HumanApi";
+import { deleteUser, updateUser, userKeys } from "../HumanApi";
 import { getRankMeta } from "../utils/rank";
 
 const EmptyRow = styled.tr`
@@ -25,6 +25,13 @@ export default function UserTable({ rows }: { rows?: UserRecord[] }) {
 
   const updateMut = useMutation({
     mutationFn: (dto: Parameters<typeof updateUser>[0]) => updateUser(dto),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: userKeys.list });
+    },
+  });
+
+  const deleteMut = useMutation({
+    mutationFn: (email: string) => deleteUser(email),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: userKeys.list });
     },
@@ -88,6 +95,11 @@ export default function UserTable({ rows }: { rows?: UserRecord[] }) {
         }}
         onEdit={async (dto) => {
           await updateMut.mutateAsync(dto);
+          setOpen(false);
+          setSelected(null);
+        }}
+        onDelete={async (record) => {
+          await deleteMut.mutateAsync(record.email);
           setOpen(false);
           setSelected(null);
         }}

@@ -1,6 +1,7 @@
 import React, { useEffect, useState, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import type { TokenResponse } from "../types/auth";
+import { syncUserProfileFromToken } from "../utils/userProfile";
 
 const AUTH_SERVER =
   import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
@@ -62,6 +63,7 @@ function AuthCallback(): JSX.Element {
 
         // 액세스 토큰은 세션, 리프레시는 로컬
         sessionStorage.setItem("access_token", data.access_token);
+        syncUserProfileFromToken(data.access_token);
         if (data.refresh_token) {
           localStorage.setItem("refresh_token", data.refresh_token);
         }
