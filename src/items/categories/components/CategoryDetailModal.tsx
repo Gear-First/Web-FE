@@ -76,7 +76,11 @@ const CategoryDetailModal = ({
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
-      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        width="40%"
+        onClick={(e) => e.stopPropagation()}
+        loading={isLoading}
+      >
         <Header>
           <HeaderLeft>
             <Title>카테고리 상세 정보</Title>

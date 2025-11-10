@@ -187,7 +187,11 @@ export default function UserRegisterModal({
 
   return (
     <Overlay onClick={onClose}>
-      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        width="40%"
+        onClick={(e) => e.stopPropagation()}
+        loading={busy}
+      >
         <Header>
           <Title>{isEdit ? "사용자 수정" : "회원가입"}</Title>
           <CloseButton onClick={onClose}>&times;</CloseButton>

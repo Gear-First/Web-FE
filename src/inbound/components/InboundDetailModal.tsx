@@ -84,6 +84,7 @@ const InboundDetailModal = ({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="inbound-detail-title"
+        loading={isLoading}
       >
         <Header>
           <HeaderLeft>

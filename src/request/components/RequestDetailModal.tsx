@@ -108,7 +108,10 @@ const DetailModal = ({
 
   return (
     <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        onClick={(e) => e.stopPropagation()}
+        loading={isLoading}
+      >
         <Header>
           <HeaderLeft>
             <Title>{cfg.title}</Title>

@@ -90,7 +90,11 @@ const PartDetailModal = ({
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
-      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        width="40%"
+        onClick={(e) => e.stopPropagation()}
+        loading={isLoading}
+      >
         <Header>
           <HeaderLeft>
             <Title id="part-detail-title">부품 상세 정보</Title>

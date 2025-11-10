@@ -49,7 +49,10 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
 
   return (
     <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        onClick={(e) => e.stopPropagation()}
+        loading={isLoading}
+      >
         <Header>
           <HeaderLeft>
             <Title>출고 상세 정보</Title>
