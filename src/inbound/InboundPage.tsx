@@ -1,4 +1,5 @@
 import { useState } from "react";
+import styled, { keyframes } from "styled-components";
 import Layout from "../components/common/Layout";
 import {
   FilterGroup,
@@ -77,7 +78,11 @@ export default function InboundPage() {
   });
 
   // 입고 예정(Not Done)
-  const paramsNotDone = buildParams(appliedNotDone, pageNotDone, pageSizeNotDone);
+  const paramsNotDone = buildParams(
+    appliedNotDone,
+    pageNotDone,
+    pageSizeNotDone
+  );
   const { data: dataNotDone, fetchStatus: fetchStatusNotDone } = useQuery<
     ListResponse<InboundRecord[]>,
     Error
@@ -212,42 +217,33 @@ export default function InboundPage() {
             />
           </FilterGroup>
 
-          <InboundTable rows={recordsNotDone} variant="pending" />
+          <SectionContent>
+            <InboundTable rows={recordsNotDone} variant="pending" />
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              margin: "8px 0 12px",
-            }}
-          >
-            <div style={{ height: 18 }}>
-              {isFetchingNotDone && (
-                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-              )}
-            </div>
-          </div>
+            <Pagination
+              page={pageNotDone}
+              totalPages={Math.max(1, totalPagesNotDone)}
+              onChange={(next) => setPageNotDone(next)}
+              isBusy={isFetchingNotDone}
+              maxButtons={5}
+              totalItems={totalNotDone}
+              pageSize={pageSizeNotDone}
+              pageSizeOptions={[10, 20, 50, 100]}
+              onChangePageSize={(n) => {
+                setPageSizeNotDone(n);
+                setPageNotDone(1);
+              }}
+              showSummary
+              showPageSize
+              align="center"
+              dense={false}
+              sticky={false}
+            />
 
-          <Pagination
-            page={pageNotDone}
-            totalPages={Math.max(1, totalPagesNotDone)}
-            onChange={(next) => setPageNotDone(next)}
-            isBusy={isFetchingNotDone}
-            maxButtons={5}
-            totalItems={totalNotDone}
-            pageSize={pageSizeNotDone}
-            pageSizeOptions={[10, 20, 50, 100]}
-            onChangePageSize={(n) => {
-              setPageSizeNotDone(n);
-              setPageNotDone(1);
-            }}
-            showSummary
-            showPageSize
-            align="center"
-            dense={false}
-            sticky={false}
-          />
+            {isFetchingNotDone ? (
+              <LoadingOverlay label="데이터를 불러오는 중입니다..." />
+            ) : null}
+          </SectionContent>
         </SectionCard>
 
         {/* 입고 완료 섹션 */}
@@ -280,44 +276,89 @@ export default function InboundPage() {
             />
           </FilterGroup>
 
-          <InboundTable rows={recordsDone} variant="done" />
+          <SectionContent>
+            <InboundTable rows={recordsDone} variant="done" />
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              alignItems: "center",
-              margin: "8px 0 12px",
-            }}
-          >
-            <div style={{ height: 18 }}>
-              {isFetchingDone && (
-                <span style={{ fontSize: 12, color: "#6b7280" }}>로딩중…</span>
-              )}
-            </div>
-          </div>
+            <Pagination
+              page={pageDone}
+              totalPages={Math.max(1, totalPagesDone)}
+              onChange={(next) => setPageDone(next)}
+              isBusy={isFetchingDone}
+              maxButtons={5}
+              totalItems={totalDone}
+              pageSize={pageSizeDone}
+              pageSizeOptions={[10, 20, 50, 100]}
+              onChangePageSize={(n) => {
+                setPageSizeDone(n);
+                setPageDone(1);
+              }}
+              showSummary
+              showPageSize
+              align="center"
+              dense={false}
+              sticky={false}
+            />
 
-          <Pagination
-            page={pageDone}
-            totalPages={Math.max(1, totalPagesDone)}
-            onChange={(next) => setPageDone(next)}
-            isBusy={isFetchingDone}
-            maxButtons={5}
-            totalItems={totalDone}
-            pageSize={pageSizeDone}
-            pageSizeOptions={[10, 20, 50, 100]}
-            onChangePageSize={(n) => {
-              setPageSizeDone(n);
-              setPageDone(1);
-            }}
-            showSummary
-            showPageSize
-            align="center"
-            dense={false}
-            sticky={false}
-          />
+            {isFetchingDone ? (
+              <LoadingOverlay label="데이터를 불러오는 중입니다..." />
+            ) : null}
+          </SectionContent>
         </SectionCard>
       </PageContainer>
     </Layout>
+  );
+}
+
+const SectionContent = styled.div`
+  position: relative;
+  min-height: 240px;
+  padding-bottom: 12px;
+`;
+
+const spin = keyframes`
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+`;
+
+const Overlay = styled.div`
+  position: absolute;
+  inset: 0;
+  background: rgba(255, 255, 255, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  border-radius: 18px;
+  z-index: 10;
+  text-align: center;
+  padding: 24px;
+`;
+
+const Spinner = styled.div`
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 3px solid rgba(37, 99, 235, 0.2);
+  border-top-color: #2563eb;
+  animation: ${spin} 0.85s linear infinite;
+`;
+
+const OverlayText = styled.p`
+  margin: 0;
+  font-size: 0.95rem;
+  color: #4b5563;
+`;
+
+function LoadingOverlay({ label }: { label: string }) {
+  return (
+    <Overlay role="status" aria-live="polite">
+      <Spinner />
+      <OverlayText>{label}</OverlayText>
+    </Overlay>
   );
 }
