@@ -1,12 +1,13 @@
 import React, { useEffect, useState, type JSX } from "react";
 import { useNavigate } from "react-router-dom";
 import type { TokenResponse } from "../types/auth";
+import { syncUserProfileFromToken } from "../utils/userProfile";
+import { resolveRedirectUri } from "../utils/redirectUri";
 
 const AUTH_SERVER =
   import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
-const REDIRECT_URI =
-  import.meta.env.VITE_REDIRECT_URI ?? "http://localhost:5173/auth/callback";
+const REDIRECT_URI = resolveRedirectUri(import.meta.env.VITE_REDIRECT_URI);
 const CLIENT_SECRET = import.meta.env.VITE_CLIENT_SECRET ?? "secret";
 
 function AuthCallback(): JSX.Element {
@@ -62,6 +63,7 @@ function AuthCallback(): JSX.Element {
 
         // 액세스 토큰은 세션, 리프레시는 로컬
         sessionStorage.setItem("access_token", data.access_token);
+        syncUserProfileFromToken(data.access_token);
         if (data.refresh_token) {
           localStorage.setItem("refresh_token", data.refresh_token);
         }
@@ -69,7 +71,6 @@ function AuthCallback(): JSX.Element {
         setMessage("로그인 성공! 🎉");
         setTimeout(() => {
           navigate("/mrp", { replace: true });
-          // 또는 window.location.replace("http://localhost:5173/mrp");
         }, 800);
       } catch (e) {
         console.error(e);
