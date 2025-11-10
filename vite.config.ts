@@ -1,6 +1,6 @@
-// vite.config.ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react-swc";
+import type { IncomingMessage, ClientRequest } from "http";
 
 export default defineConfig({
   plugins: [react()],
@@ -14,9 +14,12 @@ export default defineConfig({
         ws: true,
         followRedirects: true,
         configure: (proxy, options) => {
-          proxy.on("proxyReq", (proxyReq, req) => {
-            console.log(`[Proxy] ${req.url} -> ${options.target}`);
-          });
+          proxy.on(
+            "proxyReq",
+            (_proxyReq: ClientRequest, req: IncomingMessage) => {
+              console.log(`[Proxy] ${req.url} -> ${options.target}`);
+            }
+          );
         },
       },
     },
