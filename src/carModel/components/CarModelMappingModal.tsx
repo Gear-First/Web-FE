@@ -7,6 +7,7 @@ import {
   Footer,
   Header,
   HeaderLeft,
+  Input,
   Label,
   ModalContainer,
   Overlay,
@@ -157,29 +158,33 @@ export default function CarModelMappingModal({
 
         <Section>
           <SectionTitle>설정</SectionTitle>
-          <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <div>
-              <FieldLabel htmlFor="mapping-note">비고</FieldLabel>
-              <Textarea
+          <DetailGrid $cols={1}>
+            <DetailItem>
+              <Label htmlFor="mapping-note">비고</Label>
+              <Input
+                as="textarea"
                 id="mapping-note"
                 rows={3}
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
                 placeholder="필요 시 참고 메모를 입력하세요."
+                disabled={loading}
+                style={{ resize: "vertical" }}
               />
-            </div>
-            <div>
-              <FieldLabel>사용 여부</FieldLabel>
+            </DetailItem>
+            <DetailItem>
+              <Label>사용 여부</Label>
               <Select
                 value={enabled}
                 onChange={(e) => setEnabled(e.target.value as EnabledOption)}
+                disabled={loading}
                 style={{ minWidth: 160 }}
               >
                 <option value="true">활성</option>
                 <option value="false">중지</option>
               </Select>
-            </div>
-          </div>
+            </DetailItem>
+          </DetailGrid>
         </Section>
 
         <Footer>
@@ -236,26 +241,4 @@ const PlaceholderText = styled.p`
   margin: 0;
   color: #9ca3af;
   font-size: 0.9rem;
-`;
-
-const FieldLabel = styled.label`
-  display: block;
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: #4b5563;
-  margin-bottom: 6px;
-`;
-
-const Textarea = styled.textarea`
-  width: 100%;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  padding: 10px 12px;
-  font-size: 0.92rem;
-  resize: none;
-  &:focus {
-    outline: none;
-    border-color: #111827;
-    box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08);
-  }
 `;

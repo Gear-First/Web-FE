@@ -22,6 +22,7 @@ import type { PartRecord } from "../items/parts/PartTypes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createPartCarModelMapping,
+  createCarModel,
   deletePartCarModelMapping,
   fetchPartCarModels,
   partCarModelKeys,
@@ -34,11 +35,13 @@ import type {
   PartCarModelUpdateDTO,
 } from "./CarModelTypes";
 import CarModelMappingModal from "./components/CarModelMappingModal";
+import CarModelRegisterModal from "./components/CarModelRegisterModal";
 import CarModelExplorerSection from "./components/CarModelExplorerSection";
 
 export default function CarModelPage() {
   const [selectedPart, setSelectedPart] = useState<PartRecord | null>(null);
   const [isPartModalOpen, setIsPartModalOpen] = useState(false);
+  const [isCarModelRegisterModalOpen, setIsCarModelRegisterModalOpen] = useState(false);
 
   const [keyword, setKeyword] = useState("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
@@ -133,6 +136,18 @@ export default function CarModelPage() {
     onError: (error: Error) => alert(error.message),
   });
 
+  const createCarModelMut = useMutation({
+    mutationFn: createCarModel,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["carModel"],
+        exact: false,
+      });
+      setIsCarModelRegisterModalOpen(false);
+    },
+    onError: (error: Error) => alert(error.message),
+  });
+
   const [isMappingModalOpen, setIsMappingModalOpen] = useState(false);
   const [mappingMode, setMappingMode] = useState<"create" | "edit">("create");
   const [editingMapping, setEditingMapping] = useState<PartCarModelMapping | null>(
@@ -208,6 +223,10 @@ export default function CarModelPage() {
 
   const isMutating = createMut.isPending || updateMut.isPending;
 
+  const handleCreateCarModel = async (payload: { name: string; enabled: boolean }) => {
+    await createCarModelMut.mutateAsync(payload);
+  };
+
   return (
     <Layout>
       <PageContainer>
@@ -219,9 +238,14 @@ export default function CarModelPage() {
                 부품과 적용 차량 모델 간의 관계를 조회·관리합니다.
               </SectionCaption>
             </div>
-            <Button color="black" onClick={() => setIsPartModalOpen(true)}>
-              부품 선택
-            </Button>
+            <HeaderActions>
+              <Button color="black" onClick={() => setIsCarModelRegisterModalOpen(true)}>
+                차량 모델 등록
+              </Button>
+              <Button color="black" onClick={() => setIsPartModalOpen(true)}>
+                부품 선택
+              </Button>
+            </HeaderActions>
           </SectionHeader>
 
           {selectedPart ? (
@@ -372,6 +396,13 @@ export default function CarModelPage() {
         onSubmit={handleSubmitMapping}
         loading={isMutating}
       />
+
+      <CarModelRegisterModal
+        isOpen={isCarModelRegisterModalOpen}
+        onClose={() => setIsCarModelRegisterModalOpen(false)}
+        onSubmit={handleCreateCarModel}
+        loading={createCarModelMut.isPending}
+      />
     </Layout>
   );
 }
@@ -410,4 +441,16 @@ const EmptyState = styled.div`
   text-align: center;
   color: #9ca3af;
   font-size: 0.95rem;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
 `;

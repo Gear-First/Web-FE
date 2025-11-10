@@ -38,6 +38,11 @@ export type PartCarModelUpdateDTO = {
   enabled?: boolean;
 };
 
+export type CarModelCreateDTO = {
+  name: string;
+  enabled: boolean;
+};
+
 /* ======================= server models ======================= */
 
 export type ServerCarModel = {

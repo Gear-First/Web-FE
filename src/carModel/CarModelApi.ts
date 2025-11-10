@@ -13,6 +13,7 @@ import {
   type ServerPage,
   type ServerPartCarModel,
   type CarModelPartRecord,
+  type CarModelCreateDTO,
   toCarModelPartRecord,
   toCarModelRecord,
   toPartCarModelMapping,
@@ -255,4 +256,25 @@ export async function fetchCarModelParts(
   if (!json.success)
     throw new Error(json.message || "차량 모델 적용 부품 조회 실패");
   return mapPagedResponse(json.data, toCarModelPartRecord);
+}
+
+export async function createCarModel(
+  payload: CarModelCreateDTO
+): Promise<CarModelRecord> {
+  const res = await fetch(CAR_MODEL_ENDPOINT, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(payload),
+  });
+  if (!res.ok) throw new Error(`차량 모델 생성 실패 (${res.status})`);
+  const json: ApiResponse<ServerCarModel> = await res.json();
+  if (!json.success) throw new Error(json.message || "차량 모델 생성 실패");
+  return toCarModelRecord(json.data);
+}
+
+export async function deleteCarModel(carModelId: number): Promise<void> {
+  const res = await fetch(`${CAR_MODEL_ENDPOINT}/${carModelId}`, {
+    method: "DELETE",
+  });
+  if (!res.ok) throw new Error(`차량 모델 삭제 실패 (${res.status})`);
 }
