@@ -22,7 +22,6 @@ import type { PartRecord } from "../items/parts/PartTypes";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createPartCarModelMapping,
-  createCarModel,
   deletePartCarModelMapping,
   fetchPartCarModels,
   partCarModelKeys,
@@ -35,13 +34,11 @@ import type {
   PartCarModelUpdateDTO,
 } from "./CarModelTypes";
 import CarModelMappingModal from "./components/CarModelMappingModal";
-import CarModelRegisterModal from "./components/CarModelRegisterModal";
 import CarModelExplorerSection from "./components/CarModelExplorerSection";
 
 export default function CarModelPage() {
   const [selectedPart, setSelectedPart] = useState<PartRecord | null>(null);
   const [isPartModalOpen, setIsPartModalOpen] = useState(false);
-  const [isCarModelRegisterModalOpen, setIsCarModelRegisterModalOpen] = useState(false);
 
   const [keyword, setKeyword] = useState("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
@@ -136,23 +133,10 @@ export default function CarModelPage() {
     onError: (error: Error) => alert(error.message),
   });
 
-  const createCarModelMut = useMutation({
-    mutationFn: createCarModel,
-    onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["carModel"],
-        exact: false,
-      });
-      setIsCarModelRegisterModalOpen(false);
-    },
-    onError: (error: Error) => alert(error.message),
-  });
-
   const [isMappingModalOpen, setIsMappingModalOpen] = useState(false);
   const [mappingMode, setMappingMode] = useState<"create" | "edit">("create");
-  const [editingMapping, setEditingMapping] = useState<PartCarModelMapping | null>(
-    null
-  );
+  const [editingMapping, setEditingMapping] =
+    useState<PartCarModelMapping | null>(null);
 
   const openCreateModal = () => {
     if (!selectedPart) {
@@ -223,10 +207,6 @@ export default function CarModelPage() {
 
   const isMutating = createMut.isPending || updateMut.isPending;
 
-  const handleCreateCarModel = async (payload: { name: string; enabled: boolean }) => {
-    await createCarModelMut.mutateAsync(payload);
-  };
-
   return (
     <Layout>
       <PageContainer>
@@ -239,9 +219,6 @@ export default function CarModelPage() {
               </SectionCaption>
             </div>
             <HeaderActions>
-              <Button color="black" onClick={() => setIsCarModelRegisterModalOpen(true)}>
-                차량 모델 등록
-              </Button>
               <Button color="black" onClick={() => setIsPartModalOpen(true)}>
                 부품 선택
               </Button>
@@ -313,13 +290,17 @@ export default function CarModelPage() {
                   {rows.length === 0 ? (
                     <tr>
                       <Td colSpan={5} style={{ textAlign: "center" }}>
-                        {isFetching ? "불러오는 중..." : "등록된 매핑이 없습니다."}
+                        {isFetching
+                          ? "불러오는 중..."
+                          : "등록된 매핑이 없습니다."}
                       </Td>
                     </tr>
                   ) : (
                     rows.map((mapping) => (
                       <tr key={`${mapping.carModelId}`}>
-                        <Td style={{ textAlign: "left" }}>{mapping.carModelName}</Td>
+                        <Td style={{ textAlign: "left" }}>
+                          {mapping.carModelName}
+                        </Td>
                         <Td style={{ textAlign: "left" }}>
                           {mapping.note ?? "-"}
                         </Td>
@@ -332,7 +313,13 @@ export default function CarModelPage() {
                         </Td>
                         <Td>{mapping.updatedAt ?? "-"}</Td>
                         <Td>
-                          <div style={{ display: "flex", gap: 8, justifyContent: "center" }}>
+                          <div
+                            style={{
+                              display: "flex",
+                              gap: 8,
+                              justifyContent: "center",
+                            }}
+                          >
                             <Button
                               color="gray"
                               size="sm"
@@ -395,13 +382,6 @@ export default function CarModelPage() {
         mapping={editingMapping}
         onSubmit={handleSubmitMapping}
         loading={isMutating}
-      />
-
-      <CarModelRegisterModal
-        isOpen={isCarModelRegisterModalOpen}
-        onClose={() => setIsCarModelRegisterModalOpen(false)}
-        onSubmit={handleCreateCarModel}
-        loading={createCarModelMut.isPending}
       />
     </Layout>
   );

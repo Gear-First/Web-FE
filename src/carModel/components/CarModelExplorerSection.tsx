@@ -17,13 +17,16 @@ import {
   Th,
 } from "../../components/common/PageLayout";
 import { useCarModelSearch } from "../hooks/useCarModelSearch";
-import type { CarModelRecord } from "../CarModelTypes";
-import { useQuery } from "@tanstack/react-query";
+import type { CarModelRecord, CarModelCreateDTO } from "../CarModelTypes";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   carModelPartKeys,
+  createCarModel,
+  updateCarModel,
   fetchCarModelParts,
   type CarModelPartListParams,
 } from "../CarModelApi";
+import CarModelRegisterModal from "./CarModelRegisterModal";
 
 const MODEL_PAGE_SIZE = 8;
 const PART_PAGE_SIZE = 10;
@@ -31,14 +34,17 @@ const PART_PAGE_SIZE = 10;
 type StatusFilter = "all" | "true" | "false";
 
 export default function CarModelExplorerSection() {
+  const queryClient = useQueryClient();
   const [keyword, setKeyword] = useState("");
-  const [status, setStatus] = useState<StatusFilter>("true");
+  const [status, setStatus] = useState<StatusFilter>("all");
   const [applied, setApplied] = useState({
     keyword: "",
-    status: "true" as StatusFilter,
+    status: "all" as StatusFilter,
   });
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(MODEL_PAGE_SIZE);
+  const [isCarModelRegisterModalOpen, setIsCarModelRegisterModalOpen] =
+    useState(false);
 
   const params = useMemo(
     () => ({
@@ -125,8 +131,8 @@ export default function CarModelExplorerSection() {
 
   const onReset = () => {
     setKeyword("");
-    setStatus("true");
-    setApplied({ keyword: "", status: "true" });
+    setStatus("all");
+    setApplied({ keyword: "", status: "all" });
     setPage(1);
   };
 
@@ -141,194 +147,273 @@ export default function CarModelExplorerSection() {
     setPartPage(1);
   };
 
+  const toggleModelMut = useMutation({
+    mutationFn: ({ id, enabled }: { id: number; enabled: boolean }) =>
+      updateCarModel(id, { enabled }),
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ["carModel"], exact: false });
+      setSelected((prev) =>
+        prev && prev.id === variables.id
+          ? { ...prev, enabled: variables.enabled }
+          : prev
+      );
+    },
+    onError: (error: Error) => alert(error.message),
+  });
+
+  const createCarModelMut = useMutation({
+    mutationFn: createCarModel,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["carModel"],
+        exact: false,
+      });
+      setIsCarModelRegisterModalOpen(false);
+    },
+    onError: (error: Error) => alert(error.message),
+  });
+
+  const handleCreateCarModel = async (payload: CarModelCreateDTO) => {
+    await createCarModelMut.mutateAsync(payload);
+  };
+
+  const handleToggleModel = async (model: CarModelRecord) => {
+    const nextEnabled = !model.enabled;
+    if (!nextEnabled) {
+      const ok = window.confirm(
+        `"${model.name}" 모델을 비활성화하시겠어요?\n(활성 매핑이 있을 경우 취소될 수 있습니다.)`
+      );
+      if (!ok) return;
+    }
+    await toggleModelMut.mutateAsync({ id: model.id, enabled: nextEnabled });
+  };
+
   return (
-    <SectionCard>
-      <SectionHeader>
-        <div>
-          <SectionTitle>차량 모델별 적용 현황</SectionTitle>
-          <SectionCaption>
-            좌측에서 모델을 선택하면 우측에서 적용된 부품 목록을 확인할 수
-            있습니다.
-          </SectionCaption>
-        </div>
-      </SectionHeader>
+    <>
+      <SectionCard>
+        <SectionHeader>
+          <div>
+            <SectionTitle>차량 모델별 적용 현황</SectionTitle>
+            <SectionCaption>
+              좌측에서 모델을 선택하면 우측에서 적용된 부품 목록을 확인할 수
+              있습니다.
+            </SectionCaption>
+          </div>
+        </SectionHeader>
 
-      <ExplorerGrid>
-        <Pane>
-          <PaneHeader>
-            <PaneTitle>차량 모델 목록</PaneTitle>
-            <FilterGroup>
-              <Button variant="icon" onClick={onReset} aria-label="초기화">
-                <img src={resetIcon} width={18} height={18} alt="초기화" />
-              </Button>
-              <Select
-                value={status}
-                onChange={(e) => {
-                  const value = e.target.value as StatusFilter;
-                  setStatus(value);
-                  setApplied((prev) => ({ ...prev, status: value }));
-                  setPage(1);
-                }}
-                style={{ minWidth: 140 }}
-              >
-                <option value="true">활성</option>
-                <option value="false">중지</option>
-                <option value="all">전체</option>
-              </Select>
-              <SearchBox
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                onSearch={onSearch}
-                placeholder="모델명 검색"
-                width="150px"
-              />
-            </FilterGroup>
-          </PaneHeader>
-
-          <CenteredTable>
-            <thead>
-              <tr>
-                <Th style={{ width: 70 }}>ID</Th>
-                <Th>모델명</Th>
-                <Th style={{ width: 120 }}>상태</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {models.length === 0 ? (
-                <tr>
-                  <Td colSpan={3} style={{ textAlign: "center" }}>
-                    {isFetching ? "불러오는 중..." : "등록된 모델이 없습니다."}
-                  </Td>
-                </tr>
-              ) : (
-                models.map((model) => (
-                  <ModelRow
-                    key={model.id}
-                    $active={selected?.id === model.id}
-                    onClick={() => {
-                      setSelected(model);
-                      setPartPage(1);
-                    }}
-                  >
-                    <Td>{model.id}</Td>
-                    <Td>{model.name}</Td>
-                    <Td>
-                      <StatusBadge
-                        $variant={model.enabled ? "success" : "danger"}
-                      >
-                        {model.enabled ? "활성" : "중지"}
-                      </StatusBadge>
-                    </Td>
-                  </ModelRow>
-                ))
-              )}
-            </tbody>
-          </CenteredTable>
-
-          <Pagination
-            page={page}
-            totalPages={Math.max(1, totalPages)}
-            onChange={setPage}
-            isBusy={isFetching}
-            totalItems={total}
-            pageSize={pageSize}
-            onChangePageSize={(n) => {
-              setPageSize(n);
-              setPage(1);
-            }}
-            pageSizeOptions={[6, 8, 10]}
-            align="center"
-            dense
-          />
-        </Pane>
-
-        <Pane>
-          {selected ? (
-            <div>
-              <PaneHeader>
-                <div>
-                  <PaneTitle>{selected.name}</PaneTitle>
-                  <small style={{ color: "#6b7280" }}>
-                    ID {selected.id} · {selected.enabled ? "활성" : "중지"}
-                  </small>
-                </div>
-                <FilterGroup
-                  style={{ justifyContent: "flex-end", marginBottom: 0 }}
+        <ExplorerGrid>
+          <Pane>
+            <PaneHeader>
+              <PaneTitle>차량 모델 목록</PaneTitle>
+              <FilterGroup>
+                <Button variant="icon" onClick={onReset} aria-label="초기화">
+                  <img src={resetIcon} width={18} height={18} alt="초기화" />
+                </Button>
+                <Select
+                  value={status}
+                  onChange={(e) => {
+                    const value = e.target.value as StatusFilter;
+                    setStatus(value);
+                    setApplied((prev) => ({ ...prev, status: value }));
+                    setPage(1);
+                  }}
+                  style={{ minWidth: "10px", width: "100px" }}
                 >
-                  <Button
-                    variant="icon"
-                    onClick={onResetParts}
-                    aria-label="초기화"
-                  >
-                    <img src={resetIcon} width={18} height={18} alt="초기화" />
-                  </Button>
-                  <SearchBox
-                    keyword={partKeyword}
-                    onKeywordChange={setPartKeyword}
-                    onSearch={onSearchParts}
-                    placeholder="부품명 검색"
-                    width="220px"
-                  />
-                </FilterGroup>
-              </PaneHeader>
+                  <option value="all">전체</option>
+                  <option value="true">활성</option>
+                  <option value="false">중지</option>
+                </Select>
 
-              <CenteredTable>
-                <thead>
+                <SearchBox
+                  keyword={keyword}
+                  onKeywordChange={setKeyword}
+                  onSearch={onSearch}
+                  placeholder="모델명 검색"
+                  width="150px"
+                />
+              </FilterGroup>
+              <FilterGroup>
+                <Button
+                  color="black"
+                  onClick={() => setIsCarModelRegisterModalOpen(true)}
+                >
+                  차량 모델 등록
+                </Button>
+              </FilterGroup>
+            </PaneHeader>
+
+            <CenteredTable>
+              <thead>
+                <tr>
+                  <Th style={{ width: 70 }}>ID</Th>
+                  <Th>모델명</Th>
+                  <Th style={{ width: 120 }}>상태</Th>
+                  <Th style={{ width: 140 }}>동작</Th>
+                </tr>
+              </thead>
+              <tbody>
+                {models.length === 0 ? (
                   <tr>
-                    <Th style={{ width: 120 }}>부품 코드</Th>
-                    <Th>부품명</Th>
-                    <Th style={{ width: 140 }}>카테고리</Th>
+                    <Td colSpan={4} style={{ textAlign: "center" }}>
+                      {isFetching
+                        ? "불러오는 중..."
+                        : "등록된 모델이 없습니다."}
+                    </Td>
                   </tr>
-                </thead>
-                <tbody>
-                  {partRows.length === 0 ? (
-                    <tr>
-                      <Td colSpan={3} style={{ textAlign: "center" }}>
-                        {partFetching
-                          ? "불러오는 중..."
-                          : "적용된 부품이 없습니다."}
+                ) : (
+                  models.map((model) => (
+                    <ModelRow
+                      key={model.id}
+                      $active={selected?.id === model.id}
+                      onClick={() => {
+                        setSelected(model);
+                        setPartPage(1);
+                      }}
+                    >
+                      <Td>{model.id}</Td>
+                      <Td>{model.name}</Td>
+                      <Td>
+                        <StatusBadge
+                          $variant={model.enabled ? "success" : "danger"}
+                        >
+                          {model.enabled ? "활성" : "중지"}
+                        </StatusBadge>
                       </Td>
-                    </tr>
-                  ) : (
-                    partRows.map((part) => (
-                      <tr key={`${part.id}-${part.code}`}>
-                        <Td>{part.code}</Td>
-                        <Td>{part.name}</Td>
-                        <Td>{part.category?.name ?? "-"}</Td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-              </CenteredTable>
+                      <Td>
+                        <Button
+                          size="sm"
+                          color={model.enabled ? "danger" : "black"}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleToggleModel(model);
+                          }}
+                          disabled={toggleModelMut.isPending}
+                        >
+                          {model.enabled ? "중지" : "활성"}
+                        </Button>
+                      </Td>
+                    </ModelRow>
+                  ))
+                )}
+              </tbody>
+            </CenteredTable>
 
-              <Pagination
-                page={partPage}
-                totalPages={Math.max(1, partTotalPages)}
-                onChange={setPartPage}
-                isBusy={partFetching}
-                totalItems={partTotal}
-                pageSize={partPageSize}
-                onChangePageSize={(n) => {
-                  setPartPageSize(n);
-                  setPartPage(1);
-                }}
-                pageSizeOptions={[10, 20, 50]}
-                align="center"
-                dense
-              />
-            </div>
-          ) : (
-            <EmptyState>좌측에서 차량 모델을 선택하세요.</EmptyState>
-          )}
-        </Pane>
-      </ExplorerGrid>
-    </SectionCard>
+            <Pagination
+              page={page}
+              totalPages={Math.max(1, totalPages)}
+              onChange={setPage}
+              isBusy={isFetching}
+              totalItems={total}
+              pageSize={pageSize}
+              onChangePageSize={(n) => {
+                setPageSize(n);
+                setPage(1);
+              }}
+              pageSizeOptions={[6, 8, 10]}
+              align="center"
+              dense
+            />
+          </Pane>
+
+          <Pane>
+            {selected ? (
+              <div>
+                <PaneHeader>
+                  <div>
+                    <PaneTitle>{selected.name}</PaneTitle>
+                    <small style={{ color: "#6b7280" }}>
+                      ID {selected.id} · {selected.enabled ? "활성" : "중지"}
+                    </small>
+                  </div>
+                  <FilterGroup
+                    style={{ justifyContent: "flex-end", marginBottom: 0 }}
+                  >
+                    <Button
+                      variant="icon"
+                      onClick={onResetParts}
+                      aria-label="초기화"
+                    >
+                      <img
+                        src={resetIcon}
+                        width={18}
+                        height={18}
+                        alt="초기화"
+                      />
+                    </Button>
+                    <SearchBox
+                      keyword={partKeyword}
+                      onKeywordChange={setPartKeyword}
+                      onSearch={onSearchParts}
+                      placeholder="부품명 검색"
+                      width="220px"
+                    />
+                  </FilterGroup>
+                </PaneHeader>
+
+                <CenteredTable>
+                  <thead>
+                    <tr>
+                      <Th style={{ width: 120 }}>부품 코드</Th>
+                      <Th>부품명</Th>
+                      <Th style={{ width: 140 }}>카테고리</Th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {partRows.length === 0 ? (
+                      <tr>
+                        <Td colSpan={3} style={{ textAlign: "center" }}>
+                          {partFetching
+                            ? "불러오는 중..."
+                            : "적용된 부품이 없습니다."}
+                        </Td>
+                      </tr>
+                    ) : (
+                      partRows.map((part) => (
+                        <tr key={`${part.id}-${part.code}`}>
+                          <Td>{part.code}</Td>
+                          <Td>{part.name}</Td>
+                          <Td>{part.category?.name ?? "-"}</Td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </CenteredTable>
+
+                <Pagination
+                  page={partPage}
+                  totalPages={Math.max(1, partTotalPages)}
+                  onChange={setPartPage}
+                  isBusy={partFetching}
+                  totalItems={partTotal}
+                  pageSize={partPageSize}
+                  onChangePageSize={(n) => {
+                    setPartPageSize(n);
+                    setPartPage(1);
+                  }}
+                  pageSizeOptions={[10, 20, 50]}
+                  align="center"
+                  dense
+                />
+              </div>
+            ) : (
+              <EmptyState>좌측에서 차량 모델을 선택하세요.</EmptyState>
+            )}
+          </Pane>
+        </ExplorerGrid>
+      </SectionCard>
+      <CarModelRegisterModal
+        isOpen={isCarModelRegisterModalOpen}
+        onClose={() => setIsCarModelRegisterModalOpen(false)}
+        onSubmit={handleCreateCarModel}
+        loading={createCarModelMut.isPending}
+      />
+    </>
   );
 }
 
 const ExplorerGrid = styled.div`
   display: grid;
-  grid-template-columns: 400px minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 24px;
   align-items: flex-start;
 
@@ -381,5 +466,6 @@ const CenteredTable = styled(Table)`
   th,
   td {
     text-align: center;
+    white-space: nowrap;
   }
 `;
