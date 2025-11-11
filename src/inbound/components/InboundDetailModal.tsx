@@ -20,6 +20,7 @@ import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
 import {
   type InboundRecord,
   type InboundLineStatus,
+  type InboundDetailRecord,
   InboundStatusLabelMap,
 } from "../InboundTypes";
 import { fetchInboundDetail, inboundKeys } from "../InboundApi";
@@ -61,9 +62,10 @@ const InboundDetailModal = ({
 
   const {
     data: detail,
-    isLoading,
+    isPending,
+    isFetching,
     error,
-  } = useQuery({
+  } = useQuery<InboundDetailRecord, Error>({
     queryKey: inboundKeys.detail(noteId ?? "nil"),
     queryFn: () => fetchInboundDetail(noteId!),
     enabled,
@@ -73,10 +75,12 @@ const InboundDetailModal = ({
   if (!isOpen || !record) return null;
 
   const fmt = (v?: string | null) => (v && v.trim() ? v : "-");
+  const isInitialPending = isPending && !detail;
+  const isRefreshing = isFetching && !isPending;
   const fmtNum = (n?: number | null) =>
     typeof n === "number" ? n.toLocaleString() : "-";
 
-  const lines = Array.isArray(detail?.lines) ? detail!.lines : [];
+  const lines: InboundDetailRecord["lines"] = detail?.lines ?? [];
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
@@ -84,7 +88,7 @@ const InboundDetailModal = ({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="inbound-detail-title"
-        loading={isLoading}
+        loading={isInitialPending}
       >
         <Header>
           <HeaderLeft>
@@ -97,14 +101,20 @@ const InboundDetailModal = ({
                 (record.statusRaw ?? "").trim().toUpperCase()
               ] || InboundStatusLabelMap.DEFAULT}
             </StatusBadge>
+            {isRefreshing && (
+              <span
+                style={{ marginLeft: 8, color: "#6b7280", fontSize: "0.85rem" }}
+              >
+                최신 데이터 동기화 중…
+              </span>
+            )}
           </HeaderLeft>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
-
         {error && (
           <Section>
             <div style={{ color: "#ef4444", fontSize: 14 }}>
-              상세 조회 실패: {(error as Error).message}
+              상세 조회 실패: {error.message}
             </div>
           </Section>
         )}
@@ -175,7 +185,7 @@ const InboundDetailModal = ({
                 </tr>
               </thead>
               <tbody>
-                {isLoading ? (
+                {isInitialPending ? (
                   <tr>
                     <Td
                       colSpan={6}

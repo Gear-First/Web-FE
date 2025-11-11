@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import styled, { css } from "styled-components";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import {
   ResponsiveContainer,
@@ -55,6 +55,15 @@ type MenuSummary = {
   loading?: boolean;
   error?: string;
 };
+
+function getQueryStatus<T>(query: UseQueryResult<T, unknown>) {
+  const hasData = typeof query.data !== "undefined";
+  return {
+    hasData,
+    isInitialPending: query.isPending && !hasData,
+    isRefreshing: query.isFetching && !query.isPending && hasData,
+  };
+}
 
 export default function DashboardPage() {
   const pendingOrders = useQuery({
@@ -180,14 +189,57 @@ export default function DashboardPage() {
   });
 
   const {
+    isInitialPending: pendingOrdersLoading,
+    isRefreshing: pendingOrdersRefreshing,
+  } = getQueryStatus(pendingOrders);
+  const {
+    isInitialPending: processedOrdersLoading,
+    isRefreshing: processedOrdersRefreshing,
+  } = getQueryStatus(processedOrders);
+  const {
+    isInitialPending: bomRecordsLoading,
+    isRefreshing: bomRecordsRefreshing,
+  } = getQueryStatus(bomRecords);
+  const {
+    isInitialPending: companyRecordsLoading,
+    isRefreshing: companyRecordsRefreshing,
+  } = getQueryStatus(companyRecords);
+  const {
+    isInitialPending: inventoryPartsLoading,
+    isRefreshing: inventoryPartsRefreshing,
+  } = getQueryStatus(inventoryParts);
+  const {
+    isInitialPending: propertyRecordsLoading,
+    isRefreshing: propertyRecordsRefreshing,
+  } = getQueryStatus(propertyRecords);
+  const {
+    isInitialPending: inboundRecordsLoading,
+    isRefreshing: inboundRecordsRefreshing,
+  } = getQueryStatus(inboundRecords);
+  const {
+    isInitialPending: outboundRecordsLoading,
+    isRefreshing: outboundRecordsRefreshing,
+  } = getQueryStatus(outboundRecords);
+  const {
+    isInitialPending: humanRecordsLoading,
+    isRefreshing: humanRecordsRefreshing,
+  } = getQueryStatus(humanRecords);
+  const {
+    isInitialPending: itemPartRecordsLoading,
+    isRefreshing: itemPartRecordsRefreshing,
+  } = getQueryStatus(itemPartRecords);
+
+  const {
     data: pods,
-    isLoading,
+    isPending: arePodsPending,
+    isFetching: arePodsFetching,
     error,
   } = useQuery({
     queryKey: ["dashboard", "pods"],
     queryFn: () => fetchPods("default"),
     staleTime: 30 * 1000,
   });
+  const isPodsRefreshing = arePodsFetching && !arePodsPending && Boolean(pods);
   const openWorkload = useMemo(() => {
     const pending = pendingOrders.data ?? 0;
     const inbound = inboundRecords.data ?? 0;
@@ -259,17 +311,19 @@ export default function DashboardPage() {
         title: "요청 관리",
         route: "/request",
         primary: {
-          value: pendingOrders.isLoading
+          value: pendingOrdersLoading
             ? "· · ·"
             : formatNumber(pendingOrders.data),
           label: "승인 대기",
         },
-        secondary: processedOrders.isLoading
+        secondary: processedOrdersLoading
           ? "승인 데이터를 불러오는 중"
+          : processedOrdersRefreshing
+          ? "승인 데이터를 동기화 중…"
           : `이번 주 처리 ${formatNumber(processedOrders.data)}건`,
         status:
           processedOrders.data && processedOrders.data > 0 ? "ok" : "muted",
-        loading: pendingOrders.isLoading || processedOrders.isLoading,
+        loading: pendingOrders.isFetching || processedOrders.isFetching,
         error:
           pendingOrders.isError || processedOrders.isError
             ? "요청 현황을 불러오지 못했습니다"
@@ -280,12 +334,12 @@ export default function DashboardPage() {
         title: "자재 소요량 계획",
         route: "/mrp",
         primary: {
-          value: bomRecords.isLoading ? "· · ·" : formatNumber(bomRecords.data),
+          value: bomRecordsLoading ? "· · ·" : formatNumber(bomRecords.data),
           label: "등록된 BOM",
         },
         secondary: "MRP는 최신 BOM 기준으로 계산됩니다",
         status: "muted",
-        loading: bomRecords.isLoading,
+        loading: bomRecords.isFetching,
         error: bomRecords.isError
           ? "BOM 데이터를 불러오지 못했습니다"
           : undefined,
@@ -295,7 +349,7 @@ export default function DashboardPage() {
         title: "구매 관리",
         route: "/purchasing",
         primary: {
-          value: companyRecords.isLoading
+          value: companyRecordsLoading
             ? "· · ·"
             : formatNumber(companyRecords.data),
           label: "협력사 보유",
@@ -303,7 +357,7 @@ export default function DashboardPage() {
         secondary: "가격·납기 데이터 최신화 상태를 확인하세요",
         status:
           companyRecords.data && companyRecords.data > 0 ? "ok" : "warning",
-        loading: companyRecords.isLoading,
+        loading: companyRecords.isFetching,
         error: companyRecords.isError
           ? "협력사 목록을 불러오지 못했습니다"
           : undefined,
@@ -313,7 +367,7 @@ export default function DashboardPage() {
         title: "품목 관리",
         route: "/items",
         primary: {
-          value: itemPartRecords.isLoading
+          value: itemPartRecordsLoading
             ? "· · ·"
             : formatNumber(itemPartRecords.data),
           label: "등록된 품목",
@@ -321,7 +375,7 @@ export default function DashboardPage() {
         secondary: "부품·자재·카테고리를 한 화면에서 관리합니다",
         status:
           itemPartRecords.data && itemPartRecords.data > 0 ? "ok" : "muted",
-        loading: itemPartRecords.isLoading,
+        loading: itemPartRecords.isFetching,
         error: itemPartRecords.isError
           ? "품목 정보를 불러오지 못했습니다"
           : undefined,
@@ -331,17 +385,19 @@ export default function DashboardPage() {
         title: "재고 관리",
         route: "/part",
         primary: {
-          value: inventoryParts.isLoading
+          value: inventoryPartsLoading
             ? "· · ·"
             : formatNumber(inventoryParts.data),
           label: "창고별 품목",
         },
-        secondary: propertyRecords.isLoading
+        secondary: propertyRecordsLoading
           ? "자산 가치를 계산 중입니다"
+          : propertyRecordsRefreshing
+          ? "자산 정보를 동기화 중…"
           : `표본 자산 ₩${formatNumber(propertyRecords.data?.assetValue ?? 0)}`,
         status:
           inventoryParts.data && inventoryParts.data > 0 ? "ok" : "warning",
-        loading: inventoryParts.isLoading || propertyRecords.isLoading,
+        loading: inventoryParts.isFetching || propertyRecords.isFetching,
         error:
           inventoryParts.isError || propertyRecords.isError
             ? "재고/자산 데이터를 불러오지 못했습니다"
@@ -352,19 +408,21 @@ export default function DashboardPage() {
         title: "자산 관리",
         route: "/property",
         primary: {
-          value: propertyRecords.isLoading
+          value: propertyRecordsLoading
             ? "· · ·"
             : formatNumber(propertyRecords.data?.total),
           label: "자산 항목",
         },
-        secondary: propertyRecords.isLoading
+        secondary: propertyRecordsLoading
           ? undefined
+          : propertyRecordsRefreshing
+          ? "자산 정보를 동기화 중…"
           : `총액 ₩${formatNumber(propertyRecords.data?.assetValue ?? 0)}`,
         status:
           propertyRecords.data && propertyRecords.data.total > 0
             ? "ok"
             : "muted",
-        loading: propertyRecords.isLoading,
+        loading: propertyRecords.isFetching,
         error: propertyRecords.isError
           ? "자산 정보를 불러오지 못했습니다"
           : undefined,
@@ -374,7 +432,7 @@ export default function DashboardPage() {
         title: "입고 관리",
         route: "/inbound",
         primary: {
-          value: inboundRecords.isLoading
+          value: inboundRecordsLoading
             ? "· · ·"
             : formatNumber(inboundRecords.data),
           label: "입고 예정",
@@ -382,7 +440,7 @@ export default function DashboardPage() {
         secondary: "검수 준비 통제를 확인하세요",
         status:
           inboundRecords.data && inboundRecords.data > 0 ? "warning" : "ok",
-        loading: inboundRecords.isLoading,
+        loading: inboundRecords.isFetching,
         error: inboundRecords.isError
           ? "입고 데이터를 불러오지 못했습니다"
           : undefined,
@@ -392,7 +450,7 @@ export default function DashboardPage() {
         title: "출고 관리",
         route: "/outbound",
         primary: {
-          value: outboundRecords.isLoading
+          value: outboundRecordsLoading
             ? "· · ·"
             : formatNumber(outboundRecords.data),
           label: "출고 대기",
@@ -400,7 +458,7 @@ export default function DashboardPage() {
         secondary: "납기 위험 출고를 우선 확인하세요",
         status:
           outboundRecords.data && outboundRecords.data > 0 ? "warning" : "ok",
-        loading: outboundRecords.isLoading,
+        loading: outboundRecords.isFetching,
         error: outboundRecords.isError
           ? "출고 데이터를 불러오지 못했습니다"
           : undefined,
@@ -410,14 +468,14 @@ export default function DashboardPage() {
         title: "인사 관리",
         route: "/human",
         primary: {
-          value: humanRecords.isLoading
+          value: humanRecordsLoading
             ? "· · ·"
             : formatNumber(humanRecords.data),
           label: "등록 인원",
         },
         secondary: "현장 인력 구성과 역량 분포를 살펴보세요",
         status: humanRecords.data && humanRecords.data > 0 ? "ok" : "muted",
-        loading: humanRecords.isLoading,
+        loading: humanRecords.isFetching,
         error: humanRecords.isError
           ? "인사 데이터를 불러오지 못했습니다"
           : undefined,
@@ -426,36 +484,48 @@ export default function DashboardPage() {
 
     return cards;
   }, [
-    pendingOrders.isLoading,
+    pendingOrdersLoading,
     pendingOrders.data,
     pendingOrders.isError,
-    processedOrders.isLoading,
+    pendingOrders.isFetching,
+    processedOrdersLoading,
+    processedOrdersRefreshing,
     processedOrders.data,
     processedOrders.isError,
-    bomRecords.isLoading,
+    processedOrders.isFetching,
+    bomRecordsLoading,
     bomRecords.data,
     bomRecords.isError,
-    companyRecords.isLoading,
+    bomRecords.isFetching,
+    companyRecordsLoading,
     companyRecords.data,
     companyRecords.isError,
-    itemPartRecords.isLoading,
+    companyRecords.isFetching,
+    itemPartRecordsLoading,
     itemPartRecords.data,
     itemPartRecords.isError,
-    inventoryParts.isLoading,
+    itemPartRecords.isFetching,
+    inventoryPartsLoading,
     inventoryParts.data,
     inventoryParts.isError,
-    propertyRecords.isLoading,
+    inventoryParts.isFetching,
+    propertyRecordsLoading,
+    propertyRecordsRefreshing,
     propertyRecords.data,
     propertyRecords.isError,
-    inboundRecords.isLoading,
+    propertyRecords.isFetching,
+    inboundRecordsLoading,
     inboundRecords.data,
     inboundRecords.isError,
-    outboundRecords.isLoading,
+    inboundRecords.isFetching,
+    outboundRecordsLoading,
     outboundRecords.data,
     outboundRecords.isError,
-    humanRecords.isLoading,
+    outboundRecords.isFetching,
+    humanRecordsLoading,
     humanRecords.data,
     humanRecords.isError,
+    humanRecords.isFetching,
   ]);
 
   return (
@@ -482,12 +552,17 @@ export default function DashboardPage() {
             <HeroSummaryItem>
               <span>출·입고 대기</span>
               <strong>
-                {inboundRecords.isLoading || outboundRecords.isLoading
+                {inboundRecordsLoading || outboundRecordsLoading
                   ? "· · ·"
                   : formatNumber(
                       (inboundRecords.data ?? 0) + (outboundRecords.data ?? 0)
                     )}
               </strong>
+              {(inboundRecordsRefreshing || outboundRecordsRefreshing) && (
+                <span style={{ fontSize: "0.72rem", color: "#6b7280" }}>
+                  동기화 중…
+                </span>
+              )}
             </HeroSummaryItem>
           </HeroSummary>
         </HeroCard>
@@ -620,8 +695,10 @@ export default function DashboardPage() {
                 ₩{formatNumber(propertyRecords.data?.assetValue ?? 0)}
               </InsightValue>
               <InsightDelta $tone="positive">
-                {propertyRecords.isLoading
+                {propertyRecordsLoading
                   ? "데이터 로딩 중"
+                  : propertyRecordsRefreshing
+                  ? "자산 데이터를 동기화 중…"
                   : `자산 항목 ${formatNumber(
                       propertyRecords.data?.total ?? 0
                     )}건`}
@@ -704,7 +781,7 @@ export default function DashboardPage() {
             );
           })}
         </MenuGrid>
-        {isLoading ? (
+        {arePodsPending ? (
           <PodSection>
             <PodTitle>Pod 모니터링</PodTitle>
             <p>데이터 로딩 중...</p>
@@ -717,6 +794,11 @@ export default function DashboardPage() {
         ) : (
           <PodSection>
             <PodTitle>Pod 모니터링</PodTitle>
+            {isPodsRefreshing && (
+              <p style={{ color: "#6b7280", fontSize: "0.85rem" }}>
+                Pod 상태 동기화 중…
+              </p>
+            )}
             <PodList>
               {pods?.map((pod: any) => (
                 <PodItem key={pod.name}>

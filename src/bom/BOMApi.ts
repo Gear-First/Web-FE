@@ -1,4 +1,3 @@
-// BOMApi.ts
 import {
   INVENTORY_ENDPOINTS,
   type ApiPage,

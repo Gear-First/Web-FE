@@ -46,7 +46,11 @@ const PartDetailModal = ({
     return () => window.removeEventListener("keydown", handleKey);
   }, [isOpen, onClose]);
 
-  const { data: detail, isLoading } = useQuery({
+  const {
+    data: detail,
+    isPending,
+    isFetching,
+  } = useQuery({
     queryKey: partKeys.detail(record?.partId ?? 0),
     queryFn: () => fetchPartDetail(record?.partId ?? 0),
     enabled: !!record && isOpen,
@@ -63,7 +67,10 @@ const PartDetailModal = ({
     if (ok) onDelete();
   };
 
-  const enabledText = isLoading
+  const isInitialPending = isPending && !detail;
+  const isRefreshing = isFetching && !isPending;
+
+  const enabledText = isInitialPending
     ? "로딩중…"
     : detail?.enabled === true
     ? "사용"
@@ -73,9 +80,7 @@ const PartDetailModal = ({
   const numberFormatter = new Intl.NumberFormat("ko-KR");
   const formatNumber = (value?: number | null) =>
     typeof value === "number" ? numberFormatter.format(value) : "—";
-  const priceText = numberFormatter.format(
-    detail?.price ?? record.price ?? 0
-  );
+  const priceText = numberFormatter.format(detail?.price ?? record.price ?? 0);
   const safetyStockText = formatNumber(
     detail?.safetyStockQty ?? record.safetyStockQty
   );
@@ -93,11 +98,16 @@ const PartDetailModal = ({
       <ModalContainer
         width="40%"
         onClick={(e) => e.stopPropagation()}
-        loading={isLoading}
+        loading={isInitialPending}
       >
         <Header>
           <HeaderLeft>
             <Title id="part-detail-title">부품 상세 정보</Title>
+            {isRefreshing && (
+              <span style={{ marginLeft: 8, color: "#6b7280" }}>
+                최신 정보 동기화 중…
+              </span>
+            )}
           </HeaderLeft>
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>

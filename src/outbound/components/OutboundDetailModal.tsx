@@ -1,4 +1,3 @@
-import { useState, useEffect } from "react";
 import type { OutboundRecord } from "../OutboundTypes";
 import { StatusBadge, Td, Th } from "../../components/common/PageLayout";
 import {
@@ -17,7 +16,7 @@ import {
   RemarkSection,
 } from "../../components/common/ModalPageLayout";
 import { StickyTable, TableScroll } from "../../components/common/ScrollTable";
-import { fetchOutboundDetail } from "../OutboundApi";
+import { fetchOutboundDetail, outboundKeys } from "../OutboundApi";
 import {
   OUTBOUND_STATUS_LABELS,
   OUTBOUND_STATUS_VARIANTS,
@@ -25,6 +24,7 @@ import {
   OUTBOUND_PART_STATUS_VARIANTS,
 } from "../OutboundTypes";
 import { fmtDate } from "../../utils/string";
+import { useQuery } from "@tanstack/react-query";
 
 interface Props {
   record: OutboundRecord | null;
@@ -33,29 +33,43 @@ interface Props {
 }
 
 const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
-  const [detail, setDetail] = useState<OutboundRecord | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const noteId = record?.noteId;
+  const enabled = Boolean(isOpen && noteId);
 
-  useEffect(() => {
-    if (isOpen && record) {
-      setIsLoading(true);
-      fetchOutboundDetail(record.noteId.toString())
-        .then((data) => setDetail(data))
-        .finally(() => setIsLoading(false));
-    }
-  }, [isOpen, record]);
+  const {
+    data: detail,
+    isPending,
+    isFetching,
+    error,
+  } = useQuery<OutboundRecord, Error>({
+    queryKey: outboundKeys.detail(noteId ?? "nil"),
+    queryFn: () => fetchOutboundDetail(record!.noteId.toString()),
+    enabled,
+    staleTime: 5 * 60 * 1000,
+    placeholderData: (prev) => prev,
+  });
 
   if (!isOpen) return null;
+
+  const isInitialPending = isPending && !detail;
+  const isRefreshing = isFetching && !isPending;
 
   return (
     <Overlay onClick={onClose}>
       <ModalContainer
         onClick={(e) => e.stopPropagation()}
-        loading={isLoading}
+        loading={isInitialPending}
       >
         <Header>
           <HeaderLeft>
             <Title>출고 상세 정보</Title>
+            {isRefreshing && (
+              <span
+                style={{ marginLeft: 8, color: "#6b7280", fontSize: "0.85rem" }}
+              >
+                최신 데이터 갱신 중…
+              </span>
+            )}
             {detail && (
               <StatusBadge
                 style={{ fontSize: "0.8rem" }}
@@ -68,7 +82,15 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
           <CloseButton onClick={onClose}>&times;</CloseButton>
         </Header>
 
-        {isLoading ? (
+        {error && (
+          <Section>
+            <div style={{ color: "#ef4444", fontSize: 14 }}>
+              상세 조회 실패: {error.message}
+            </div>
+          </Section>
+        )}
+
+        {isInitialPending ? (
           <p style={{ padding: 20 }}>로딩중…</p>
         ) : detail ? (
           <>
@@ -126,29 +148,40 @@ const OutboundDetailModal = ({ record, isOpen, onClose }: Props) => {
                     </tr>
                   </thead>
                   <tbody>
-                    {detail.lines?.map((line) => (
-                      <tr key={line.lineId}>
-                        <Td>{line.product?.name ?? "-"}</Td>
-                        <Td>{line.product?.code ?? "-"}</Td>
-                        <Td>{line.product?.lot ?? "-"}</Td>
-                        <Td>{line.orderedQty?.toLocaleString() ?? "-"}</Td>
-                        <Td>
-                          <StatusBadge
-                            $variant={
-                              OUTBOUND_PART_STATUS_VARIANTS[
-                                line.status as keyof typeof OUTBOUND_PART_STATUS_VARIANTS
-                              ]
-                            }
-                          >
-                            {
-                              OUTBOUND_PART_STATUS_LABELS[
-                                line.status as keyof typeof OUTBOUND_PART_STATUS_LABELS
-                              ]
-                            }
-                          </StatusBadge>
+                    {detail.lines?.length ? (
+                      detail.lines.map((line) => (
+                        <tr key={line.lineId}>
+                          <Td>{line.product?.name ?? "-"}</Td>
+                          <Td>{line.product?.code ?? "-"}</Td>
+                          <Td>{line.product?.lot ?? "-"}</Td>
+                          <Td>{line.orderedQty?.toLocaleString() ?? "-"}</Td>
+                          <Td>
+                            <StatusBadge
+                              $variant={
+                                OUTBOUND_PART_STATUS_VARIANTS[
+                                  line.status as keyof typeof OUTBOUND_PART_STATUS_VARIANTS
+                                ]
+                              }
+                            >
+                              {
+                                OUTBOUND_PART_STATUS_LABELS[
+                                  line.status as keyof typeof OUTBOUND_PART_STATUS_LABELS
+                                ]
+                              }
+                            </StatusBadge>
+                          </Td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <Td
+                          colSpan={5}
+                          style={{ textAlign: "center", color: "#6b7280" }}
+                        >
+                          라인이 없습니다.
                         </Td>
                       </tr>
-                    ))}
+                    )}
                   </tbody>
                 </StickyTable>
               </TableScroll>

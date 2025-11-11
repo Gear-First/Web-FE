@@ -1,19 +1,12 @@
-import axios from "axios";
 import type { PropertyResponse } from "./PropertyTypes";
+import { WAREHOUSE_BASE_PATH } from "../api";
 
 // --- query keys ---
 export const propertyKeys = {
   records: ["property", "property-records"] as const,
 };
 
-// axios 인스턴스 생성
-const api = axios.create({
-  baseURL: "https://gearfirst-auth.duckdns.org/warehouse/api/v1", // 백엔드 API 주소
-  headers: {
-    "Content-Type": "application/json",
-  },
-  timeout: 10000, // 10초 제한
-});
+const BASE_URL = `${WAREHOUSE_BASE_PATH}/inventory/on-hand`;
 
 export type PropertyQueryParams = {
   q?: string;
@@ -42,6 +35,24 @@ export async function fetchPropertyRecords(
   delete requestParams.keyword;
   delete requestParams.pageSize;
 
-  const res = await api.get("/inventory/on-hand", { params: requestParams });
-  return res.data;
+  const query = new URLSearchParams();
+  Object.entries(requestParams).forEach(([key, value]) => {
+    if (value === undefined || value === null) return;
+    query.set(key, String(value));
+  });
+
+  const url =
+    query.size > 0 ? `${BASE_URL}?${query.toString()}` : BASE_URL;
+
+  const res = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`자산 정보를 불러오지 못했습니다 (${res.status})`);
+  }
+
+  return res.json() as Promise<PropertyResponse>;
 }

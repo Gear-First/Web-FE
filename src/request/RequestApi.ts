@@ -1,10 +1,10 @@
-import axios from "axios";
 import type {
   PendingOrderResponse,
   ProcessedOrderResponse,
   CancelOrderResponse,
   OrderDetailResponse,
 } from "./RequestTypes";
+import { fetchWithAuth } from "../auth/api/fetchWithAuth";
 
 export const requestKeys = {
   pendingOrders: ["request", "pending-orders"] as const,
@@ -13,38 +13,42 @@ export const requestKeys = {
   orderDetail: (id: number) => ["request", "order-detail", id] as const,
 };
 
-// axios 인스턴스 생성
-const api = axios.create({
-  baseURL: "https://gearfirst-auth.duckdns.org/order/api/v1",
-  headers: {
-    "Content-Type": "application/json",
-  },
-  timeout: 10000, // 10초 제한
-});
+const REQUEST_BASE_URL = "https://gearfirst-auth.duckdns.org/order/api/v1";
 
-api.interceptors.request.use(
-  (config) => {
-    const token = sessionStorage.getItem("access_token");
+type QueryValue = string | number | boolean | undefined | null;
 
-    if (token) {
-      // Authorization 헤더 추가
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-api.interceptors.response.use(
-  (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      console.warn("[API] 401 Unauthorized 발생:", error.response.data);
-    }
-    return Promise.reject(error);
+function buildUrl(path: string, params?: Record<string, QueryValue>): string {
+  const url = new URL(`${REQUEST_BASE_URL}${path}`);
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      if (value === undefined || value === null || value === "") return;
+      url.searchParams.set(key, String(value));
+    });
   }
-);
+  return url.toString();
+}
+
+async function requestJson<T>(
+  path: string,
+  options: RequestInit = {},
+  params?: Record<string, QueryValue>
+): Promise<T> {
+  const res = await fetchWithAuth(buildUrl(path, params), {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options.headers ?? {}),
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      `요청 API 호출 실패 (${res.status} ${res.statusText || ""})`.trim()
+    );
+  }
+
+  return res.json() as Promise<T>;
+}
 
 // 미승인 목록 조회
 export async function fetchPendingOrders(params: {
@@ -55,8 +59,11 @@ export async function fetchPendingOrders(params: {
   startDate?: string;
   endDate?: string;
 }): Promise<PendingOrderResponse> {
-  const res = await api.get("/purchase-orders/head/orders/pending", { params });
-  return res.data;
+  return requestJson<PendingOrderResponse>(
+    "/purchase-orders/head/orders/pending",
+    {},
+    params
+  );
 }
 
 // 승인 목록 조회
@@ -69,10 +76,11 @@ export async function fetchProcessedOrders(params: {
   endDate?: string;
   status?: string;
 }): Promise<ProcessedOrderResponse> {
-  const res = await api.get("/purchase-orders/head/orders/processed", {
-    params,
-  });
-  return res.data;
+  return requestJson<ProcessedOrderResponse>(
+    "/purchase-orders/head/orders/processed",
+    {},
+    params
+  );
 }
 
 // 승인/반려 목록 조회
@@ -85,32 +93,32 @@ export async function fetchCancelOrders(params: {
   endDate?: string;
   status?: string;
 }): Promise<CancelOrderResponse> {
-  const res = await api.get("/purchase-orders/head/orders/cancel", {
-    params,
-  });
-  return res.data;
+  return requestJson<CancelOrderResponse>(
+    "/purchase-orders/head/orders/cancel",
+    {},
+    params
+  );
 }
 
 // 상세
 export async function fetchOrderDetail(
   orderId: number
 ): Promise<OrderDetailResponse> {
-  const res = await api.get(`/purchase-orders/head/${orderId}`);
-  return res.data;
+  return requestJson<OrderDetailResponse>(`/purchase-orders/head/${orderId}`);
 }
 
 // 발주 반려
 export async function rejectOrder(orderId: number, note: string) {
-  const res = await api.patch(`/purchase-orders/${orderId}/reject`, {
-    note,
+  return requestJson<any>(`/purchase-orders/${orderId}/reject`, {
+    method: "PATCH",
+    body: JSON.stringify({ note }),
   });
-  return res.data;
 }
 
 // 발주 승인
 export async function approveOrder(orderId: number, note: string) {
-  const res = await api.patch(`/purchase-orders/${orderId}/approve`, {
-    note,
+  return requestJson<any>(`/purchase-orders/${orderId}/approve`, {
+    method: "PATCH",
+    body: JSON.stringify({ note }),
   });
-  return res.data;
 }

@@ -1,5 +1,3 @@
-// OutboundApi.ts
-import axios from "axios";
 import type { OutboundRecord } from "./OutboundTypes";
 
 const OUTBOUND_BASE_URL = "http://34.120.215.23/warehouse/api/v1/shipping";
@@ -13,6 +11,7 @@ export const outboundKeys = {
   base: ["outbound"] as const,
   notDoneRecords: ["outbound", "not-done"] as const,
   doneRecords: ["outbound", "done"] as const,
+  detail: (id: string | number) => ["outbound", "detail", id] as const,
 };
 
 export type OutboundListParams = {
@@ -70,12 +69,14 @@ async function requestOutboundList(
     qs.toString().length > 0
       ? `${OUTBOUND_NOTES_ENDPOINT}?${qs.toString()}`
       : OUTBOUND_NOTES_ENDPOINT;
-  const res = await axios.get(url);
+  const res = await fetch(url);
 
-  if (res.status !== 200)
+  if (!res.ok) {
     throw new Error(`출고 데이터 요청 실패 (${res.status})`);
+  }
 
-  const { items, total, page, size } = res.data?.data ?? {};
+  const payload: any = await res.json().catch(() => ({}));
+  const { items, total, page, size } = payload?.data ?? {};
   const resolvedSize = clampPageSize(size ?? mergedParams.pageSize);
 
   return {
@@ -114,10 +115,12 @@ export async function fetchOutboundDetail(
   noteId: string | number
 ): Promise<OutboundRecord> {
   const url = `${OUTBOUND_NOTES_ENDPOINT}/${noteId}`;
-  const res = await axios.get(url);
+  const res = await fetch(url);
 
-  if (res.status !== 200)
+  if (!res.ok) {
     throw new Error(`출고 상세 요청 실패 (${res.status})`);
+  }
 
-  return res.data.data;
+  const payload: any = await res.json().catch(() => ({}));
+  return payload?.data as OutboundRecord;
 }

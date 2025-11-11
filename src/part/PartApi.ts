@@ -1,20 +1,12 @@
-import axios from "axios";
 import type { PartResponse } from "./PartTypes";
+import { WAREHOUSE_BASE_PATH } from "../api";
 
 export const partKeys = {
   records: ["part", "part-records"] as const,
 };
 
-// axios 인스턴스 생성
-const api = axios.create({
-  baseURL: "https://gearfirst-auth.duckdns.org/warehouse/api/v1", // 백엔드 API 주소
-  headers: {
-    "Content-Type": "application/json",
-  },
-  timeout: 10000, // 10초 제한
-});
+const BASE_URL = `${WAREHOUSE_BASE_PATH}/inventory/on-hand`;
 
-//
 export async function fetchPartRecords(params: {
   q?: string;
   page?: number;
@@ -23,6 +15,23 @@ export async function fetchPartRecords(params: {
   partKeyword?: string;
   supplierName?: string;
 }): Promise<PartResponse> {
-  const res = await api.get("/inventory/on-hand", { params });
-  return res.data;
+  const query = new URLSearchParams();
+  Object.entries(params).forEach(([key, value]) => {
+    if (value === undefined || value === null || value === "") return;
+    query.set(key, String(value));
+  });
+
+  const url = query.size > 0 ? `${BASE_URL}?${query.toString()}` : BASE_URL;
+
+  const res = await fetch(url, {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(`재고 정보를 불러오지 못했습니다 (${res.status})`);
+  }
+
+  return res.json() as Promise<PartResponse>;
 }

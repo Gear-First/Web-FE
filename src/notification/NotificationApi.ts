@@ -1,4 +1,3 @@
-import axios from "axios";
 import type { NotificationItem } from "./NotificationTypes";
 
 const BASE_URL = "/notification";
@@ -6,15 +5,19 @@ const BASE_URL = "/notification";
 /** 단일 알림 읽음 처리 */
 export async function markAsRead(id: number) {
   try {
-    const res = await axios.post(
-      `${BASE_URL}/notifications/${id}/read`,
-      {},
-      { withCredentials: true }
-    );
-    if (res.data?.success) {
+    const res = await fetch(`${BASE_URL}/notifications/${id}/read`, {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({}),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (res.ok && data?.success) {
       console.log(`[${id}] 읽음 처리 성공`);
     } else {
-      console.warn(`[${id}] 읽음 처리 실패`, res.data);
+      console.warn(`[${id}] 읽음 처리 실패`, data);
     }
   } catch (err) {
     console.error(`[${id}] 읽음 처리 중 오류`, err);

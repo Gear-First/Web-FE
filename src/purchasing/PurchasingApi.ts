@@ -1,9 +1,25 @@
-import axios from "axios";
+const BASE_URL = "https://gearfirst-auth.duckdns.org/inventory/api/v1";
 
-const api = axios.create({
-  baseURL: "https://gearfirst-auth.duckdns.org/inventory/api/v1",
-  headers: { "Content-Type": "application/json" },
-});
+async function requestJson<T>(
+  path: string,
+  init: RequestInit = {}
+): Promise<T> {
+  const res = await fetch(`${BASE_URL}${path}`, {
+    ...init,
+    headers: {
+      "Content-Type": "application/json",
+      ...(init.headers ?? {}),
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error(
+      `구매 API 호출 실패 (${res.status} ${res.statusText || ""})`.trim()
+    );
+  }
+
+  return res.json() as Promise<T>;
+}
 
 export const purchasingKeys = {
   records: ["purchasing", "records"] as const,
@@ -22,9 +38,12 @@ export async function addCompany(data: {
   untilDate: string;
 }) {
   try {
-    const res = await api.post("/addCompany", data);
-    console.log("응답:", res.data);
-    return res.data;
+    const json = await requestJson<any>("/addCompany", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    console.log("응답:", json);
+    return json;
   } catch (err) {
     console.error("업체 등록 실패:", err);
     throw err;
@@ -63,8 +82,7 @@ export async function fetchCompanyList(params?: {
   query.append("sort", "createdAt");
 
   try {
-    const res = await api.get(`/getCompanyList?${query.toString()}`);
-    const json = res.data;
+    const json = await requestJson<any>(`/getCompanyList?${query.toString()}`);
 
     if (!json.success) throw new Error(json.message || "조회 실패");
 
@@ -105,17 +123,15 @@ export async function fetchCompanyCandidates(params: {
   keyword: string;
 }) {
   try {
-    const res = await api.get("/getCompanyList", {
-      params: {
-        endDate: params.endDate,
-        keyword: params.keyword,
-        page: 0,
-        size: 10,
-        sort: "createdAt",
-      },
+    const query = new URLSearchParams({
+      endDate: params.endDate,
+      keyword: params.keyword,
+      page: "0",
+      size: "10",
+      sort: "createdAt",
     });
 
-    const json = res.data;
+    const json = await requestJson<any>(`/getCompanyList?${query.toString()}`);
     if (!json.success) throw new Error(json.message || "조회 실패");
     return json.data?.content ?? [];
   } catch (err) {
@@ -129,9 +145,12 @@ export async function createPurchaseOrders(
   payload: { id: number; orderCnt: number; totalPrice: number }[]
 ) {
   try {
-    const res = await api.post("/selectCompany", payload);
-    console.log("PO 생성 성공:", res.data);
-    return res.data;
+    const json = await requestJson<any>("/selectCompany", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    console.log("PO 생성 성공:", json);
+    return json;
   } catch (err) {
     console.error("PO 생성 실패:", err);
     throw err;

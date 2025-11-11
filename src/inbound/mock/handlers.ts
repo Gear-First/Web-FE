@@ -1,4 +1,3 @@
-// src/features/inbound/mock/handlers.ts
 import { http, HttpResponse } from "msw";
 import { mockdata as inboundRecords } from "./mockdata";
 
@@ -20,9 +19,10 @@ export const handlers = [
     if (q && q.trim()) {
       const lower = q.toLowerCase();
       data = data.filter((r) => {
-        const haystack = `${r.noteId} ${r.receivingNo} ${r.supplierName} ${r.warehouseCode}`
-          .toLowerCase()
-          .includes(lower);
+        const haystack =
+          `${r.noteId} ${r.receivingNo} ${r.supplierName} ${r.warehouseCode}`
+            .toLowerCase()
+            .includes(lower);
         return haystack;
       });
     }
