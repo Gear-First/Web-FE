@@ -1,6 +1,8 @@
 import type { ReactElement } from "react";
-import { Navigate } from "react-router-dom";
-import { useOrgTypeGuard, type OrgType } from "../../auth/hooks/useOrgTypeGuard";
+import {
+  useOrgTypeGuard,
+  type OrgType,
+} from "../../auth/hooks/useOrgTypeGuard";
 
 interface Props {
   required: OrgType;
@@ -33,5 +35,5 @@ export default function RequireOrgType({ required, children }: Props) {
 
   sessionStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
-  return <Navigate to="/login" replace />;
+  window.location.href = `https://gearfirst-fe.vercel.app/login`;
 }
