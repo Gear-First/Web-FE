@@ -30,7 +30,11 @@ export default function RequireOrgType({ required, children }: Props) {
         <h2>접근 권한이 없습니다</h2>
         <p>요청한 페이지는 {required} 권한 사용자만 이용할 수 있어요.</p>
         <div>
-          <ActionButton onClick={() => (window.location.href = "/dashboard")}>
+          <ActionButton
+            onClick={() =>
+              (window.location.href = `https://gearfirst-fe.vercel.app/login`)
+            }
+          >
             대시보드로 이동
           </ActionButton>
         </div>
