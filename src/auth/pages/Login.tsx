@@ -3,17 +3,11 @@ import {
   generateCodeChallenge,
   generateState,
 } from "../utils/pkce";
-import {
-  type JSX,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
+import { type JSX, useCallback, useEffect, useMemo, useState } from "react";
 import { resolveRedirectUri } from "../utils/redirectUri";
 
 const AUTH_SERVER =
-  import.meta.env.VITE_AUTH_SERVER ?? "https://gearfirst-auth.duckdns.org/auth";
+  import.meta.env.VITE_AUTH_SERVER ?? "http://34.120.215.23/auth";
 const CLIENT_ID = import.meta.env.VITE_CLIENT_ID ?? "gearfirst-client";
 const REDIRECT_URI = resolveRedirectUri(import.meta.env.VITE_REDIRECT_URI);
 
