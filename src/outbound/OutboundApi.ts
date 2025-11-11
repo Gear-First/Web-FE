@@ -1,7 +1,7 @@
+import { WAREHOUSE_ENDPOINTS } from "../api";
 import type { OutboundRecord } from "./OutboundTypes";
 
-const OUTBOUND_BASE_URL = "http://34.120.215.23/warehouse/api/v1/shipping";
-const OUTBOUND_NOTES_ENDPOINT = `${OUTBOUND_BASE_URL}/notes`;
+const OUTBOUND_NOTES_ENDPOINT = `${WAREHOUSE_ENDPOINTS.OUTBOUND_LIST}/notes`;
 
 const DEFAULT_PAGE_SIZE = 20;
 const PAGE_SIZE_MIN = 1;
@@ -34,13 +34,13 @@ export type ListResponse<T> = {
   };
 };
 
-// ✅ 페이지 사이즈 보정
+// 페이지 사이즈 보정
 function clampPageSize(size?: number): number {
   if (typeof size !== "number" || Number.isNaN(size)) return DEFAULT_PAGE_SIZE;
   return Math.max(PAGE_SIZE_MIN, Math.min(PAGE_SIZE_MAX, size));
 }
 
-// ✅ 쿼리 파라미터 생성
+// 쿼리 파라미터 생성
 function buildOutboundQuery(params?: OutboundListParams): URLSearchParams {
   const qs = new URLSearchParams();
   const status = params?.status ?? "all";
@@ -62,7 +62,7 @@ function buildOutboundQuery(params?: OutboundListParams): URLSearchParams {
   return qs;
 }
 
-// ✅ 공통 리스트 요청 함수
+// 공통 리스트 요청 함수
 async function requestOutboundList(
   params: OutboundListParams | undefined,
   defaultStatus?: OutboundListParams["status"]
@@ -101,7 +101,7 @@ async function requestOutboundList(
   };
 }
 
-// ✅ 리스트 API들
+// 리스트 API들
 export function fetchOutboundRecords(
   params?: OutboundListParams
 ): Promise<ListResponse<OutboundRecord[]>> {
@@ -124,7 +124,7 @@ export function fetchOutboundDoneRecords(
 export async function fetchOutboundDetail(
   noteId: string | number
 ): Promise<OutboundRecord> {
-  const url = `${OUTBOUND_BASE_URL}/${noteId}`;
+  const url = `${WAREHOUSE_ENDPOINTS.OUTBOUND_LIST}/${noteId}`;
   const res = await fetch(url);
 
   if (!res.ok) {

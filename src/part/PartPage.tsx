@@ -21,13 +21,8 @@ export default function PartPage() {
   // 입력 상태
   const [keyword, setKeyword] = useState("");
   const [appliedKeyword, setAppliedKeyword] = useState("");
-  const {
-    page,
-    pageSize,
-    onChangePage,
-    onChangePageSize,
-    resetPage,
-  } = usePagination(1, 10);
+  const { page, pageSize, onChangePage, onChangePageSize, resetPage } =
+    usePagination(1, 10);
 
   const { data: partData, fetchStatus: fetchStatus } = useQuery({
     queryKey: ["part-records", page, pageSize, appliedKeyword],
@@ -62,10 +57,7 @@ export default function PartPage() {
         )
       : 0;
 
-  const totalPages = Math.max(
-    1,
-    Math.ceil(totalItems / pageSize) || 1
-  );
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize) || 1);
 
   return (
     <Page>
@@ -73,9 +65,7 @@ export default function PartPage() {
         <SummaryCard>
           <SummaryLabel>총 재고 품목</SummaryLabel>
           <SummaryValue>
-            {fetchStatus === "fetching"
-              ? "· · ·"
-              : totalItems.toLocaleString()}
+            {fetchStatus === "fetching" ? "· · ·" : totalItems.toLocaleString()}
           </SummaryValue>
           <SummaryNote>창고 전체 등록 품목 수</SummaryNote>
         </SummaryCard>
@@ -97,7 +87,7 @@ export default function PartPage() {
         title="재고 관리"
         caption="창고별 부품 재고 현황을 확인합니다."
         filters={
-          <FilterGroup>
+          <>
             <FilterResetButton onClick={onReset} />
             <SearchBox
               keyword={keyword}
@@ -106,7 +96,7 @@ export default function PartPage() {
               onReset={onReset}
               placeholder="창고 / 대리점 / 부품코드 / 부품명 검색"
             />
-          </FilterGroup>
+          </>
         }
         isBusy={fetchStatus === "fetching"}
         footer={
