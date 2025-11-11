@@ -40,13 +40,8 @@ export default function CategoryPage() {
     endDate: null,
   });
 
-  const {
-    page,
-    pageSize,
-    onChangePage,
-    onChangePageSize,
-    resetPage,
-  } = usePagination(1, 10);
+  const { page, pageSize, onChangePage, onChangePageSize, resetPage } =
+    usePagination(1, 10);
 
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
