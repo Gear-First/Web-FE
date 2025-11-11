@@ -1,4 +1,4 @@
-const DEFAULT_LOCAL = "https://gearfirst-auth.duckdns.org/auth/callback";
+const DEFAULT_LOCAL = "http://34.120.215.23/auth/callback";
 
 function getOriginFallback(): string {
   if (typeof window === "undefined") return DEFAULT_LOCAL;

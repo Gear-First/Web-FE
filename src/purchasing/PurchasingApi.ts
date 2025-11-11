@@ -56,7 +56,7 @@ export async function addCompany(data: {
 export async function fetchMaterialList(query: string, page = 0, size = 10) {
   try {
     const res = await fetch(
-      `https://gearfirst-auth.duckdns.org/inventory/api/v1/getMaterialList?page=${page}&size=${size}&sort=createdAt`
+      `http://34.120.215.23/inventory/api/v1/getMaterialList?page=${page}&size=${size}&sort=createdAt`
     );
     const json = await res.json();
     return json.data?.content ?? [];
