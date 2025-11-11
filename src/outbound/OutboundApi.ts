@@ -26,14 +26,21 @@ export type OutboundListParams = {
 
 export type ListResponse<T> = {
   data: T;
-  meta?: { total: number; page: number; pageSize: number; totalPages: number };
+  meta?: {
+    total: number;
+    page: number;
+    pageSize: number;
+    totalPages: number;
+  };
 };
 
+// ✅ 페이지 사이즈 보정
 function clampPageSize(size?: number): number {
   if (typeof size !== "number" || Number.isNaN(size)) return DEFAULT_PAGE_SIZE;
   return Math.max(PAGE_SIZE_MIN, Math.min(PAGE_SIZE_MAX, size));
 }
 
+// ✅ 쿼리 파라미터 생성
 function buildOutboundQuery(params?: OutboundListParams): URLSearchParams {
   const qs = new URLSearchParams();
   const status = params?.status ?? "all";
@@ -55,6 +62,7 @@ function buildOutboundQuery(params?: OutboundListParams): URLSearchParams {
   return qs;
 }
 
+// ✅ 공통 리스트 요청 함수
 async function requestOutboundList(
   params: OutboundListParams | undefined,
   defaultStatus?: OutboundListParams["status"]
@@ -69,8 +77,8 @@ async function requestOutboundList(
     qs.toString().length > 0
       ? `${OUTBOUND_NOTES_ENDPOINT}?${qs.toString()}`
       : OUTBOUND_NOTES_ENDPOINT;
-  const res = await fetch(url);
 
+  const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`출고 데이터 요청 실패 (${res.status})`);
   }
@@ -93,7 +101,7 @@ async function requestOutboundList(
   };
 }
 
-// ✅ 리스트 요청들
+// ✅ 리스트 API들
 export function fetchOutboundRecords(
   params?: OutboundListParams
 ): Promise<ListResponse<OutboundRecord[]>> {
@@ -112,12 +120,12 @@ export function fetchOutboundDoneRecords(
   return requestOutboundList(params, "done");
 }
 
-// 상세 요청
+// 상세 조회 API
 export async function fetchOutboundDetail(
   noteId: string | number
 ): Promise<OutboundRecord> {
   const url = `${OUTBOUND_BASE_URL}/${noteId}`;
-  const res = await axios.get(url);
+  const res = await fetch(url);
 
   if (!res.ok) {
     throw new Error(`출고 상세 요청 실패 (${res.status})`);
