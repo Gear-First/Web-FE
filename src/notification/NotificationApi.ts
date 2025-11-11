@@ -75,7 +75,7 @@ export function connectSSE(
       // console.log("[notification 이벤트]");
       // console.log("raw data:", e.data);
       const parsed = normalizeData(e.data);
-      console.log("파싱 결과:", parsed);
+      // console.log("파싱 결과:", parsed);
       onMessage(parsed);
     });
 

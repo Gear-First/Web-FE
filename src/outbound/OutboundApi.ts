@@ -13,6 +13,7 @@ export const outboundKeys = {
   base: ["outbound"] as const,
   notDoneRecords: ["outbound", "not-done"] as const,
   doneRecords: ["outbound", "done"] as const,
+  detail: (noteId: string | number) => ["outbound", "detail", noteId] as const,
 };
 
 export type OutboundListParams = {
@@ -92,6 +93,7 @@ async function requestOutboundList(
   };
 }
 
+// ✅ 리스트 요청들
 export function fetchOutboundRecords(
   params?: OutboundListParams
 ): Promise<ListResponse<OutboundRecord[]>> {
@@ -110,10 +112,11 @@ export function fetchOutboundDoneRecords(
   return requestOutboundList(params, "done");
 }
 
+// 상세 요청
 export async function fetchOutboundDetail(
   noteId: string | number
 ): Promise<OutboundRecord> {
-  const url = `${OUTBOUND_NOTES_ENDPOINT}/${noteId}`;
+  const url = `${OUTBOUND_BASE_URL}/${noteId}`;
   const res = await axios.get(url);
 
   if (res.status !== 200)

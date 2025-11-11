@@ -124,26 +124,24 @@ export default function OutboundPage() {
 
   const doneRecords = doneData?.data ?? [];
   const doneMeta = doneData?.meta ?? { total: 0, totalPages: 1 };
+  const doneTotal = doneMeta.total ?? 0;
 
   const pendingTotal = pendingMeta.total ?? 0;
-  const doneTotal = doneMeta.total ?? 0;
+
+  const completedRecords = doneRecords.filter((r) => r.status === "COMPLETED");
+  const delayedRecords = doneRecords.filter((r) => r.status === "DELAYED");
+
+  const completedCount = completedRecords.length;
+  const delayedCount = delayedRecords.length;
+
   const completionRate =
     pendingTotal + doneTotal > 0
-      ? Math.round((doneTotal / (pendingTotal + doneTotal)) * 100)
+      ? Math.round((completedCount / (pendingTotal + doneTotal)) * 100)
       : 0;
   const backlogQty = pendingRecords.reduce(
     (sum, record) => sum + (record.totalQty ?? 0),
     0
   );
-  const delayedCount = pendingRecords.filter(
-    (record) => record.status === "DELAYED"
-  ).length;
-  const avgKindsDone = doneRecords.length
-    ? Math.round(
-        doneRecords.reduce((sum, r) => sum + (r.itemKindsNumber ?? 0), 0) /
-          doneRecords.length
-      )
-    : 0;
 
   const onSearchDone = () => {
     setAppliedDone({
@@ -173,21 +171,19 @@ export default function OutboundPage() {
     <Page>
       <SummaryGrid>
         <SummaryCard>
-          <SummaryLabel>출고 대기</SummaryLabel>
+          <SummaryLabel>출고 예정</SummaryLabel>
           <SummaryValue>{pendingTotal.toLocaleString()}건</SummaryValue>
-          <SummaryNote>대기 수량 {backlogQty.toLocaleString()}ea</SummaryNote>
+          <SummaryNote>예정 수량 {backlogQty.toLocaleString()}ea</SummaryNote>
         </SummaryCard>
         <SummaryCard>
           <SummaryLabel>출고 완료</SummaryLabel>
-          <SummaryValue>{doneTotal.toLocaleString()}건</SummaryValue>
+          <SummaryValue>{completedCount.toLocaleString()}건</SummaryValue>
           <SummaryNote>완료율 {completionRate}%</SummaryNote>
         </SummaryCard>
         <SummaryCard>
-          <SummaryLabel>지연 + 평균 품목</SummaryLabel>
-          <SummaryValue>
-            {delayedCount.toLocaleString()} / {avgKindsDone.toLocaleString()}
-          </SummaryValue>
-          <SummaryNote>지연 건수 / 평균 품목 종류</SummaryNote>
+          <SummaryLabel>지연 현황</SummaryLabel>
+          <SummaryValue>{delayedCount.toLocaleString()}건</SummaryValue>
+          <SummaryNote>지연된 출고 요청 수</SummaryNote>
         </SummaryCard>
       </SummaryGrid>
 
