@@ -31,11 +31,9 @@ export default function RequireOrgType({ required, children }: Props) {
         <p>요청한 페이지는 {required} 권한 사용자만 이용할 수 있어요.</p>
         <div>
           <ActionButton
-            onClick={() =>
-              (window.location.href = `https://gearfirst-fe.vercel.app/login`)
-            }
+            onClick={() => forceLogout("https://gearfirst-fe.vercel.app/")}
           >
-            대시보드로 이동
+            로그인 이동
           </ActionButton>
         </div>
       </Splash>
@@ -56,9 +54,7 @@ export default function RequireOrgType({ required, children }: Props) {
     );
   }
 
-  sessionStorage.removeItem("access_token");
-  localStorage.removeItem("refresh_token");
-  window.location.href = `https://gearfirst-fe.vercel.app/login`;
+  forceLogout("https://gearfirst-fe.vercel.app/login");
 
   return null;
 }
@@ -79,6 +75,24 @@ const Splash = ({ children }: { children: ReactNode }) => (
     {children}
   </div>
 );
+
+function forceLogout(target: string) {
+  try {
+    sessionStorage.removeItem("access_token");
+    localStorage.removeItem("refresh_token");
+    document.cookie
+      .split(";")
+      .map((cookie) => cookie.split("=")[0]?.trim())
+      .filter(Boolean)
+      .forEach((name) => {
+        document.cookie = `${name}=; Max-Age=0; path=/;`;
+      });
+  } catch {
+    // ignore
+  } finally {
+    window.location.href = target;
+  }
+}
 
 const ActionButton = ({
   onClick,
