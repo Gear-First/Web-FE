@@ -1,4 +1,6 @@
-const BASE_URL = "https://gearfirst-auth.duckdns.org/inventory/api/v1";
+import { INVENTORY_BASE_PATH } from "../api";
+
+const BASE_URL = INVENTORY_BASE_PATH;
 
 async function requestJson<T>(
   path: string,

@@ -1,3 +1,4 @@
+import { ORDER_BASE_PATH } from "../api";
 import type {
   PendingOrderResponse,
   ProcessedOrderResponse,
@@ -13,7 +14,7 @@ export const requestKeys = {
   orderDetail: (id: number) => ["request", "order-detail", id] as const,
 };
 
-const REQUEST_BASE_URL = "https://gearfirst-auth.duckdns.org/order/api/v1";
+const REQUEST_BASE_URL = ORDER_BASE_PATH;
 
 type QueryValue = string | number | boolean | undefined | null;
 
