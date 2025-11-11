@@ -1,4 +1,3 @@
-// src/mocks/bom.handlers.ts (혹은 기존 파일)
 import { http, HttpResponse } from "msw";
 import { mockdata as bomRecords } from "./mockdata";
 import { paginate } from "../../mocks/shared/utils";
@@ -17,8 +16,7 @@ type ListResponse<T> = {
 
 const fallbackCategories = ["카테고리 A", "카테고리 B", "카테고리 C"];
 
-const materialLabel = (id: number) =>
-  `자재 ${String(id).padStart(3, "0")}`;
+const materialLabel = (id: number) => `자재 ${String(id).padStart(3, "0")}`;
 const materialCode = (id: number) => `MAT-${String(id).padStart(4, "0")}`;
 
 const toMaterialFromInfo = (

@@ -1,4 +1,3 @@
-// src/mocks/handlers.ts
 import { http, HttpResponse } from "msw";
 import { paginate } from "../../../mocks/shared/utils";
 import { MaterialMockdata } from "./mockdata"; // 새 Material 목데이터(배열)

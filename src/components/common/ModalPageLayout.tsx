@@ -1,4 +1,6 @@
+import { forwardRef, type HTMLAttributes } from "react";
 import styled, { css } from "styled-components";
+import LoadingOverlay from "./LoadingOverlay";
 
 /* 모달 전체 배경 */
 export const Overlay = styled.div`
@@ -12,15 +14,20 @@ export const Overlay = styled.div`
   -webkit-backdrop-filter: blur(10px);
   z-index: 2000;
 `;
-interface ModalContainerProps {
+interface ModalContainerStyleProps {
   width?: string; // ex) "800px" or "60%"
   maxWidth?: string; // ex) "90%"
   height?: string; // ex) "600px"
   padding?: string; // ex) "24px"
 }
 
-/* 모달 컨테이너 */
-export const ModalContainer = styled.div<ModalContainerProps>`
+export type ModalContainerProps = ModalContainerStyleProps &
+  HTMLAttributes<HTMLDivElement> & {
+    loading?: boolean;
+    loadingLabel?: string;
+  };
+
+const StyledModalContainer = styled.div<ModalContainerStyleProps>`
   position: relative;
   display: flex;
   flex-direction: column;
@@ -78,6 +85,31 @@ export const ModalContainer = styled.div<ModalContainerProps>`
     }
   }
 `;
+
+/* 모달 컨테이너 */
+export const ModalContainer = forwardRef<HTMLDivElement, ModalContainerProps>(
+  (
+    {
+      children,
+      loading = false,
+      loadingLabel = "처리 중입니다...",
+      ...rest
+    },
+    ref
+  ) => (
+    <StyledModalContainer ref={ref} {...rest}>
+      {children}
+      <LoadingOverlay
+        visible={Boolean(loading)}
+        label={loadingLabel}
+        coverParent
+      />
+    </StyledModalContainer>
+  )
+);
+ModalContainer.displayName = "ModalContainer";
+
+export const ModalContainerBase = StyledModalContainer;
 
 /* 모달 상단 헤더 */
 export const Header = styled.header`

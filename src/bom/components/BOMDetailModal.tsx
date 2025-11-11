@@ -124,6 +124,7 @@ export default function BOMDetailModal({
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-labelledby="bom-detail-title"
+        loading={isPending || isFetching}
       >
         <Header>
           <HeaderLeft>

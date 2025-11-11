@@ -26,6 +26,7 @@ import {
   OUTBOUND_PART_STATUS_VARIANTS,
 } from "../OutboundTypes";
 import { fmtDate } from "../../utils/string";
+import { useQuery } from "@tanstack/react-query";
 
 interface Props {
   record: OutboundRecord | null;

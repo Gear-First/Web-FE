@@ -40,7 +40,8 @@ const CategoryDetailModal = ({
 
   const {
     data: detail,
-    isLoading,
+    isPending,
+    isFetching,
     error,
   } = useQuery<CategoryDetailRecord, Error>({
     queryKey: categoryKeys.detail(id),
@@ -60,6 +61,8 @@ const CategoryDetailModal = ({
   if (!isOpen || !record) return null;
 
   const fmt = (v?: string | null) => (v ? v : "-");
+  const isInitialPending = isPending && !detail;
+  const isRefreshing = isFetching && !isPending;
 
   const handleEdit = () => {
     if (!detail) return;
@@ -76,7 +79,11 @@ const CategoryDetailModal = ({
 
   return (
     <Overlay onClick={disableOverlayClose ? undefined : onClose}>
-      <ModalContainer width="40%" onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        width="40%"
+        onClick={(e) => e.stopPropagation()}
+        loading={isInitialPending}
+      >
         <Header>
           <HeaderLeft>
             <Title>카테고리 상세 정보</Title>
@@ -114,9 +121,14 @@ const CategoryDetailModal = ({
               <Value>{fmt(detail?.updatedAt)}</Value>
             </DetailItem>
           </DetailGrid>
-          {isLoading && (
+          {isInitialPending && (
             <Value style={{ fontSize: 12, color: "#6b7280" }}>
               불러오는 중...
+            </Value>
+          )}
+          {isRefreshing && (
+            <Value style={{ fontSize: 12, color: "#94a3b8" }}>
+              최신 정보 동기화 중...
             </Value>
           )}
           {error && (

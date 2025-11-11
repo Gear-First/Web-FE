@@ -38,7 +38,11 @@ export default function OutboundPage() {
   });
   const pendingPagination = usePagination(1, 10);
 
-  const { data: notDoneData, isLoading: isPendingLoading } = useQuery({
+  const {
+    data: notDoneData,
+    isPending: isPendingNotDone,
+    isFetching: isFetchingNotDone,
+  } = useQuery({
     queryKey: [
       ...outboundKeys.notDoneRecords,
       {
@@ -59,8 +63,11 @@ export default function OutboundPage() {
     placeholderData: (prev) => prev,
   });
 
+  const hasPendingData = typeof notDoneData !== "undefined";
   const pendingRecords = notDoneData?.data ?? [];
   const pendingMeta = notDoneData?.meta ?? { total: 0, totalPages: 1 };
+  const isPendingLoading = isPendingNotDone && !hasPendingData;
+  const isPendingRefreshing = isFetchingNotDone && !isPendingNotDone;
 
   const onSearchPending = () => {
     setAppliedPending({
@@ -101,7 +108,11 @@ export default function OutboundPage() {
   });
   const donePagination = usePagination(1, 10);
 
-  const { data: doneData, isLoading: isDoneLoading } = useQuery({
+  const {
+    data: doneData,
+    isPending: isPendingDone,
+    isFetching: isFetchingDone,
+  } = useQuery({
     queryKey: [
       ...outboundKeys.doneRecords,
       {
@@ -122,6 +133,7 @@ export default function OutboundPage() {
     placeholderData: (prev) => prev,
   });
 
+  const hasDoneData = typeof doneData !== "undefined";
   const doneRecords = doneData?.data ?? [];
   const doneMeta = doneData?.meta ?? { total: 0, totalPages: 1 };
   const doneTotal = doneMeta.total ?? 0;
@@ -189,7 +201,7 @@ export default function OutboundPage() {
 
       <PageSection
         title="출고 예정"
-        caption="대기 및 진행중 상태의 출고 요청을 조회합니다."
+        caption={pendingCaption}
         filters={
           <>
             <FilterResetButton onClick={onResetPending} />
@@ -230,7 +242,7 @@ export default function OutboundPage() {
 
       <PageSection
         title="출고 완료"
-        caption="완료 및 지연 상태의 출고 요청을 조회합니다."
+        caption={doneCaption}
         filters={
           <>
             <FilterResetButton onClick={onResetDone} />

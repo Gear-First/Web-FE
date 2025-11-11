@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 import {
   Overlay,
-  ModalContainer as BaseModalContainer,
+  ModalContainerBase as BaseModalContainer,
   Header,
   HeaderLeft,
   Title,

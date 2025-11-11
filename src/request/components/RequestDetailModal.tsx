@@ -76,7 +76,8 @@ const DetailModal = ({
   // 상세 데이터 조회
   const {
     data: detail,
-    isLoading,
+    isPending,
+    isFetching,
     error,
   } = useQuery({
     queryKey: ["order-detail", orderId],
@@ -106,12 +107,25 @@ const DetailModal = ({
     if (code.includes("창고")) return "창고";
   };
 
+  const isInitialPending = isPending && !detail;
+  const isRefreshing = isFetching && !isPending;
+
   return (
     <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        onClick={(e) => e.stopPropagation()}
+        loading={isInitialPending}
+      >
         <Header>
           <HeaderLeft>
             <Title>{cfg.title}</Title>
+            {isRefreshing && (
+              <span
+                style={{ marginLeft: 8, color: "#6b7280", fontSize: "0.85rem" }}
+              >
+                최신 데이터 동기화 중…
+              </span>
+            )}
             {cfg.showStatus && (
               <StatusBadge $variant={ORDER_STATUS_VARIANTS[orderStatus]}>
                 {ORDER_STATUS_LABELS[orderStatus]}
@@ -180,7 +194,7 @@ const DetailModal = ({
                 </tr>
               </thead>
               <tbody>
-                {isLoading ? (
+                {isInitialPending ? (
                   <tr>
                     <Td
                       colSpan={3}

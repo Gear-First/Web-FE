@@ -43,13 +43,15 @@ export default function HumanPage() {
 
   const {
     data: regionRes,
-    isLoading: isRegionLoading,
+    isPending: isRegionPending,
+    isFetching: isRegionFetching,
     error: regionError,
   } = useRegions(true);
 
   const {
     data: workTypeRes,
-    isLoading: isWorkTypeLoading,
+    isPending: isWorkTypePending,
+    isFetching: isWorkTypeFetching,
     error: workTypeError,
   } = useWorkTypes(true);
 
@@ -85,6 +87,10 @@ export default function HumanPage() {
   };
 
   const isFetching = fetchStatus === "fetching";
+  const isRegionInitialLoading = isRegionPending && !regionRes;
+  const isWorkTypeInitialLoading = isWorkTypePending && !workTypeRes;
+  const isRegionRefreshing = isRegionFetching && !isRegionPending;
+  const isWorkTypeRefreshing = isWorkTypeFetching && !isWorkTypePending;
   const rows = data?.data ?? [];
   const total = data?.meta?.total ?? 0;
   const totalPages = data?.meta?.totalPages ?? 1;
@@ -93,10 +99,10 @@ export default function HumanPage() {
   const totalWorkTypes = workTypeRes?.data?.length ?? 0;
   const regionStatusText = regionError
     ? "지역 정보를 불러오지 못했습니다"
-    : `${totalRegions}개 지역`;
+    : `${totalRegions}개 지역${isRegionRefreshing ? " · 갱신 중" : ""}`;
   const workTypeStatusText = workTypeError
     ? "지점 정보를 불러오지 못했습니다"
-    : `${totalWorkTypes}개 지점`;
+    : `${totalWorkTypes}개 지점${isWorkTypeRefreshing ? " · 갱신 중" : ""}`;
 
   const filters = (
     <FilterGroup>
@@ -125,7 +131,7 @@ export default function HumanPage() {
             setWorkType(selected ?? "ALL");
           }
         }}
-        disabled={isWorkTypeLoading}
+        disabled={isWorkTypeInitialLoading}
       >
         {workTypeOptions.map((w) => (
           <option
@@ -150,7 +156,7 @@ export default function HumanPage() {
             setRegion(selected ?? "ALL");
           }
         }}
-        disabled={isRegionLoading}
+        disabled={isRegionInitialLoading}
       >
         {regionOptions.map((r) => (
           <option
@@ -201,7 +207,9 @@ export default function HumanPage() {
         caption="구성원 계정의 등록·검색·필터링을 관리합니다."
         actions={<Button onClick={() => setOpenReg(true)}>회원가입 +</Button>}
         filters={filters}
-        isBusy={isFetching || isRegionLoading || isWorkTypeLoading}
+        isBusy={
+          isFetching || isRegionInitialLoading || isWorkTypeInitialLoading
+        }
         footer={
           <Pagination
             page={pagination.page}
