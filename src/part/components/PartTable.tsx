@@ -54,8 +54,8 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
             })
           ) : (
             <tr>
-              <Td colSpan={6} style={{ textAlign: "center", color: "#6b7280" }}>
-                재고 데이터가 없습니다.
+              <Td colSpan={7} style={{ textAlign: "center", color: "#9ca3af" }}>
+                데이터가 없습니다.
               </Td>
             </tr>
           )}

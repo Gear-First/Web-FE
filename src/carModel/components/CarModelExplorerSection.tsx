@@ -247,10 +247,11 @@ export default function CarModelExplorerSection() {
               <tbody>
                 {models.length === 0 ? (
                   <tr>
-                    <Td colSpan={4} style={{ textAlign: "center" }}>
-                      {isFetching
-                        ? "불러오는 중..."
-                        : "등록된 모델이 없습니다."}
+                    <Td
+                      colSpan={4}
+                      style={{ textAlign: "center", color: "#9ca3af" }}
+                    >
+                      {isFetching ? "불러오는 중..." : "데이터가 없습니다."}
                     </Td>
                   </tr>
                 ) : (
@@ -300,6 +301,8 @@ export default function CarModelExplorerSection() {
               onChangePageSize={modelPagination.onChangePageSize}
               pageSizeOptions={[6, 8, 10]}
               align="center"
+              showSummary={false}
+              showPageSize={false}
               dense
             />
           </Pane>

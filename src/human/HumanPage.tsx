@@ -98,10 +98,10 @@ export default function HumanPage() {
   const totalRegions = regionRes?.data?.length ?? 0;
   const totalWorkTypes = workTypeRes?.data?.length ?? 0;
   const regionStatusText = regionError
-    ? "지역 정보를 불러오지 못했습니다"
+    ? "0개 지역"
     : `${totalRegions}개 지역${isRegionRefreshing ? " · 갱신 중" : ""}`;
   const workTypeStatusText = workTypeError
-    ? "지점 정보를 불러오지 못했습니다"
+    ? "0개 지점"
     : `${totalWorkTypes}개 지점${isWorkTypeRefreshing ? " · 갱신 중" : ""}`;
 
   const filters = (
@@ -184,7 +184,7 @@ export default function HumanPage() {
         <SummaryCard>
           <SummaryLabel>등록 인원</SummaryLabel>
           <SummaryValue>
-            {isFetching ? "· · ·" : total.toLocaleString()}
+            {isFetching ? "0" : total.toLocaleString()}
           </SummaryValue>
           <SummaryNote>필터 기준 전체 구성원</SummaryNote>
         </SummaryCard>

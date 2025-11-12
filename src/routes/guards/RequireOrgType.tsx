@@ -30,9 +30,8 @@ export default function RequireOrgType({ required, children }: Props) {
         <h2>접근 권한이 없습니다</h2>
         <p>요청한 페이지는 {required} 권한 사용자만 이용할 수 있어요.</p>
         <div>
-          <ActionButton
-            onClick={() => forceLogout("https://gearfirst-fe.vercel.app/")}
-          >
+          {/* <ActionButton onClick={() => forceLogout("https://gearfirst-fe.vercel.app/")}> */}
+          <ActionButton onClick={() => forceLogout("http://localhost:5173/")}>
             로그인 이동
           </ActionButton>
         </div>
@@ -54,7 +53,8 @@ export default function RequireOrgType({ required, children }: Props) {
     );
   }
 
-  forceLogout("https://gearfirst-fe.vercel.app/login");
+  // forceLogout("https://gearfirst-fe.vercel.app/login");
+  forceLogout("http://localhost:5173/login");
 
   return null;
 }

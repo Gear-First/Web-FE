@@ -50,7 +50,7 @@ export default function VendorQuotesTable({
           {rows.length === 0 && (
             <tr>
               <Td colSpan={6} style={{ textAlign: "center", color: "#9ca3af" }}>
-                후보 없음
+                데이터가 없습니다.
               </Td>
             </tr>
           )}

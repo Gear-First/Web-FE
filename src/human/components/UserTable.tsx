@@ -52,9 +52,11 @@ export default function UserTable({ rows }: { rows?: UserRecord[] }) {
         </thead>
         <tbody>
           {data.length === 0 ? (
-            <EmptyRow>
-              <td colSpan={6}>등록된 사용자가 없습니다.</td>
-            </EmptyRow>
+            <tr>
+              <Td colSpan={6} style={{ textAlign: "center", color: "#9ca3af" }}>
+                데이터가 없습니다.
+              </Td>
+            </tr>
           ) : (
             data.map((u) => (
               <tr

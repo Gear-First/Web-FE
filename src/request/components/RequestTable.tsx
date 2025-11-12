@@ -20,7 +20,7 @@ export default function RequestTable({
       <thead>
         <tr>
           <Th>발주 번호</Th>
-          <Th>대리점</Th>
+          <Th>발주처</Th>
           <Th>담당자</Th>
           <Th>요청 일시</Th>
           <Th>처리 일시</Th>
@@ -30,7 +30,7 @@ export default function RequestTable({
       <tbody>
         {rows.length === 0 ? (
           <tr>
-            <Td colSpan={6} style={{ textAlign: "center", color: "#6b7280" }}>
+            <Td colSpan={6} style={{ textAlign: "center", color: "#9ca3af" }}>
               데이터가 없습니다.
             </Td>
           </tr>

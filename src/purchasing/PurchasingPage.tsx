@@ -148,21 +148,21 @@ export default function PurchasingPage() {
         <SummaryCard>
           <SummaryLabel>등록된 업체</SummaryLabel>
           <SummaryValue>
-            {isFetchingAll ? "· · ·" : totalAll.toLocaleString()}
+            {isFetchingAll ? "0" : totalAll.toLocaleString()}
           </SummaryValue>
           <SummaryNote>전체 공급 네트워크 규모</SummaryNote>
         </SummaryCard>
         <SummaryCard>
           <SummaryLabel>선정 업체</SummaryLabel>
           <SummaryValue>
-            {isFetchingSelected ? "· · ·" : totalSelected.toLocaleString()}
+            {isFetchingSelected ? "0" : totalSelected.toLocaleString()}
           </SummaryValue>
           <SummaryNote>선정 비율 {coverageRate}%</SummaryNote>
         </SummaryCard>
         <SummaryCard>
           <SummaryLabel>평균 단가</SummaryLabel>
           <SummaryValue>
-            ₩{isFetchingAll ? "· · ·" : avgPrice.toLocaleString()}
+            ₩{isFetchingAll ? "0" : avgPrice.toLocaleString()}
           </SummaryValue>
           <SummaryNote>조회된 업체 기준</SummaryNote>
         </SummaryCard>
@@ -170,121 +170,123 @@ export default function PurchasingPage() {
 
       <PageSection
         title="등록된 업체"
-        caption="조회된 전체 목록"
-          actions={
-            <div style={{ display: "flex", gap: 8 }}>
-              <Button
-                color="gray"
-                disabled={selectedIds.length < 2 || selectedIds.length > 3}
-                onClick={() => setIsCompareOpen(true)}
-              >
-                비교하기
-              </Button>
-              <Button
-                color="black"
-                onClick={() => {
-                  setModalMode("register");
-                  setSelectedRecord(null);
-                  setIsModalOpen(true);
-                }}
-              >
-                업체 등록
-              </Button>
-            </div>
-          }
-          filters={
-            <>
-              <FilterResetButton onClick={onReset} />
-              <SearchBox
-                keyword={keyword}
-                onKeywordChange={setKeyword}
-                onSearch={onSearch}
-                onReset={onReset}
-                placeholder="자재명 / 업체명 검색"
-              />
-            </>
-          }
-          isBusy={isFetchingAll}
-          footer={
-            <Pagination
-              page={allPagination.page}
-              totalPages={Math.max(1, totalPagesAll)}
-              onChange={allPagination.onChangePage}
-              maxButtons={5}
-              totalItems={totalAll}
-              pageSize={allPagination.pageSize}
-              pageSizeOptions={[10, 20, 50, 100]}
-              onChangePageSize={allPagination.onChangePageSize}
-              showSummary
-              showPageSize
-              align="center"
+        caption="등록된 모든 업체의 정보를 조회합니다."
+        actions={
+          <div style={{ display: "flex", gap: 8 }}>
+            <Button
+              color="gray"
+              disabled={selectedIds.length < 2 || selectedIds.length > 3}
+              onClick={() => setIsCompareOpen(true)}
+            >
+              비교하기
+            </Button>
+            <Button
+              color="black"
+              onClick={() => {
+                setModalMode("register");
+                setSelectedRecord(null);
+                setIsModalOpen(true);
+              }}
+            >
+              업체 등록
+            </Button>
+          </div>
+        }
+        filters={
+          <>
+            <FilterResetButton onClick={onReset} />
+            <SearchBox
+              keyword={keyword}
+              onKeywordChange={setKeyword}
+              onSearch={onSearch}
+              onReset={onReset}
+              placeholder="자재명 / 업체명 검색"
             />
-          }
-        >
-          <PurchasingTable
-            rows={allCompanies}
-            selectedIds={selectedIds}
-            onToggleSelect={handleToggleSelect}
-            showContractDate={false}
-            showOrderCount={false}
-            onRowClick={(r) => {
-              setSelectedRecord(r);
-              setModalMode("view");
-              setIsModalOpen(true);
-            }}
+          </>
+        }
+        isBusy={isFetchingAll}
+        footer={
+          <Pagination
+            page={allPagination.page}
+            totalPages={Math.max(1, totalPagesAll)}
+            onChange={allPagination.onChangePage}
+            maxButtons={5}
+            totalItems={totalAll}
+            pageSize={allPagination.pageSize}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={allPagination.onChangePageSize}
+            showSummary
+            showPageSize
+            align="center"
           />
+        }
+      >
+        <PurchasingTable
+          rows={allCompanies}
+          showCheckbox={true}
+          selectedIds={selectedIds}
+          onToggleSelect={handleToggleSelect}
+          showContractDate={false}
+          showOrderCount={false}
+          onRowClick={(r) => {
+            setSelectedRecord(r);
+            setModalMode("view");
+            setIsModalOpen(true);
+          }}
+        />
       </PageSection>
 
       <SourcingSection />
 
       <PageSection
         title="선정된 업체"
-        caption="isSelected=true 조건으로 조회된 목록"
-          filters={
-            <>
-              <FilterResetButton onClick={onResetSelected} />
-              <SearchBox
-                keyword={keywordSelected}
-                onKeywordChange={setKeywordSelected}
-                onSearch={onSearchSelected}
-                onReset={onResetSelected}
-                placeholder="자재명 / 업체명 검색"
-              />
-            </>
-          }
-          isBusy={isFetchingSelected}
-          footer={
-            <Pagination
-              page={selectedPagination.page}
-              totalPages={Math.max(1, totalPagesSelected)}
-              onChange={selectedPagination.onChangePage}
-              maxButtons={5}
-              totalItems={totalSelected}
-              pageSize={selectedPagination.pageSize}
-              pageSizeOptions={[10, 20, 50, 100]}
-              onChangePageSize={selectedPagination.onChangePageSize}
-              showSummary
-              showPageSize
-              align="center"
+        caption="선정된 업체 목록을 확인합니다."
+        filters={
+          <>
+            <FilterResetButton onClick={onResetSelected} />
+            <SearchBox
+              keyword={keywordSelected}
+              onKeywordChange={setKeywordSelected}
+              onSearch={onSearchSelected}
+              onReset={onResetSelected}
+              placeholder="자재명 / 업체명 검색"
             />
-          }
-        >
-          <PurchasingTable
-            rows={selectedCompanies}
-            showContractDate={true}
-            showOrderCount={true}
-            onRowClick={(r) => {
-              setSelectedRecord(r);
-              setModalMode("view");
-              setIsModalOpen(true);
-            }}
+          </>
+        }
+        isBusy={isFetchingSelected}
+        footer={
+          <Pagination
+            page={selectedPagination.page}
+            totalPages={Math.max(1, totalPagesSelected)}
+            onChange={selectedPagination.onChangePage}
+            maxButtons={5}
+            totalItems={totalSelected}
+            pageSize={selectedPagination.pageSize}
+            pageSizeOptions={[10, 20, 50, 100]}
+            onChangePageSize={selectedPagination.onChangePageSize}
+            showSummary
+            showPageSize
+            align="center"
           />
-          <PurchasingCompareModal
-            isOpen={isCompareOpen}
-            onClose={() => setIsCompareOpen(false)}
-            records={selectedForCompare}
-          />
-        </PageSection>
+        }
+      >
+        <PurchasingTable
+          rows={selectedCompanies}
+          showCheckbox={false}
+          showContractDate={true}
+          showOrderCount={true}
+          onRowClick={(r) => {
+            setSelectedRecord(r);
+            setModalMode("view");
+            setIsModalOpen(true);
+          }}
+        />
+        <PurchasingCompareModal
+          isOpen={isCompareOpen}
+          onClose={() => setIsCompareOpen(false)}
+          records={selectedForCompare}
+        />
+      </PageSection>
 
       <PurchasingRegisterModal
         isOpen={isModalOpen}

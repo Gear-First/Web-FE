@@ -31,12 +31,12 @@ async function enableMocking() {
 
 enableMocking().then(() => {
   ReactDOM.createRoot(document.getElementById("root")!).render(
-    <React.StrictMode>
-      <QueryClientProvider client={queryClient}>
-        <App />
-        {/* 개발 중 디버깅용: 선택사항 */}
-        <ReactQueryDevtools initialIsOpen={false} />
-      </QueryClientProvider>
-    </React.StrictMode>
+    // <React.StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <App />
+      {/* 개발 중 디버깅용: 선택사항 */}
+      <ReactQueryDevtools initialIsOpen={false} />
+    </QueryClientProvider>
+    // </React.StrictMode>
   );
 });

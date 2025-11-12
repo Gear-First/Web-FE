@@ -53,15 +53,14 @@ export const Select = styled.select`
   padding: 0.48rem 0.65rem;
   border-radius: 12px;
   border: 1px solid #d4d4d8;
-  background: #fff;
+
   font-size: 0.9rem;
-  color: #1f1f24;
+
   transition: border-color 0.15s ease, box-shadow 0.15s ease;
 
   &:focus {
     outline: none;
     border-color: #111111;
-    box-shadow: 0 0 0 2px rgba(17, 17, 17, 0.12);
   }
 `;
 

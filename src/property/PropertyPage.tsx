@@ -75,26 +75,21 @@ export default function PropertyPage() {
         <SummaryCard>
           <SummaryLabel>총 자산 항목</SummaryLabel>
           <SummaryValue>
-            {fetchStatus === "fetching"
-              ? "· · ·"
-              : totalItems.toLocaleString()}
+            {fetchStatus === "fetching" ? "0" : totalItems.toLocaleString()}
           </SummaryValue>
           <SummaryNote>필터 기준 자산 등록 건수</SummaryNote>
         </SummaryCard>
         <SummaryCard>
           <SummaryLabel>표본 자산 가치</SummaryLabel>
           <SummaryValue>
-            ₩
-            {fetchStatus === "fetching"
-              ? "· · ·"
-              : assetValue.toLocaleString()}
+            ₩{fetchStatus === "fetching" ? "0" : assetValue.toLocaleString()}
           </SummaryValue>
           <SummaryNote>현재 페이지의 총 금액 합계</SummaryNote>
         </SummaryCard>
         <SummaryCard>
           <SummaryLabel>평균 단가</SummaryLabel>
           <SummaryValue>
-            ₩{fetchStatus === "fetching" ? "· · ·" : avgUnit.toLocaleString()}
+            ₩{fetchStatus === "fetching" ? "0" : avgUnit.toLocaleString()}
           </SummaryValue>
           <SummaryNote>표본 기준 평균 단가</SummaryNote>
         </SummaryCard>

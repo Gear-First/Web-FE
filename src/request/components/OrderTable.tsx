@@ -23,7 +23,8 @@ export default function OrderTable({
         <thead>
           <tr>
             <Th>발주 번호</Th>
-            <Th>{branchType === "대리점" ? "대리점" : "창고"}</Th>
+            {/* <Th>{branchType === "대리점" ? "대리점" : "창고"}</Th> */}
+            <Th>발주처</Th>
             <Th>담당자</Th>
             <Th>요청 일시</Th>
           </tr>
@@ -31,7 +32,7 @@ export default function OrderTable({
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <Td colSpan={5} style={{ textAlign: "center", color: "#6b7280" }}>
+              <Td colSpan={5} style={{ textAlign: "center", color: "#9ca3af" }}>
                 데이터가 없습니다.
               </Td>
             </tr>

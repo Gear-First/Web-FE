@@ -120,7 +120,10 @@ const PartSearchModal = ({
             <tbody>
               {rows.length === 0 ? (
                 <tr>
-                  <Td colSpan={4} style={{ textAlign: "center" }}>
+                  <Td
+                    colSpan={4}
+                    style={{ textAlign: "center", color: "#9ca3af" }}
+                  >
                     {isFetching ? "불러오는 중..." : "검색 결과가 없습니다."}
                   </Td>
                 </tr>

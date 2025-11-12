@@ -65,7 +65,7 @@ export default function PartPage() {
         <SummaryCard>
           <SummaryLabel>총 재고 품목</SummaryLabel>
           <SummaryValue>
-            {fetchStatus === "fetching" ? "· · ·" : totalItems.toLocaleString()}
+            {fetchStatus === "fetching" ? "0" : totalItems.toLocaleString()}
           </SummaryValue>
           <SummaryNote>창고 전체 등록 품목 수</SummaryNote>
         </SummaryCard>
@@ -77,7 +77,7 @@ export default function PartPage() {
         <SummaryCard>
           <SummaryLabel>평균 보유 수량</SummaryLabel>
           <SummaryValue>
-            {fetchStatus === "fetching" ? "· · ·" : avgQty.toLocaleString()}
+            {fetchStatus === "fetching" ? "0" : avgQty.toLocaleString()}
           </SummaryValue>
           <SummaryNote>표본 기준 가용 재고</SummaryNote>
         </SummaryCard>

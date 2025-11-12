@@ -3,6 +3,7 @@ import type { PurchasingRecord } from "../PurchasingTypes";
 
 interface Props {
   rows: PurchasingRecord[];
+  showCheckbox?: boolean;
   showContractDate?: boolean;
   showOrderCount?: boolean;
   onRowClick?: (record: PurchasingRecord) => void;
@@ -12,6 +13,7 @@ interface Props {
 
 export default function PurchasingTable({
   rows,
+  showCheckbox = false,
   showContractDate = false,
   showOrderCount = false,
   onRowClick,
@@ -22,7 +24,7 @@ export default function PurchasingTable({
     <Table>
       <thead>
         <tr>
-          <Th style={{ width: 36 }}></Th>
+          {showCheckbox && <Th style={{ width: 36 }}></Th>}
           <Th>등록번호</Th>
           <Th>업체명</Th>
           <Th>자재명</Th>
@@ -44,22 +46,24 @@ export default function PurchasingTable({
                 style={{ cursor: "pointer" }}
                 onClick={() => onRowClick?.(r)}
               >
-                <Td
-                  onClick={(e) => e.stopPropagation()} // 행 클릭과 구분
-                  style={{ textAlign: "center" }}
-                >
-                  <input
-                    type="checkbox"
-                    checked={isChecked}
-                    onChange={() => onToggleSelect?.(r.purchasingId)}
-                    style={{
-                      accentColor: "#111111",
-                      width: "16px",
-                      height: "16px",
-                      cursor: "pointer",
-                    }}
-                  />
-                </Td>
+                {showCheckbox && (
+                  <Td
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ textAlign: "center" }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => onToggleSelect?.(r.purchasingId)}
+                      style={{
+                        accentColor: "#111111",
+                        width: "16px",
+                        height: "16px",
+                        cursor: "pointer",
+                      }}
+                    />
+                  </Td>
+                )}
                 <Td>{r.purchasingId}</Td>
                 <Td>{r.company}</Td>
                 <Td>{r.materialName}</Td>
@@ -86,7 +90,7 @@ export default function PurchasingTable({
         ) : (
           <tr>
             <Td colSpan={9} style={{ textAlign: "center", color: "#9ca3af" }}>
-              등록된 업체가 없습니다.
+              데이터가 없습니다.
             </Td>
           </tr>
         )}
