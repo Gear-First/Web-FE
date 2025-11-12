@@ -34,13 +34,8 @@ export default function MaterialPage() {
     endDate: null,
   });
 
-  const {
-    page,
-    pageSize,
-    onChangePage,
-    onChangePageSize,
-    resetPage,
-  } = usePagination(1, 10);
+  const { page, pageSize, onChangePage, onChangePageSize, resetPage } =
+    usePagination(1, 10);
 
   const [isRegOpen, setIsRegOpen] = useState(false);
   const [regMode, setRegMode] = useState<"create" | "edit">("create");
@@ -140,12 +135,11 @@ export default function MaterialPage() {
             onChange={onChangePage}
             isBusy={isFetching}
             maxButtons={5}
-            totalItems={total}
             pageSize={pageSize}
             pageSizeOptions={[10, 20, 50, 100]}
             onChangePageSize={onChangePageSize}
-            showSummary
-            showPageSize
+            showSummary={false}
+            showPageSize={false}
             align="center"
             dense={false}
             sticky={false}

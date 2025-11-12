@@ -89,12 +89,7 @@ const StyledModalContainer = styled.div<ModalContainerStyleProps>`
 /* 모달 컨테이너 */
 export const ModalContainer = forwardRef<HTMLDivElement, ModalContainerProps>(
   (
-    {
-      children,
-      loading = false,
-      loadingLabel = "처리 중입니다...",
-      ...rest
-    },
+    { children, loading = false, loadingLabel = "처리 중입니다...", ...rest },
     ref
   ) => (
     <StyledModalContainer ref={ref} {...rest}>
@@ -295,15 +290,12 @@ export const Button = styled.button<{ color?: string }>`
 
 /* 입력창 */
 export const Input = styled.input`
-  padding: 0.75rem 0.95rem;
-  border: 1px solid rgba(17, 17, 17, 0.08);
-  border-radius: 14px;
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
   font-size: 0.9rem;
-  outline: none;
-  background: #ffffff;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease;
   &:focus {
-    border-color: rgba(17, 17, 17, 0.32);
-    box-shadow: 0 0 0 3px rgba(17, 17, 17, 0.08);
+    border-color: #111;
+    outline: none;
   }
 `;

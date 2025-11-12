@@ -19,6 +19,7 @@ export async function logout(): Promise<void> {
     sessionStorage.removeItem("access_token");
     localStorage.removeItem("refresh_token");
     clearUserProfile();
-    window.location.href = `https://gearfirst-fe.vercel.app/login`;
+    // window.location.href = `https://gearfirst-fe.vercel.app/login`;
+    window.location.href = `http://localhost:5173/login`;
   }
 }

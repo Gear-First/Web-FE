@@ -22,9 +22,23 @@ function Login(): JSX.Element {
   const handleLogin = useCallback(async (): Promise<void> => {
     setStatusMessage("보안 토큰을 준비하고 있어요.");
 
+    console.log("🧩 [Login] verifier, state 생성 전");
     const verifier = generateCodeVerifier();
     const challenge = await generateCodeChallenge(verifier);
     const state = generateState();
+    console.log("🧩 생성:", { verifier, state });
+
+    sessionStorage.setItem("pkce_verifier", verifier);
+    sessionStorage.setItem("oauth_state", state);
+
+    console.log("💾 세션 저장 완료:", {
+      verifier: sessionStorage.getItem("pkce_verifier"),
+      state: sessionStorage.getItem("oauth_state"),
+    });
+
+    // const verifier = generateCodeVerifier();
+    // const challenge = await generateCodeChallenge(verifier);
+    // const state = generateState();
 
     sessionStorage.setItem("pkce_verifier", verifier);
     sessionStorage.setItem("oauth_state", state);

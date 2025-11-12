@@ -60,7 +60,7 @@ export default function CategoryTable({ rows }: { rows: CategoryRecord[] }) {
         <tbody>
           {rows.length === 0 ? (
             <tr>
-              <Td colSpan={3} style={{ textAlign: "center", color: "#6b7280" }}>
+              <Td colSpan={3} style={{ textAlign: "center", color: "#9ca3af" }}>
                 데이터가 없습니다.
               </Td>
             </tr>

@@ -53,13 +53,8 @@ export default function BOMPage() {
   });
 
   // 페이지네이션 (화면 1-based)
-  const {
-    page,
-    pageSize,
-    onChangePage,
-    onChangePageSize,
-    resetPage,
-  } = usePagination(1, 10);
+  const { page, pageSize, onChangePage, onChangePageSize, resetPage } =
+    usePagination(1, 10);
 
   // 등록 모달
   const [isRegOpen, setIsRegOpen] = useState(false);

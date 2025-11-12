@@ -311,9 +311,7 @@ export default function DashboardPage() {
         title: "요청 관리",
         route: "/request",
         primary: {
-          value: pendingOrdersLoading
-            ? "· · ·"
-            : formatNumber(pendingOrders.data),
+          value: pendingOrdersLoading ? "0" : formatNumber(pendingOrders.data),
           label: "승인 대기",
         },
         secondary: processedOrdersLoading
@@ -334,7 +332,7 @@ export default function DashboardPage() {
         title: "자재 소요량 계획",
         route: "/mrp",
         primary: {
-          value: bomRecordsLoading ? "· · ·" : formatNumber(bomRecords.data),
+          value: bomRecordsLoading ? "0" : formatNumber(bomRecords.data),
           label: "등록된 BOM",
         },
         secondary: "MRP는 최신 BOM 기준으로 계산됩니다",
@@ -350,7 +348,7 @@ export default function DashboardPage() {
         route: "/purchasing",
         primary: {
           value: companyRecordsLoading
-            ? "· · ·"
+            ? "0"
             : formatNumber(companyRecords.data),
           label: "협력사 보유",
         },
@@ -368,7 +366,7 @@ export default function DashboardPage() {
         route: "/items",
         primary: {
           value: itemPartRecordsLoading
-            ? "· · ·"
+            ? "0"
             : formatNumber(itemPartRecords.data),
           label: "등록된 품목",
         },
@@ -386,7 +384,7 @@ export default function DashboardPage() {
         route: "/part",
         primary: {
           value: inventoryPartsLoading
-            ? "· · ·"
+            ? "0"
             : formatNumber(inventoryParts.data),
           label: "창고별 품목",
         },
@@ -409,7 +407,7 @@ export default function DashboardPage() {
         route: "/property",
         primary: {
           value: propertyRecordsLoading
-            ? "· · ·"
+            ? "0"
             : formatNumber(propertyRecords.data?.total),
           label: "자산 항목",
         },
@@ -433,7 +431,7 @@ export default function DashboardPage() {
         route: "/inbound",
         primary: {
           value: inboundRecordsLoading
-            ? "· · ·"
+            ? "0"
             : formatNumber(inboundRecords.data),
           label: "입고 예정",
         },
@@ -451,7 +449,7 @@ export default function DashboardPage() {
         route: "/outbound",
         primary: {
           value: outboundRecordsLoading
-            ? "· · ·"
+            ? "0"
             : formatNumber(outboundRecords.data),
           label: "출고 대기",
         },
@@ -468,9 +466,7 @@ export default function DashboardPage() {
         title: "인사 관리",
         route: "/human",
         primary: {
-          value: humanRecordsLoading
-            ? "· · ·"
-            : formatNumber(humanRecords.data),
+          value: humanRecordsLoading ? "0" : formatNumber(humanRecords.data),
           label: "등록 인원",
         },
         secondary: "현장 인력 구성과 역량 분포를 살펴보세요",
@@ -553,7 +549,7 @@ export default function DashboardPage() {
               <span>출·입고 대기</span>
               <strong>
                 {inboundRecordsLoading || outboundRecordsLoading
-                  ? "· · ·"
+                  ? "0"
                   : formatNumber(
                       (inboundRecords.data ?? 0) + (outboundRecords.data ?? 0)
                     )}

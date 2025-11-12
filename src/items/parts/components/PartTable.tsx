@@ -95,6 +95,13 @@ export default function PartTable({ rows }: { rows: PartRecord[] }) {
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 && (
+            <tr>
+              <Td colSpan={7} style={{ textAlign: "center", color: "#9ca3af" }}>
+                데이터가 없습니다.
+              </Td>
+            </tr>
+          )}
           {rows.map((r) => (
             <tr
               key={r.partId}

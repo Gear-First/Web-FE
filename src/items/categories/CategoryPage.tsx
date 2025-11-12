@@ -153,12 +153,10 @@ export default function CategoryPage() {
             totalPages={Math.max(1, totalPages)}
             onChange={onChangePage}
             maxButtons={5}
-            totalItems={total}
             pageSize={pageSize}
-            pageSizeOptions={[10, 20, 50, 100]}
             onChangePageSize={onChangePageSize}
-            showSummary
-            showPageSize
+            showSummary={false}
+            showPageSize={false}
             align="center"
             dense={false}
             sticky={false}

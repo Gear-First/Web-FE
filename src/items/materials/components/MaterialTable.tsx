@@ -69,6 +69,13 @@ export default function MaterialTable({ rows }: { rows: MaterialRecord[] }) {
           </tr>
         </thead>
         <tbody>
+          {rows.length === 0 && (
+            <tr>
+              <Td colSpan={2} style={{ textAlign: "center", color: "#9ca3af" }}>
+                데이터가 없습니다.
+              </Td>
+            </tr>
+          )}
           {rows.map((r) => (
             <tr
               key={r.materialCode}
