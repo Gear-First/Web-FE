@@ -1,7 +1,27 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react-swc'
+// @ts-nocheck
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react-swc";
 
-// https://vite.dev/config/
 export default defineConfig({
   plugins: [react()],
-})
+  server: {
+    port: 5173,
+    proxy: {
+      "/notification": {
+        target: "http://34.120.215.23",
+        changeOrigin: true,
+        secure: false,
+        ws: true,
+        followRedirects: true,
+        configure: (proxy, options) => {
+          proxy.on("proxyReq", (_proxyReq, req) => {
+            console.log(`[Proxy] ${req.url} -> ${options.target}`);
+          });
+        },
+      },
+    },
+  },
+  build: {
+    chunkSizeWarningLimit: 1500,
+  },
+});
